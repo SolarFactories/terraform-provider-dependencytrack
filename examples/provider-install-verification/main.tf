@@ -7,6 +7,6 @@ terraform {
 }
 
 provider "dependencytrack" {
-	host = "localhost:8080"
+	host = "http://localhost:8081"
 	token = "odt_dcqVqQWFy84PAxWfpEQBTItkEAMWeeoG"
 }

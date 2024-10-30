@@ -7,8 +7,14 @@ terraform {
 }
 
 provider "dependencytrack" {
-	host = "localhost:8080"
+	host = "http://localhost:8081"
 	token = "odt_dcqVqQWFy84PAxWfpEQBTItkEAMWeeoG"
 }
 
-data "dependencytrack_project" "example" {}
+// Requires the creation of a project within DependencyTrack.
+// By default, DependencyTrack defaults to an empty Version,
+// which prevents the Go SDK from being able to find it with `Lookup`
+data "dependencytrack_project" "example" {
+	name = "Example"
+	version = "v1"
+}

@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 
+	"github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -26,12 +27,6 @@ type dependencyTrackProvider struct {
 type dependencyTrackProviderModel struct {
 	Host types.String `tfsdk:"host"`
 	Token types.String `tfsdk:"token"`
-}
-
-// TODO: Replace with introduction of an SDK
-type DependencyTrackClient struct {
-	Host string
-	Token string
 }
 
 func (p *dependencyTrackProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -85,7 +80,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 
 	// Fetch values, and perform value validation
 	host := config.Host.ValueString()
-	token := config.Host.ValueString()
+	token := config.Token.ValueString()
 
 	if host == "" {
 		resp.Diagnostics.AddAttributeError(
@@ -104,8 +99,17 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	resp.DataSourceData = DependencyTrackClient { Host: host, Token: token }
-	resp.ResourceData = DependencyTrackClient { Host: host, Token: token }
+
+	client, err := dtrack.NewClient(host, dtrack.WithAPIKey(token))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create DependencyTrack API Client",
+			"An Unexpected error occurred when creating the DependencyTrack API Client. "+err.Error(),
+		)
+		return
+	}
+	resp.DataSourceData = client
+	resp.ResourceData = client
 }
 
 func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resource.Resource {
