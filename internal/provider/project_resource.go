@@ -6,19 +6,19 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/DependencyTrack/client-go"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 var (
-	_ resource.Resource = &projectResource {}
-	_ resource.ResourceWithConfigure = &projectResource {}
-	_ resource.ResourceWithImportState = &projectResource {}
+	_ resource.Resource                = &projectResource{}
+	_ resource.ResourceWithConfigure   = &projectResource{}
+	_ resource.ResourceWithImportState = &projectResource{}
 )
 
 func NewProjectResource() resource.Resource {
@@ -30,33 +30,33 @@ type projectResource struct {
 }
 
 type projectResourceModel struct {
-	ID types.String `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
-	Active types.Bool `tfsdk:"active"`
+	Active      types.Bool   `tfsdk:"active"`
 }
 
 func (r *projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName+"_project"
+	resp.TypeName = req.ProviderTypeName + "_project"
 }
 
 func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema {
-		Attributes: map[string]schema.Attribute {
-			"id": schema.StringAttribute {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
 				Computed: true,
-				PlanModifiers: []planmodifier.String {
+				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"name": schema.StringAttribute {
+			"name": schema.StringAttribute{
 				Required: true,
 			},
-			"description": schema.StringAttribute {
+			"description": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
 			},
-			"active": schema.BoolAttribute {
+			"active": schema.BoolAttribute{
 				Optional: true,
 				Computed: true,
 			},
@@ -72,10 +72,10 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	projectReq := dtrack.Project {
-		Name: plan.Name.ValueString(),
+	projectReq := dtrack.Project{
+		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
-		Active: plan.Active.ValueBool(),
+		Active:      plan.Active.ValueBool(),
 	}
 
 	tflog.Debug(ctx, "Creating a new project, with name: "+projectReq.Name)
@@ -161,11 +161,11 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		)
 		return
 	}
-	projectReq := dtrack.Project {
-		UUID: id,
-		Name: plan.Name.ValueString(),
+	projectReq := dtrack.Project{
+		UUID:        id,
+		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
-		Active: plan.Active.ValueBool(),
+		Active:      plan.Active.ValueBool(),
 	}
 
 	// Execute

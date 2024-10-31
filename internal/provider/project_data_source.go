@@ -1,8 +1,8 @@
 package provider
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 
 	"github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
-// Interface impl check
+// Interface impl check.
 var (
-	_ datasource.DataSource = &projectDataSource {}
-	_ datasource.DataSourceWithConfigure = &projectDataSource {}
+	_ datasource.DataSource              = &projectDataSource{}
+	_ datasource.DataSourceWithConfigure = &projectDataSource{}
 )
 
 func NewProjectDataSource() datasource.DataSource {
@@ -26,17 +26,17 @@ type projectDataSource struct {
 }
 
 type projectDataSourceModel struct {
-	Name types.String `tfsdk:"name"`
-	Version types.String `tfsdk:"version"`
-	ID types.String `tfsdk:"id"`
+	Name       types.String             `tfsdk:"name"`
+	Version    types.String             `tfsdk:"version"`
+	ID         types.String             `tfsdk:"id"`
 	Properties []projectPropertiesModel `tfsdk:"properties"`
 }
 
 type projectPropertiesModel struct {
-	Group types.String `tfsdk:"group"`
-	Name types.String `tfsdk:"name"`
-	Value types.String `tfsdk:"value"`
-	Type types.String `tfsdk:"type"`
+	Group       types.String `tfsdk:"group"`
+	Name        types.String `tfsdk:"name"`
+	Value       types.String `tfsdk:"value"`
+	Type        types.String `tfsdk:"type"`
 	Description types.String `tfsdk:"description"`
 }
 
@@ -45,34 +45,34 @@ func (d *projectDataSource) Metadata(_ context.Context, req datasource.MetadataR
 }
 
 func (d *projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resp.Schema = schema.Schema {
-		Attributes: map[string]schema.Attribute {
-			"name": schema.StringAttribute {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"name": schema.StringAttribute{
 				Required: true,
 			},
-			"version": schema.StringAttribute {
+			"version": schema.StringAttribute{
 				Optional: true,
 			},
-			"id": schema.StringAttribute {
+			"id": schema.StringAttribute{
 				Computed: true,
 			},
-			"properties": schema.ListNestedAttribute {
+			"properties": schema.ListNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject {
-					Attributes: map[string]schema.Attribute {
-						"group": schema.StringAttribute {
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"group": schema.StringAttribute{
 							Computed: true,
 						},
-						"name": schema.StringAttribute {
+						"name": schema.StringAttribute{
 							Computed: true,
 						},
-						"value": schema.StringAttribute {
+						"value": schema.StringAttribute{
 							Computed: true,
 						},
-						"type": schema.StringAttribute {
+						"type": schema.StringAttribute{
 							Computed: true,
 						},
-						"description": schema.StringAttribute {
+						"description": schema.StringAttribute{
 							Computed: true,
 						},
 					},
@@ -100,19 +100,19 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 	tflog.Debug(ctx, "Found project with UUID: "+project.UUID.String())
 	// Transform data into model
-	projectState := projectDataSourceModel {
-		Name: types.StringValue(project.Name),
-		Version: types.StringValue(project.Version),
-		ID: types.StringValue(project.UUID.String()),
+	projectState := projectDataSourceModel{
+		Name:       types.StringValue(project.Name),
+		Version:    types.StringValue(project.Version),
+		ID:         types.StringValue(project.UUID.String()),
 		Properties: make([]projectPropertiesModel, 0),
 	}
 	for _, property := range project.Properties {
-		tflog.Debug(ctx, "Found property with group"+property.Group);
-		projectState.Properties = append(projectState.Properties, projectPropertiesModel {
-			Group: types.StringValue(property.Group),
-			Name: types.StringValue(property.Name),
-			Value: types.StringValue(property.Value),
-			Type: types.StringValue(property.Type),
+		tflog.Debug(ctx, "Found property with group"+property.Group)
+		projectState.Properties = append(projectState.Properties, projectPropertiesModel{
+			Group:       types.StringValue(property.Group),
+			Name:        types.StringValue(property.Name),
+			Value:       types.StringValue(property.Value),
+			Type:        types.StringValue(property.Type),
 			Description: types.StringValue(property.Description),
 		})
 	}

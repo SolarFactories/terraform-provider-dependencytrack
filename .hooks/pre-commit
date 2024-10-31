@@ -1,0 +1,4 @@
+#!/bin/sh
+
+gofmt -w -s .
+golangci-lint run

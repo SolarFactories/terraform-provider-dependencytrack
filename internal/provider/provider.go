@@ -15,7 +15,7 @@ import (
 
 // Ensure satisfies various provider interfaces.
 var (
-	_ provider.Provider = &dependencyTrackProvider {}
+	_ provider.Provider = &dependencyTrackProvider{}
 )
 
 type dependencyTrackProvider struct {
@@ -26,7 +26,7 @@ type dependencyTrackProvider struct {
 }
 
 type dependencyTrackProviderModel struct {
-	Host types.String `tfsdk:"host"`
+	Host  types.String `tfsdk:"host"`
 	Token types.String `tfsdk:"token"`
 }
 
@@ -36,15 +36,15 @@ func (p *dependencyTrackProvider) Metadata(ctx context.Context, req provider.Met
 }
 
 func (p *dependencyTrackProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
-	resp.Schema = schema.Schema {
-		Attributes: map[string]schema.Attribute {
-			"host": schema.StringAttribute {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"host": schema.StringAttribute{
 				Required: true,
 				Optional: false,
 			},
-			"token": schema.StringAttribute {
-				Required: true,
-				Optional: false,
+			"token": schema.StringAttribute{
+				Required:  true,
+				Optional:  false,
 				Sensitive: true,
 			},
 		},
@@ -116,13 +116,13 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 }
 
 func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource {
+	return []func() resource.Resource{
 		NewProjectResource,
 	}
 }
 
 func (p *dependencyTrackProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource {
+	return []func() datasource.DataSource{
 		NewProjectDataSource,
 	}
 }
