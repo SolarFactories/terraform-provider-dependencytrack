@@ -18,3 +18,7 @@ data "dependencytrack_project" "example" {
 	name = "Example"
 	version = "v1"
 }
+
+output "project_example_uuid" {
+	value = data.dependencytrack_project.example
+}

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Interface impl check
@@ -96,13 +97,16 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		)
 		return
 	}
+	tflog.Debug(ctx, "Found project with UUID: "+project.UUID.String())
 	// Transform data into model
 	projectState := projectDataSourceModel {
 		Name: types.StringValue(project.Name),
 		Version: types.StringValue(project.Version),
 		ID: types.StringValue(project.UUID.String()),
+		Properties: make([]projectPropertiesModel, 0),
 	}
 	for _, property := range project.Properties {
+		tflog.Debug(ctx, "Found property with group"+property.Group);
 		projectState.Properties = append(projectState.Properties, projectPropertiesModel {
 			Group: types.StringValue(property.Group),
 			Name: types.StringValue(property.Name),
@@ -112,7 +116,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		})
 	}
 	// Update state
-	diags2 := resp.State.Set(ctx, &state)
+	diags2 := resp.State.Set(ctx, &projectState)
 	resp.Diagnostics.Append(diags2...)
 	if resp.Diagnostics.HasError() {
 		return
