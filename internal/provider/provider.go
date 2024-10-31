@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
 // Ensure satisfies various provider interfaces.
@@ -100,6 +101,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 		return
 	}
 
+	tflog.Debug(ctx, "Creating DependencyTrack client")
 	client, err := dtrack.NewClient(host, dtrack.WithAPIKey(token))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -110,6 +112,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	}
 	resp.DataSourceData = client
 	resp.ResourceData = client
+	tflog.Info(ctx, "Configured DependencyTrack client", map[string]any{"success": true})
 }
 
 func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resource.Resource {
