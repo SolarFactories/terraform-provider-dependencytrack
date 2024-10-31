@@ -18,6 +18,7 @@ import (
 var (
 	_ resource.Resource = &projectResource {}
 	_ resource.ResourceWithConfigure = &projectResource {}
+	_ resource.ResourceWithImportState = &projectResource {}
 )
 
 func NewProjectResource() resource.Resource {
@@ -202,6 +203,40 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 }
 
 func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// Load state
+	var state projectResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Map TF to SDK
+	id, err := uuid.Parse(state.ID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("id"),
+			"Within Delete, unable to parse UUID",
+			"Error parsing UUID from: "+state.ID.ValueString()+", error: "+err.Error(),
+		)
+		return
+	}
+
+	// Execute
+	tflog.Debug(ctx, "Deleting project with id: "+id.String())
+	err = r.client.Project.Delete(ctx, id)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to delete project",
+			"Unexpected error when trying to delete project: "+id.String()+", error: "+err.Error(),
+		)
+		return
+	}
+	tflog.Debug(ctx, "Deleted project with id: "+id.String())
+}
+
+func (r *projectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *projectResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
