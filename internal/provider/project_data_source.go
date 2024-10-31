@@ -13,8 +13,8 @@ import (
 
 // Interface impl check
 var (
-	_ datasource.DataSource = &projectDataSource{}
-	_ datasource.DataSourceWithConfigure = &projectDataSource{}
+	_ datasource.DataSource = &projectDataSource {}
+	_ datasource.DataSourceWithConfigure = &projectDataSource {}
 )
 
 func NewProjectDataSource() datasource.DataSource {

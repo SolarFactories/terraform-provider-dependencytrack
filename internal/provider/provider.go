@@ -15,7 +15,7 @@ import (
 
 // Ensure satisfies various provider interfaces.
 var (
-	_ provider.Provider = &dependencyTrackProvider{}
+	_ provider.Provider = &dependencyTrackProvider {}
 )
 
 type dependencyTrackProvider struct {
@@ -116,7 +116,9 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 }
 
 func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return nil
+	return []func() resource.Resource {
+		NewProjectResource,
+	}
 }
 
 func (p *dependencyTrackProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
