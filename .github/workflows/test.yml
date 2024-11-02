@@ -8,8 +8,8 @@ on:
     paths-ignore:
       - 'README.md'
   push:
-    paths-ignore:
-      - 'README.md'
+    branches:
+      - main
 
 # Testing only needs permissions to read the repository contents.
 permissions:
@@ -90,7 +90,6 @@ jobs:
       - name: Bootstrap authentication
         shell: bash
         run: |
-          sleep 30
           ./scripts/change-password.sh
           export TOKEN="$(./scripts/login.sh)"
           ./scripts/disable-settings.sh
@@ -103,7 +102,7 @@ jobs:
           echo "DEPENDENCYTRACK_API_KEY=${API_KEY}" >> $GITHUB_ENV
 
         env:
-          HOST: "api:8081"
+          HOST: "localhost:8081"
           USERNAME: "admin"
           CURRENT_PASSWORD: "admin"
           NEW_PASSWORD: "pipeline"
