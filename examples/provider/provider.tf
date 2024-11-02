@@ -1,4 +1,4 @@
 provider "dependencytrack" {
-  host  = "http://localhost:8081"
-  token = "TOKEN"
+  host = "http://localhost:8081"
+  key  = "OS_ENV"
 }

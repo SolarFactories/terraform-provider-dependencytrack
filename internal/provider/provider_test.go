@@ -9,7 +9,7 @@ const (
 	providerConfig = `
 provider "dependencytrack" {
 	host = "http://localhost:8081"
-	token = "odt_dcqVqQWFy84PAxWfpEQBTItkEAMWeeoG"
+	key = "OS_ENV"
 }
 `
 )

@@ -3,6 +3,11 @@
 set -e
 
 make fmt
+if [ -n "$(git status --untracked --short | grep '^ ')" ]; then
+	echo "Untracked files after formatting. These may have been re-formatted."
+	exit 1
+fi
+
 make lint
 make install
 make generate
