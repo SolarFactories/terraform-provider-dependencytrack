@@ -56,7 +56,6 @@ jobs:
   test:
     name: Terraform Provider Acceptance Tests
     # Disable running acceptance tests on pipeline, until able to bring up local DT service, sign in and generate an API Key for it
-    if: false
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
