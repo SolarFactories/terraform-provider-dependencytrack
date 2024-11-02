@@ -90,14 +90,12 @@ jobs:
       - name: Bootstrap authentication
         shell: bash
         run: |
-          set -eux
           ./scripts/change-password.sh
           export TOKEN="$(./scripts/login.sh)"
           ./scripts/disable-settings.sh
           export TEAM_UUID="$(./scripts/create-team.sh | jq -r '.uuid')"
           PERMISSIONS="$(./scripts/get-valid-permissions.sh | jq -r '.[].name')"
-          for perm in "${PERMISSIONS}"; do
-            echo "${perm}"
+          for perm in ${PERMISSIONS}; do
             PERMISSION="${perm}" ./scripts/assign-permission.sh
           done
           export PROJECT_UUID="$(./scripts/create-project.sh | jq -r '.uuid')"
