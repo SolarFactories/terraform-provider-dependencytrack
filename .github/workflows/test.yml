@@ -90,6 +90,7 @@ jobs:
       - name: Bootstrap authentication
         shell: bash
         run: |
+          set -eux
           ./scripts/change-password.sh
           export TOKEN="$(./scripts/login.sh)"
           ./scripts/disable-settings.sh
@@ -125,5 +126,5 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
-        run: go test -v -cover ./internal/provider/
+        run: echo "$(env)" && go test -v -cover ./internal/provider/
         timeout-minutes: 10
