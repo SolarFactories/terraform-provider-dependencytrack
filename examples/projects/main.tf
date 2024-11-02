@@ -7,8 +7,8 @@ terraform {
 }
 
 provider "dependencytrack" {
-  host  = "http://localhost:8081"
-  token = "odt_dcqVqQWFy84PAxWfpEQBTItkEAMWeeoG"
+  host = "http://localhost:8081"
+  key  = "odt_dcqVqQWFy84PAxWfpEQBTItkEAMWeeoG"
 }
 
 // Requires the creation of a project within DependencyTrack.

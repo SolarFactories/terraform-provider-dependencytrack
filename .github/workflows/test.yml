@@ -55,6 +55,8 @@ jobs:
   # Run acceptance tests in a matrix with Terraform CLI versions
   test:
     name: Terraform Provider Acceptance Tests
+    # Disable running acceptance tests on pipeline, until able to bring up local DT service, sign in and generate an API Key for it
+    if: false
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -68,6 +70,11 @@ jobs:
           - '1.2.*'
           - '1.3.*'
           - '1.4.*'
+          - '1.5.*'
+          - '1.6.*'
+          - '1.7.*'
+          - '1.8.*'
+          - '1.9.*'
     steps:
       - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4.2.1
       - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2

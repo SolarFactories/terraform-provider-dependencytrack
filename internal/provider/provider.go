@@ -26,8 +26,8 @@ type dependencyTrackProvider struct {
 }
 
 type dependencyTrackProviderModel struct {
-	Host  types.String `tfsdk:"host"`
-	Token types.String `tfsdk:"token"`
+	Host types.String `tfsdk:"host"`
+	Key  types.String `tfsdk:"key"`
 }
 
 func (p *dependencyTrackProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -44,7 +44,7 @@ func (p *dependencyTrackProvider) Schema(ctx context.Context, req provider.Schem
 				Required:    true,
 				Optional:    false,
 			},
-			"token": schema.StringAttribute{
+			"key": schema.StringAttribute{
 				Description: "API Key for authentication to DependencyTrack. Must have permissions for all attempted actions.",
 				Required:    true,
 				Optional:    false,
@@ -68,14 +68,14 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 		resp.Diagnostics.AddAttributeError(
 			path.Root("host"),
 			"Unknown DependencyTrack Host",
-			"Unable to create DependencyTrack Client, due to missing host configuration.",
+			"Unable to create DependencyTrack Client, due to missing API host configuration.",
 		)
 	}
-	if config.Token.IsUnknown() {
+	if config.Key.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("token"),
-			"Unknown DependencyTrack Token",
-			"Unable to create DependencyTrack Client, due to missing API token configuration.",
+			path.Root("key"),
+			"Unknown DependencyTrack API Key",
+			"Unable to create DependencyTrack Client, due to missing API key configuration.",
 		)
 	}
 	if resp.Diagnostics.HasError() {
@@ -84,7 +84,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 
 	// Fetch values, and perform value validation
 	host := config.Host.ValueString()
-	token := config.Token.ValueString()
+	key := config.Key.ValueString()
 
 	if host == "" {
 		resp.Diagnostics.AddAttributeError(
@@ -93,11 +93,11 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"Host for DependencyTrack was provided, but it was empty.",
 		)
 	}
-	if token == "" {
+	if key == "" {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("token"),
-			"Missing DependencyTrack Token",
-			"Token for DependencyTrack was provided, but it was empty.",
+			path.Root("key"),
+			"Missing DependencyTrack API Key",
+			"API Key for DependencyTrack was provided, but it was empty.",
 		)
 	}
 	if resp.Diagnostics.HasError() {
@@ -105,7 +105,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	}
 
 	tflog.Debug(ctx, "Creating DependencyTrack client")
-	client, err := dtrack.NewClient(host, dtrack.WithAPIKey(token))
+	client, err := dtrack.NewClient(host, dtrack.WithAPIKey(key))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create DependencyTrack API Client",
