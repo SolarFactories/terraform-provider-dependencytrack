@@ -51,7 +51,7 @@ func (d *projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				Required: true,
 			},
 			"version": schema.StringAttribute{
-				Optional: true,
+				Required: true,
 			},
 			"id": schema.StringAttribute{
 				Computed: true,
