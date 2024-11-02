@@ -62,11 +62,11 @@ jobs:
     services:
       api:
         image: dependencytrack/apiserver
-        options:
-          --health-cmd "wget api:8081/health -o /dev/null"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+#        options:
+#          --health-cmd "curl api:8081/health -o /dev/null"
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
         ports:
           - 8081:8080
 
@@ -90,8 +90,10 @@ jobs:
       - name: Bootstrap authentication
         shell: bash
         run: |
+          sleep 30
           ./scripts/change-password.sh
           export TOKEN="$(./scripts/login.sh)"
+          ./scripts/disable-settings.sh
           export TEAM_UUID="$(./scripts/create-team.sh | jq -r '.uuid')"
           PERMISSIONS="$(./scripts/get-valid-permissions.sh | jq -r '.[].name')"
           for perm in $PERMISSONS; do
