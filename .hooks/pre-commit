@@ -2,5 +2,7 @@
 
 set -e
 
-gofmt -w -s .
-golangci-lint run
+make fmt
+make lint
+make install
+make generate

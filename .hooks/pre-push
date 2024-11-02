@@ -1,4 +1,6 @@
 #!/bin/sh
 
 set -e
-TF_ACC=1 go test -v ./internal/provider
+
+make test
+make testacc

@@ -37,15 +37,18 @@ func (p *dependencyTrackProvider) Metadata(ctx context.Context, req provider.Met
 
 func (p *dependencyTrackProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Interact with DependencyTrack.",
 		Attributes: map[string]schema.Attribute{
 			"host": schema.StringAttribute{
-				Required: true,
-				Optional: false,
+				Description: "URI for DependencyTrack API.",
+				Required:    true,
+				Optional:    false,
 			},
 			"token": schema.StringAttribute{
-				Required:  true,
-				Optional:  false,
-				Sensitive: true,
+				Description: "API Key for authentication to DependencyTrack. Must have permissions for all attempted actions.",
+				Required:    true,
+				Optional:    false,
+				Sensitive:   true,
 			},
 		},
 	}

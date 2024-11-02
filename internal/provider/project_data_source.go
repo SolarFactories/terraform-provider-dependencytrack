@@ -46,34 +46,44 @@ func (d *projectDataSource) Metadata(_ context.Context, req datasource.MetadataR
 
 func (d *projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Fetch an existing Project by name and version. Requires the project to have a version defined on DependencyTrack.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				Required: true,
+				Description: "Name of the project to find.",
+				Required:    true,
 			},
 			"version": schema.StringAttribute{
-				Required: true,
+				Description: "Version of the project to find.",
+				Required:    true,
 			},
 			"id": schema.StringAttribute{
-				Computed: true,
+				Description: "UUID of the project located.",
+				Computed:    true,
 			},
 			"properties": schema.ListNestedAttribute{
-				Computed: true,
+				Description: "Existing properties within the Project.",
+				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"group": schema.StringAttribute{
-							Computed: true,
+							Description: "Group Name for the project Property.",
+							Computed:    true,
 						},
 						"name": schema.StringAttribute{
-							Computed: true,
+							Description: "Property Name for the project Property.",
+							Computed:    true,
 						},
 						"value": schema.StringAttribute{
-							Computed: true,
+							Description: "Property Value for the project Property.",
+							Computed:    true,
 						},
 						"type": schema.StringAttribute{
-							Computed: true,
+							Description: "Property Type for the project Property as a string enum.",
+							Computed:    true,
 						},
 						"description": schema.StringAttribute{
-							Computed: true,
+							Description: "Description for the project Property.",
+							Computed:    true,
 						},
 					},
 				},
