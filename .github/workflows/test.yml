@@ -63,7 +63,7 @@ jobs:
       api:
         image: dependencytrack/apiserver
         options:
-          --health-cmd "wget localhost:8081/health -o /dev/null"
+          --health-cmd "wget api:8081/health -o /dev/null"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
