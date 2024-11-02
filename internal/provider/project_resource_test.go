@@ -1,34 +1,33 @@
 package provider
 
 import (
-	"testing"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"testing"
 )
 
 func TestAccProjectResource(t *testing.T) {
-	resource.Test(t, resource.TestCase {
+	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep {
+		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: providerConfig+`
+				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
 	name = "Test"
 	active = true
 }
 `,
-				Check: resource.ComposeAggregateTestCheckFunc(
-				),
+				Check: resource.ComposeAggregateTestCheckFunc(),
 			},
 			// ImportState testing
 			{
-				ResourceName: "dependencytrack_project.test",
-				ImportState: true,
+				ResourceName:      "dependencytrack_project.test",
+				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
-				Config: providerConfig+`
+				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
 	name = "Test"
 }
