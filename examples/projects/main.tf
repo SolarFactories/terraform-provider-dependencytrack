@@ -8,7 +8,7 @@ terraform {
 
 provider "dependencytrack" {
   host = "http://localhost:8081"
-  key  = "odt_dcqVqQWFy84PAxWfpEQBTItkEAMWeeoG"
+  key  = "OS_ENV"
 }
 
 // Requires the creation of a project within DependencyTrack.

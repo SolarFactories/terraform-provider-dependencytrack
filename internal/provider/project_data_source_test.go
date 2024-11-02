@@ -21,11 +21,13 @@ data "dependencytrack_project" "test" {
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.0.group", "Group1"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.0.name", "Name1"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.0.value", "Value1"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.0.type", "STRING"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.0.description", "Description1"),
 					//
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.1.group", "Group2"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.1.name", "Name2"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.1.value", "2"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.1.type", "INTEGER"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.1.description", "Description2"),
 				),
 			},

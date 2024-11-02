@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"os"
 
 	"github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -45,7 +46,7 @@ func (p *dependencyTrackProvider) Schema(ctx context.Context, req provider.Schem
 				Optional:    false,
 			},
 			"key": schema.StringAttribute{
-				Description: "API Key for authentication to DependencyTrack. Must have permissions for all attempted actions.",
+				Description: "API Key for authentication to DependencyTrack. Must have permissions for all attempted actions. Set to 'OS_ENV' to read from DEPENDENCYTRACK_API_KEY environment variable.",
 				Required:    true,
 				Optional:    false,
 				Sensitive:   true,
@@ -92,6 +93,10 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"Missing DependencyTrack Host",
 			"Host for DependencyTrack was provided, but it was empty.",
 		)
+	}
+	// If key is the magic value 'OS_ENV', load from environment variable
+	if key == "OS_ENV" {
+		key = os.Getenv("DEPENDENCYTRACK_API_KEY")
 	}
 	if key == "" {
 		resp.Diagnostics.AddAttributeError(

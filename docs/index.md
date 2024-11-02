@@ -15,7 +15,7 @@ Interact with DependencyTrack.
 ```terraform
 provider "dependencytrack" {
   host = "http://localhost:8081"
-  key  = "TOKEN"
+  key  = "OS_ENV"
 }
 ```
 
@@ -25,4 +25,4 @@ provider "dependencytrack" {
 ### Required
 
 - `host` (String) URI for DependencyTrack API.
-- `key` (String, Sensitive) API Key for authentication to DependencyTrack. Must have permissions for all attempted actions.
+- `key` (String, Sensitive) API Key for authentication to DependencyTrack. Must have permissions for all attempted actions. Set to 'OS_ENV' to read from DEPENDENCYTRACK_API_KEY environment variable.
