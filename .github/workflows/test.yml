@@ -95,8 +95,8 @@ jobs:
           ./scripts/disable-settings.sh
           export TEAM_UUID="$(./scripts/create-team.sh | jq -r '.uuid')"
           PERMISSIONS="$(./scripts/get-valid-permissions.sh | jq -r '.[].name')"
-          for perm in $PERMISSONS; do
-            ./scripts/assign-permission.sh
+          for perm in "${PERMISSIONS}"; do
+            PERMISSION="${perm}" ./scripts/assign-permission.sh
           done
           export PROJECT_UUID="$(./scripts/create-project.sh | jq -r '.uuid')"
           GROUP_NAME="Group1" PROPERTY_NAME="Name1" PROPERTY_VALUE="Value1" PROPERTY_TYPE="STRING" DESCRIPTION="Description1" ./scripts/create-project-property.sh
