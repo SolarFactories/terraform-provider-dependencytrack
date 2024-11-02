@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -eu
+
 unset DATA
 HOST="${HOST:-}"
 USERNAME="${USERNAME:-}"
