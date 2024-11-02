@@ -15,7 +15,7 @@ if [ -z "${HOST}" ]; then
 fi
 
 if [ -z "${USERNAME}" ]; then
-	echo -n "Enter Username to change password: "
+	echo -n "Enter Username to sign in as: "
 	read -r USERNAME
 	if [ -z "${USERNAME}" ]; then
 		echo "Username is required" >> /dev/stderr
