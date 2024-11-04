@@ -127,8 +127,8 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		})
 	}
 	// Update state
-	diags2 := resp.State.Set(ctx, &projectState)
-	resp.Diagnostics.Append(diags2...)
+	diags = resp.State.Set(ctx, &projectState)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
