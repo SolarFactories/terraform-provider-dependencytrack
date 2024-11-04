@@ -133,7 +133,7 @@ func (d *projectPropertyDataSource) Read(ctx context.Context, req datasource.Rea
 		Name:        types.StringValue(property.Name),
 		Value:       types.StringValue(property.Value),
 		Type:        types.StringValue(property.Type),
-		Description: types.StringValue(property.Type),
+		Description: types.StringValue(property.Description),
 	}
 	diags = resp.State.Set(ctx, &propertyState)
 	resp.Diagnostics.Append(diags...)
