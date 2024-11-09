@@ -299,13 +299,13 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 	tflog.Debug(ctx, "Deleted project property.")*/
 	resp.Diagnostics.AddWarning(
 		"Project property has not been deleted.",
-		"Due to an error when using the SDK, unable to delete project properties.",
+		"Due to an error when using the SDK, this provider is unable to delete project properties.",
 	)
 }
 
 func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	idParts := strings.Split(req.ID, "/")
-	if len(idParts) != 3 || idParts[0] == "" || idParts[1] == "" {
+	if len(idParts) != 3 || idParts[0] == "" || idParts[1] == "" || idParts[2] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected import id",
 			fmt.Sprintf("Expected id in format <UUID>/<Group>/<Name>. Received %s", req.ID),
@@ -328,7 +328,7 @@ func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to fetch all project properties",
+			"Within Import, unable to fetch all project properties",
 			"Error from: "+err.Error(),
 		)
 	}
@@ -345,13 +345,13 @@ func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.
 	}
 	if len(filtered) == 0 {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to locate property.",
+			"Within Import, unable to locate property.",
 			"No such property on project",
 		)
 		return
 	} else if len(filtered) > 1 {
 		resp.Diagnostics.AddError(
-			"Within Read, found multiple matching properties.",
+			"Within Import, found multiple matching properties.",
 			"This is supposed to be an impossible situation.",
 		)
 		return
