@@ -13,7 +13,7 @@ func TestAccProjectResource(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
-	name = "Test"
+	name = "Test_Project"
 	active = true
 }
 `,
@@ -29,11 +29,11 @@ resource "dependencytrack_project" "test" {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
-	name = "Test"
+	name = "Test_Project"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("dependencytrack_project.test", "name", "Test"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "name", "Test_Project"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "active", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "description", ""),
 				),

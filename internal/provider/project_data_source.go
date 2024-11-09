@@ -127,8 +127,8 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		})
 	}
 	// Update state
-	diags2 := resp.State.Set(ctx, &projectState)
-	resp.Diagnostics.Append(diags2...)
+	diags = resp.State.Set(ctx, &projectState)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -142,7 +142,7 @@ func (d *projectDataSource) Configure(_ context.Context, req datasource.Configur
 	client, ok := req.ProviderData.(*dtrack.Client)
 	if !ok {
 		resp.Diagnostics.AddError(
-			"Unexpected DataSource Configure Type",
+			"Unexpected Configure Type",
 			fmt.Sprintf("Expected *dtrack.Client, got %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 		return
