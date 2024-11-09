@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/DependencyTrack/client-go"
@@ -27,9 +28,9 @@ type dependencyTrackProvider struct {
 }
 
 type dependencyTrackProviderModel struct {
-	Host    types.String `tfsdk:"host"`
-	Key     types.String `tfsdk:"key"`
-	Headers types.List   `tfsdk:"headers"`
+	Host    types.String                          `tfsdk:"host"`
+	Key     types.String                          `tfsdk:"key"`
+	Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
 }
 
 type dependencyTrackProviderHeadersModel struct {
@@ -83,29 +84,9 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// Check for unspecified values
-	if config.Host.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("host"),
-			"Unknown DependencyTrack Host",
-			"Unable to create DependencyTrack Client, due to missing API host configuration.",
-		)
-	}
-	if config.Key.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("key"),
-			"Unknown DependencyTrack API Key",
-			"Unable to create DependencyTrack Client, due to missing API key configuration.",
-		)
-	}
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Fetch values, and perform value validation
 	host := config.Host.ValueString()
 	key := config.Key.ValueString()
+	headers := make([]Header, 0, len(config.Headers))
 
 	if host == "" {
 		resp.Diagnostics.AddAttributeError(
@@ -125,12 +106,25 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"API Key for DependencyTrack was provided, but it was empty.",
 		)
 	}
+	for _, header := range config.Headers {
+		name := header.Name.ValueString()
+		value := header.Value.ValueString()
+		if name == "" || value == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("headers"),
+				"Missing header attributes",
+				fmt.Sprintf("Found Header Name: %s, and Value: %s", name, value),
+			)
+			continue
+		}
+		headers = append(headers, Header{name, value})
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 	tflog.Debug(ctx, "Creating DependencyTrack client")
-	client, err := dtrack.NewClient(host, dtrack.WithAPIKey(key))
+	httpClient := NewHttpClient(headers)
+	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(&httpClient), dtrack.WithAPIKey(key))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create DependencyTrack API Client",
