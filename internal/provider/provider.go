@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/DependencyTrack/client-go"
@@ -27,8 +28,14 @@ type dependencyTrackProvider struct {
 }
 
 type dependencyTrackProviderModel struct {
-	Host types.String `tfsdk:"host"`
-	Key  types.String `tfsdk:"key"`
+	Host    types.String                          `tfsdk:"host"`
+	Key     types.String                          `tfsdk:"key"`
+	Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
+}
+
+type dependencyTrackProviderHeadersModel struct {
+	Name  types.String `tfsdk:"name"`
+	Value types.String `tfsdk:"value"`
 }
 
 func (p *dependencyTrackProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -43,13 +50,27 @@ func (p *dependencyTrackProvider) Schema(ctx context.Context, req provider.Schem
 			"host": schema.StringAttribute{
 				Description: "URI for DependencyTrack API.",
 				Required:    true,
-				Optional:    false,
 			},
 			"key": schema.StringAttribute{
 				Description: "API Key for authentication to DependencyTrack. Must have permissions for all attempted actions. Set to 'OS_ENV' to read from DEPENDENCYTRACK_API_KEY environment variable.",
 				Required:    true,
-				Optional:    false,
 				Sensitive:   true,
+			},
+			"headers": schema.ListNestedAttribute{
+				Description: "Add additional headers to client API requests. Useful for proxy authentication.",
+				Optional:    true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "Name of the header to specify.",
+							Required:    true,
+						},
+						"value": schema.StringAttribute{
+							Description: "Value of the header to specify.",
+							Required:    true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -63,29 +84,9 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// Check for unspecified values
-	if config.Host.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("host"),
-			"Unknown DependencyTrack Host",
-			"Unable to create DependencyTrack Client, due to missing API host configuration.",
-		)
-	}
-	if config.Key.IsUnknown() {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("key"),
-			"Unknown DependencyTrack API Key",
-			"Unable to create DependencyTrack Client, due to missing API key configuration.",
-		)
-	}
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Fetch values, and perform value validation
 	host := config.Host.ValueString()
 	key := config.Key.ValueString()
+	headers := make([]Header, 0, len(config.Headers))
 
 	if host == "" {
 		resp.Diagnostics.AddAttributeError(
@@ -105,12 +106,25 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"API Key for DependencyTrack was provided, but it was empty.",
 		)
 	}
+	for _, header := range config.Headers {
+		name := header.Name.ValueString()
+		value := header.Value.ValueString()
+		if name == "" || value == "" {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("headers"),
+				"Missing header attributes",
+				fmt.Sprintf("Found Header Name: %s, and Value: %s", name, value),
+			)
+			continue
+		}
+		headers = append(headers, Header{name, value})
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 	tflog.Debug(ctx, "Creating DependencyTrack client")
-	client, err := dtrack.NewClient(host, dtrack.WithAPIKey(key))
+	httpClient := NewHttpClient(headers)
+	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(&httpClient), dtrack.WithAPIKey(key))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create DependencyTrack API Client",

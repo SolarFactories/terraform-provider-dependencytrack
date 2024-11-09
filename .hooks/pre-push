@@ -2,5 +2,11 @@
 
 set -e
 
+DIFF="$(git diff --quiet)"
+if [ -n "${DIFF}" ]; then
+	echo "Unstaged files. Exiting"
+	exit 1
+fi
+
 make test
 make testacc
