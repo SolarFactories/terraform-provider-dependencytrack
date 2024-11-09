@@ -27,8 +27,14 @@ type dependencyTrackProvider struct {
 }
 
 type dependencyTrackProviderModel struct {
-	Host types.String `tfsdk:"host"`
-	Key  types.String `tfsdk:"key"`
+	Host    types.String `tfsdk:"host"`
+	Key     types.String `tfsdk:"key"`
+	Headers types.List   `tfsdk:"headers"`
+}
+
+type dependencyTrackProviderHeadersModel struct {
+	Name  types.String `tfsdk:"name"`
+	Value types.String `tfsdk:"value"`
 }
 
 func (p *dependencyTrackProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -43,13 +49,27 @@ func (p *dependencyTrackProvider) Schema(ctx context.Context, req provider.Schem
 			"host": schema.StringAttribute{
 				Description: "URI for DependencyTrack API.",
 				Required:    true,
-				Optional:    false,
 			},
 			"key": schema.StringAttribute{
 				Description: "API Key for authentication to DependencyTrack. Must have permissions for all attempted actions. Set to 'OS_ENV' to read from DEPENDENCYTRACK_API_KEY environment variable.",
 				Required:    true,
-				Optional:    false,
 				Sensitive:   true,
+			},
+			"headers": schema.ListNestedAttribute{
+				Description: "Add additional headers to client API requests. Useful for proxy authentication.",
+				Optional:    true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "Name of the header to specify.",
+							Required:    true,
+						},
+						"value": schema.StringAttribute{
+							Description: "Value of the header to specify.",
+							Required:    true,
+						},
+					},
+				},
 			},
 		},
 	}
