@@ -26,3 +26,7 @@ Manages a Project Property.
 ### Optional
 
 - `description` (String) Description of the Project Property.
+
+### Read-Only
+
+- `id` (String) ID used by provider. Has no meaning to DependencyTrack.

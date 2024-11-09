@@ -16,6 +16,10 @@ data "dependencytrack_project" "test" {
 	version = "1"
 }`,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("data.dependencytrack_project.test", "id"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "name", "Project_Data_Test"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "version", "1"),
+					//
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.#", "2"),
 					//
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.0.group", "Group1"),

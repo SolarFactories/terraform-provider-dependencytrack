@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	"strings"
 
 	"github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -16,9 +17,9 @@ import (
 )
 
 var (
-	_ resource.Resource              = &projectPropertyResource{}
-	_ resource.ResourceWithConfigure = &projectPropertyResource{}
-	//_ resource.ResourceWithImportState = &projectPropertyResource{}.
+	_ resource.Resource                = &projectPropertyResource{}
+	_ resource.ResourceWithConfigure   = &projectPropertyResource{}
+	_ resource.ResourceWithImportState = &projectPropertyResource{}
 )
 
 func NewProjectPropertyResource() resource.Resource {
@@ -30,6 +31,7 @@ type projectPropertyResource struct {
 }
 
 type projectPropertyResourceModel struct {
+	ID          types.String `tfsdk:"id"`
 	Project     types.String `tfsdk:"project"`
 	Group       types.String `tfsdk:"group"`
 	Name        types.String `tfsdk:"name"`
@@ -46,6 +48,13 @@ func (r *projectPropertyResource) Schema(_ context.Context, _ resource.SchemaReq
 	resp.Schema = schema.Schema{
 		Description: "Manages a Project Property.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description: "ID used by provider. Has no meaning to DependencyTrack.",
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"project": schema.StringAttribute{
 				Description: "UUID for the Project in which to create the Property.",
 				Required:    true,
@@ -120,6 +129,7 @@ func (r *projectPropertyResource) Create(ctx context.Context, req resource.Creat
 		)
 		return
 	}
+	plan.ID = types.StringValue(fmt.Sprintf("%s/%s/%s", project.String(), propertyRes.Group, propertyRes.Name))
 	plan.Project = types.StringValue(project.String())
 	plan.Group = types.StringValue(propertyRes.Group)
 	plan.Name = types.StringValue(propertyRes.Name)
@@ -188,6 +198,7 @@ func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadReq
 	}
 	property := filtered[0]
 	propertyState := projectPropertyResourceModel{
+		ID:          types.StringValue(fmt.Sprintf("%s/%s/%s", project.String(), property.Group, property.Name)),
 		Project:     types.StringValue(project.String()),
 		Group:       types.StringValue(property.Group),
 		Name:        types.StringValue(property.Name),
@@ -237,6 +248,7 @@ func (r *projectPropertyResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 	state := projectPropertyResourceModel{
+		ID:          types.StringValue(fmt.Sprintf("%s/%s/%s", project.String(), propertyRes.Group, propertyRes.Name)),
 		Project:     types.StringValue(project.String()),
 		Group:       types.StringValue(propertyRes.Group),
 		Name:        types.StringValue(propertyRes.Name),
@@ -291,10 +303,76 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 	)
 }
 
-// TODO: Identify how to import, since it doesn't have one singular ID, but rather a combination of `project`, `group` and `name`.
-/*func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	//resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-}*/
+func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	idParts := strings.Split(req.ID, "/")
+	if len(idParts) != 3 || idParts[0] == "" || idParts[1] == "" {
+		resp.Diagnostics.AddError(
+			"Unexpected import id",
+			fmt.Sprintf("Expected id in format <UUID>/<Group>/<Name>. Received %s", req.ID),
+		)
+		return
+	}
+	uuid, err := uuid.Parse(idParts[0])
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unexpected import id",
+			"Unable to parse UUID: "+err.Error(),
+		)
+		return
+	}
+	groupName := idParts[1]
+	propertyName := idParts[2]
+
+	properties, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
+		return r.client.ProjectProperty.GetAll(ctx, uuid, po)
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Within Read, unable to fetch all project properties",
+			"Error from: "+err.Error(),
+		)
+	}
+
+	filtered := []dtrack.ProjectProperty{}
+	for _, property := range properties {
+		if property.Group != groupName {
+			continue
+		}
+		if property.Name != propertyName {
+			continue
+		}
+		filtered = append(filtered, property)
+	}
+	if len(filtered) == 0 {
+		resp.Diagnostics.AddError(
+			"Within Read, unable to locate property.",
+			"No such property on project",
+		)
+		return
+	} else if len(filtered) > 1 {
+		resp.Diagnostics.AddError(
+			"Within Read, found multiple matching properties.",
+			"This is supposed to be an impossible situation.",
+		)
+		return
+	}
+	property := filtered[0]
+	propertyState := projectPropertyResourceModel{
+		ID:          types.StringValue(fmt.Sprintf("%s/%s/%s", uuid.String(), property.Group, property.Name)),
+		Project:     types.StringValue(uuid.String()),
+		Group:       types.StringValue(property.Group),
+		Name:        types.StringValue(property.Name),
+		Value:       types.StringValue(property.Value),
+		Type:        types.StringValue(property.Type),
+		Description: types.StringValue(property.Description),
+	}
+	diags := resp.State.Set(ctx, propertyState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Imported a project property.")
+}
 
 func (r *projectPropertyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {

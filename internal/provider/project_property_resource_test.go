@@ -25,14 +25,21 @@ resource "dependencytrack_project_property" "test" {
 	description = "D"
 }
 `,
-				Check: resource.ComposeAggregateTestCheckFunc(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "id"),
+					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "project"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "group", "A"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "name", "B"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "value", "C"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "type", "STRING"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "description", "D"),
+				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "dependencytrack_project_project.test",
-				RefreshState:      true,
-				ImportState:       false,
-				ImportStateVerify: false,
+				ResourceName:      "dependencytrack_project_property.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -50,6 +57,8 @@ resource "dependencytrack_project_property" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "id"),
+					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "project"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "group", "A"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "name", "B"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "value", "C2"),
