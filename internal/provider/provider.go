@@ -149,6 +149,7 @@ func (p *dependencyTrackProvider) DataSources(ctx context.Context) []func() data
 	return []func() datasource.DataSource{
 		NewProjectDataSource,
 		NewProjectPropertyDataSource,
+		NewTeamDataSource,
 	}
 }
 
