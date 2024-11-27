@@ -143,6 +143,7 @@ func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resour
 		NewProjectPropertyResource,
 		NewTeamResource,
 		NewTeamPermissionResource,
+		NewTeamApiKeyResource,
 	}
 }
 

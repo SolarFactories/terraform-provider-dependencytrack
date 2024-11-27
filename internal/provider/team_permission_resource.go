@@ -61,7 +61,7 @@ func (r *teamPermissionResource) Create(ctx context.Context, req resource.Create
 	team, err := uuid.Parse(plan.TeamID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
+			path.Root("team"),
 			"Within Create, unable to parse id into UUID",
 			"Error from: "+err.Error(),
 		)
@@ -186,7 +186,7 @@ func (r *teamPermissionResource) Delete(ctx context.Context, req resource.Delete
 	team, err := uuid.Parse(state.TeamID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
+			path.Root("team"),
 			"Within Delete, unable to parse UUID",
 			"Error parsing UUID from: "+state.TeamID.ValueString()+", error: "+err.Error(),
 		)
