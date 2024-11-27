@@ -5,38 +5,35 @@ import (
 	"testing"
 )
 
-func TestAccProjectResource(t *testing.T) {
+func TestAccTeamResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
 				Config: providerConfig + `
-resource "dependencytrack_project" "test" {
+resource "dependencytrack_team" "test" {
 	name = "Test_Project"
-	active = true
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "dependencytrack_project.test",
+				ResourceName:      "dependencytrack_team.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
 				Config: providerConfig + `
-resource "dependencytrack_project" "test" {
+resource "dependencytrack_team" "test" {
 	name = "Test_Project"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("dependencytrack_project.test", "id"),
-					resource.TestCheckResourceAttr("dependencytrack_project.test", "name", "Test_Project"),
-					resource.TestCheckResourceAttr("dependencytrack_project.test", "active", "true"),
-					resource.TestCheckResourceAttr("dependencytrack_project.test", "description", ""),
+					resource.TestCheckResourceAttrSet("dependencytrack_team.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_team.test", "name", "Test_Project"),
 				),
 			},
 		},
