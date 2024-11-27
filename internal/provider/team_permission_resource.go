@@ -120,28 +120,16 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 		)
 		return
 	}
-	filtered := []dtrack.Permission{}
-	for _, permission := range team.Permissions {
-		if permission.Name != state.Permission.ValueString() {
-			continue
-		}
-		filtered = append(filtered, permission)
-	}
-	if len(filtered) == 0 {
+	permission, err := Find(team.Permissions, func(permission dtrack.Permission) bool {
+		return permission.Name == state.Permission.ValueString()
+	})
+	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to locate team permission.",
-			"Permission not granted to team.",
-		)
-		return
-	} else if len(filtered) > 1 {
-		resp.Diagnostics.AddError(
-			"Within Read, found multiple matching permission assignments.",
-			"This is supposed to be an impossible situation.",
+			"Within Read, unable to identify team permission",
+			"Unexpected Error from: "+err.Error(),
 		)
 		return
 	}
-	permission := filtered[0]
-
 	state.TeamID = types.StringValue(team.UUID.String())
 	state.Permission = types.StringValue(permission.Name)
 

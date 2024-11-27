@@ -81,37 +81,22 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	}
 	tflog.Debug(ctx, "Reading DependencyTrack team", map[string]any{"name": state.Name.ValueString()})
 
-	teams, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
-		return d.client.Team.GetAll(ctx, po)
-	})
+	team, err := FindPaged(
+		func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
+			return d.client.Team.GetAll(ctx, po)
+		},
+		func(team dtrack.Team) bool {
+			return team.Name == state.Name.ValueString()
+		},
+	)
+
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Read, unable to fetch teams.",
-			"Internal error: "+err.Error(),
+			"Unexpected error from: "+err.Error(),
 		)
 		return
 	}
-	filtered := []dtrack.Team{}
-	for _, team := range teams {
-		if team.Name != state.Name.ValueString() {
-			continue
-		}
-		filtered = append(filtered, team)
-	}
-	if len(filtered) == 0 {
-		resp.Diagnostics.AddError(
-			"Within Read, unable to locate team.",
-			"No such team with name",
-		)
-		return
-	} else if len(filtered) > 1 {
-		resp.Diagnostics.AddError(
-			"Within Read, found multiple matching teams.",
-			"This is supposed to be an impossible situation.",
-		)
-		return
-	}
-	team := filtered[0]
 	tflog.Debug(ctx, "Found team with UUID: "+team.UUID.String())
 	// Transform data into model
 	teamState := teamDataSourceModel{
