@@ -19,7 +19,17 @@ resource "dependencytrack_team_apikey" "test" {
 	team = dependencytrack_team.test.id
 }
 `,
-				Check: resource.ComposeAggregateTestCheckFunc(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "team"),
+					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
+					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", ""),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "dependencytrack_team_apikey.test",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			// Update and Read testing
 			{
@@ -29,12 +39,14 @@ resource "dependencytrack_team" "test" {
 }
 resource "dependencytrack_team_apikey" "test" {
 	team = dependencytrack_team.test.id
+	comment = "Sample comment"
 }
 
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "team"),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
+					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample comment"),
 				),
 			},
 		},

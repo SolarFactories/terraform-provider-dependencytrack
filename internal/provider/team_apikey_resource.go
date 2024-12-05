@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	"strings"
 
 	"github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -16,8 +17,9 @@ import (
 )
 
 var (
-	_ resource.Resource              = &teamApiKeyResource{}
-	_ resource.ResourceWithConfigure = &teamApiKeyResource{}
+	_ resource.Resource                = &teamApiKeyResource{}
+	_ resource.ResourceWithConfigure   = &teamApiKeyResource{}
+	_ resource.ResourceWithImportState = &teamApiKeyResource{}
 )
 
 func NewTeamApiKeyResource() resource.Resource {
@@ -29,6 +31,7 @@ type teamApiKeyResource struct {
 }
 
 type teamApiKeyResourceModel struct {
+	ID      types.String `tfsdk:"id"`
 	TeamID  types.String `tfsdk:"team"`
 	Key     types.String `tfsdk:"key"`
 	Comment types.String `tfsdk:"comment"`
@@ -42,6 +45,13 @@ func (r *teamApiKeyResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	resp.Schema = schema.Schema{
 		Description: "Manages an API Key for a Team.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description: "ID used by provider. Has no meaning to DependencyTrack.",
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"team": schema.StringAttribute{
 				Description: "UUID for the Team for which to manage the permission.",
 				Required:    true,
@@ -53,6 +63,9 @@ func (r *teamApiKeyResource) Schema(_ context.Context, _ resource.SchemaRequest,
 				Description: "The generated API Key for the Team.",
 				Sensitive:   true,
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"comment": schema.StringAttribute{
 				Description: "The comment to assign to the API Key.",
@@ -103,6 +116,7 @@ func (r *teamApiKeyResource) Create(ctx context.Context, req resource.CreateRequ
 		}
 	}
 
+	plan.ID = types.StringValue(fmt.Sprintf("%s/%s", team.String(), key))
 	plan.TeamID = types.StringValue(team.String())
 	plan.Key = types.StringValue(key)
 	plan.Comment = types.StringValue(comment)
@@ -153,6 +167,7 @@ func (r *teamApiKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
+	state.ID = types.StringValue(fmt.Sprintf("%s/%s", team.String(), apiKey.Key))
 	state.TeamID = types.StringValue(team.String())
 	state.Key = types.StringValue(apiKey.Key)
 	state.Comment = types.StringValue(apiKey.Comment)
@@ -181,7 +196,7 @@ func (r *teamApiKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 	_, err := r.client.Team.UpdateAPIKeyComment(ctx, key, comment)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to update the API Key comment",
+			"Unable to update the API Key comment.",
 			"Unexpected error: "+err.Error(),
 		)
 		return
@@ -227,6 +242,56 @@ func (r *teamApiKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 	tflog.Debug(ctx, "Deleted API Key from team with id: "+team.String())
+}
+
+func (r *teamApiKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	idParts := strings.Split(req.ID, "/")
+	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
+		resp.Diagnostics.AddError(
+			"Unexpected import id",
+			fmt.Sprintf("Expected id in format <UUID>/<Key>. Received %s", req.ID),
+		)
+		return
+	}
+	uuid, err := uuid.Parse(idParts[0])
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unexpected import id",
+			"Unable to parse UUID: "+err.Error(),
+		)
+		return
+	}
+	key := idParts[1]
+	keys, err := r.client.Team.GetAPIKeys(ctx, uuid)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Within Import, unable to retrieve Team API Keys.",
+			"Unexpected error: "+err.Error(),
+		)
+		return
+	}
+	apiKey, err := Find(keys, func(apiKey dtrack.APIKey) bool { return apiKey.Key == key })
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Within Import, unable to identify API Key.",
+			"Unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	keyState := teamApiKeyResourceModel{
+		ID:      types.StringValue(fmt.Sprintf("%s/%s", uuid.String(), apiKey.Key)),
+		TeamID:  types.StringValue(uuid.String()),
+		Key:     types.StringValue(apiKey.Key),
+		Comment: types.StringValue(apiKey.Comment),
+	}
+
+	diags := resp.State.Set(ctx, keyState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Imported a project property.")
 }
 
 func (r *teamApiKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

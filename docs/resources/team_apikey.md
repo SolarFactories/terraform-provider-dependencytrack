@@ -25,4 +25,5 @@ Manages an API Key for a Team.
 
 ### Read-Only
 
+- `id` (String) ID used by provider. Has no meaning to DependencyTrack.
 - `key` (String, Sensitive) The generated API Key for the Team.
