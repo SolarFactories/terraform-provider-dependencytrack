@@ -16,7 +16,10 @@ resource "dependencytrack_team" "test" {
 	name = "Test_Project"
 }
 `,
-				Check: resource.ComposeAggregateTestCheckFunc(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_team.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_team.test", "name", "Test_Project"),
+				),
 			},
 			// ImportState testing
 			{

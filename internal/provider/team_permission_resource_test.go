@@ -20,7 +20,10 @@ resource "dependencytrack_team_permission" "test" {
 	permission = "SYSTEM_CONFIGURATION"
 }
 `,
-				Check: resource.ComposeAggregateTestCheckFunc(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_team_permission.test", "team"),
+					resource.TestCheckResourceAttr("dependencytrack_team_permission.test", "permission", "SYSTEM_CONFIGURATION"),
+				),
 			},
 			// Update and Read testing
 			{

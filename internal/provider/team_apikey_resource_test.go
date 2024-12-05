@@ -20,6 +20,7 @@ resource "dependencytrack_team_apikey" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "id"),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "team"),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", ""),
@@ -44,6 +45,7 @@ resource "dependencytrack_team_apikey" "test" {
 
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "id"),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "team"),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample comment"),
