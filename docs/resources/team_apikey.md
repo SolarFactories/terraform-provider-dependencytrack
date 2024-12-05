@@ -3,12 +3,12 @@
 page_title: "dependencytrack_team_apikey Resource - dependencytrack"
 subcategory: ""
 description: |-
-  Manages an API Key for a Team..
+  Manages an API Key for a Team.
 ---
 
 # dependencytrack_team_apikey (Resource)
 
-Manages an API Key for a Team..
+Manages an API Key for a Team.
 
 
 
@@ -18,6 +18,10 @@ Manages an API Key for a Team..
 ### Required
 
 - `team` (String) UUID for the Team for which to manage the permission.
+
+### Optional
+
+- `comment` (String) The comment to assign to the API Key.
 
 ### Read-Only
 

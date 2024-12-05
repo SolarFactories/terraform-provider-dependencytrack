@@ -9,6 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -27,8 +29,9 @@ type teamApiKeyResource struct {
 }
 
 type teamApiKeyResourceModel struct {
-	TeamID types.String `tfsdk:"team"`
-	Key    types.String `tfsdk:"key"`
+	TeamID  types.String `tfsdk:"team"`
+	Key     types.String `tfsdk:"key"`
+	Comment types.String `tfsdk:"comment"`
 }
 
 func (r *teamApiKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -37,15 +40,23 @@ func (r *teamApiKeyResource) Metadata(_ context.Context, req resource.MetadataRe
 
 func (r *teamApiKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages an API Key for a Team..",
+		Description: "Manages an API Key for a Team.",
 		Attributes: map[string]schema.Attribute{
 			"team": schema.StringAttribute{
 				Description: "UUID for the Team for which to manage the permission.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"key": schema.StringAttribute{
 				Description: "The generated API Key for the Team.",
 				Sensitive:   true,
+				Computed:    true,
+			},
+			"comment": schema.StringAttribute{
+				Description: "The comment to assign to the API Key.",
+				Optional:    true,
 				Computed:    true,
 			},
 		},
@@ -68,6 +79,7 @@ func (r *teamApiKeyResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
+	comment := plan.Comment.ValueString()
 
 	tflog.Debug(ctx, "Creating API Key for team "+team.String())
 	key, err := r.client.Team.GenerateAPIKey(ctx, team)
@@ -79,8 +91,21 @@ func (r *teamApiKeyResource) Create(ctx context.Context, req resource.CreateRequ
 		)
 		return
 	}
+	if comment != "" {
+		tflog.Debug(ctx, "Setting Comment for API Key for team "+team.String())
+		_, err = r.client.Team.UpdateAPIKeyComment(ctx, key, comment)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Error setting API Key comment",
+				"Unexpected error: "+err.Error(),
+			)
+			return
+		}
+	}
+
 	plan.TeamID = types.StringValue(team.String())
 	plan.Key = types.StringValue(key)
+	plan.Comment = types.StringValue(comment)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -91,7 +116,6 @@ func (r *teamApiKeyResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *teamApiKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// No way to re-read and identify the API Key, without already knowing it. This resource only has Create, Delete actions
 	// Fetch state
 	var state teamApiKeyResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -99,6 +123,39 @@ func (r *teamApiKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	key := state.Key.ValueString()
+	team, err := uuid.Parse(state.TeamID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("id"),
+			"Within Read, unable to parse id into UUID",
+			"Error from: "+err.Error(),
+		)
+		return
+	}
+
+	keys, err := r.client.Team.GetAPIKeys(ctx, team)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to read API Keys",
+			"Unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	apiKey, err := Find(keys, func(apiKey dtrack.APIKey) bool { return apiKey.Key == key })
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to find API Key",
+			"Unexpected error: "+err.Error(),
+		)
+		return
+	}
+
+	state.TeamID = types.StringValue(team.String())
+	state.Key = types.StringValue(apiKey.Key)
+	state.Comment = types.StringValue(apiKey.Comment)
 
 	// Update state
 	diags = resp.State.Set(ctx, &state)
@@ -110,12 +167,23 @@ func (r *teamApiKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *teamApiKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Nothing to Update. This resource only has Create, Delete actions
 	// Get State
 	var plan teamApiKeyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	key := plan.Key.ValueString()
+	comment := plan.Comment.ValueString()
+
+	_, err := r.client.Team.UpdateAPIKeyComment(ctx, key, comment)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to update the API Key comment",
+			"Unexpected error: "+err.Error(),
+		)
 		return
 	}
 
@@ -138,7 +206,8 @@ func (r *teamApiKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Map TF to SDK
-	/*team, err := uuid.Parse(state.TeamID.ValueString())
+	key := state.Key.ValueString()
+	team, err := uuid.Parse(state.TeamID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("team"),
@@ -149,7 +218,7 @@ func (r *teamApiKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 	// Execute
 	tflog.Debug(ctx, "Deleting API Key from team with id: "+team.String())
-	_, err = r.client.Team.DeleteAPIKey(ctx, team, state.Key.ValueString())
+	err = r.client.Team.DeleteAPIKey(ctx, key)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Team API Key",
@@ -157,12 +226,7 @@ func (r *teamApiKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted API Key from team with id: "+team.String())*/
-	resp.Diagnostics.AddWarning(
-		"Team API Key has not been deleted.",
-		"Due to functionality not existing within the SDK, this provider is unable to delete Team API Keys.",
-	)
-
+	tflog.Debug(ctx, "Deleted API Key from team with id: "+team.String())
 }
 
 func (r *teamApiKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
