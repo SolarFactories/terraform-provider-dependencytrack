@@ -13,12 +13,12 @@ func TestAccTeamResource(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {
-	name = "Test_Project"
+	name = "Test_Team"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_team.test", "id"),
-					resource.TestCheckResourceAttr("dependencytrack_team.test", "name", "Test_Project"),
+					resource.TestCheckResourceAttr("dependencytrack_team.test", "name", "Test_Team"),
 				),
 			},
 			// ImportState testing
@@ -31,12 +31,12 @@ resource "dependencytrack_team" "test" {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {
-	name = "Test_Project"
+	name = "Test_Team_2"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_team.test", "id"),
-					resource.TestCheckResourceAttr("dependencytrack_team.test", "name", "Test_Project"),
+					resource.TestCheckResourceAttr("dependencytrack_team.test", "name", "Test_Team_2"),
 				),
 			},
 		},

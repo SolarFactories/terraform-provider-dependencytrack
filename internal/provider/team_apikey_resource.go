@@ -86,7 +86,7 @@ func (r *teamApiKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	team, err := uuid.Parse(plan.TeamID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
+			path.Root("team"),
 			"Within Create, unable to parse id into UUID",
 			"Error from: "+err.Error(),
 		)
@@ -142,7 +142,7 @@ func (r *teamApiKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 	team, err := uuid.Parse(state.TeamID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
+			path.Root("team"),
 			"Within Read, unable to parse id into UUID",
 			"Error from: "+err.Error(),
 		)

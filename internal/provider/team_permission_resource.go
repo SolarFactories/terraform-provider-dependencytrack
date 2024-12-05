@@ -197,8 +197,8 @@ func (r *teamPermissionResource) Delete(ctx context.Context, req resource.Delete
 	_, err = r.client.Permission.RemovePermissionFromTeam(ctx, permission, team)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to delete team",
-			"Unexpected error when trying to delete team: "+team.String()+", error: "+err.Error(),
+			"Unable to delete team permission",
+			"Unexpected error when trying to delete team permission: "+team.String()+", error: "+err.Error(),
 		)
 		return
 	}

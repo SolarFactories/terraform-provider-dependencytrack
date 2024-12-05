@@ -33,13 +33,13 @@ resource "dependencytrack_team" "test" {
 }
 resource "dependencytrack_team_permission" "test" {
 	team = dependencytrack_team.test.id
-	permission = "SYSTEM_CONFIGURATION"
+	permission = "BOM_UPLOAD"
 }
 
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_team_permission.test", "team"),
-					resource.TestCheckResourceAttr("dependencytrack_team_permission.test", "permission", "SYSTEM_CONFIGURATION"),
+					resource.TestCheckResourceAttr("dependencytrack_team_permission.test", "permission", "BOM_UPLOAD"),
 				),
 			},
 		},
