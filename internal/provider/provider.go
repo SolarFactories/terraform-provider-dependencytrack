@@ -141,6 +141,9 @@ func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resour
 	return []func() resource.Resource{
 		NewProjectResource,
 		NewProjectPropertyResource,
+		NewTeamResource,
+		NewTeamPermissionResource,
+		NewTeamApiKeyResource,
 	}
 }
 
@@ -148,6 +151,7 @@ func (p *dependencyTrackProvider) DataSources(ctx context.Context) []func() data
 	return []func() datasource.DataSource{
 		NewProjectDataSource,
 		NewProjectPropertyDataSource,
+		NewTeamDataSource,
 	}
 }
 

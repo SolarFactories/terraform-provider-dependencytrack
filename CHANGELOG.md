@@ -1,3 +1,15 @@
+## 1.3.0
+
+#### FEATURES
+- `dependencytrack_team` Resource, to manage a team.
+- `dependencytrack_team` DataSource, to retrieve a team.
+- `dependencytrack_team_apikey` Resource, to manage an API Key for a team.
+- `dependencytrack_team_permission` Resource, to manage the permissions of a team.
+
+#### DEPENDENCIES
+- `DependencyTrack/client-go` `v0.13.0` -> `v0.14.0`
+- `hashicorp/terraform-plugin-testing` `v1.10.0` -> `v1.11.0`
+
 ## 1.2.0
 
 #### FEATURES:

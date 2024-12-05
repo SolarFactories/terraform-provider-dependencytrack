@@ -163,40 +163,26 @@ func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadReq
 		)
 		return
 	}
-	properties, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
-		return r.client.ProjectProperty.GetAll(ctx, project, po)
-	})
+	property, err := FindPaged(
+		func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
+			return r.client.ProjectProperty.GetAll(ctx, project, po)
+		},
+		func(property dtrack.ProjectProperty) bool {
+			if property.Group != state.Group.ValueString() {
+				return false
+			}
+			if property.Name != state.Name.ValueString() {
+				return false
+			}
+			return true
+		},
+	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to fetch all project properties",
-			"Error from: "+err.Error(),
+			"Within Read, unable to locate project property.",
+			"Unexpected error from: "+err.Error(),
 		)
 	}
-
-	filtered := []dtrack.ProjectProperty{}
-	for _, property := range properties {
-		if property.Group != state.Group.ValueString() {
-			continue
-		}
-		if property.Name != state.Name.ValueString() {
-			continue
-		}
-		filtered = append(filtered, property)
-	}
-	if len(filtered) == 0 {
-		resp.Diagnostics.AddError(
-			"Within Read, unable to locate property.",
-			"No such property on project",
-		)
-		return
-	} else if len(filtered) > 1 {
-		resp.Diagnostics.AddError(
-			"Within Read, found multiple matching properties.",
-			"This is supposed to be an impossible situation.",
-		)
-		return
-	}
-	property := filtered[0]
 	propertyState := projectPropertyResourceModel{
 		ID:          types.StringValue(fmt.Sprintf("%s/%s/%s", project.String(), property.Group, property.Name)),
 		Project:     types.StringValue(project.String()),
@@ -323,40 +309,26 @@ func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.
 	groupName := idParts[1]
 	propertyName := idParts[2]
 
-	properties, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
-		return r.client.ProjectProperty.GetAll(ctx, uuid, po)
-	})
+	property, err := FindPaged(
+		func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
+			return r.client.ProjectProperty.GetAll(ctx, uuid, po)
+		},
+		func(property dtrack.ProjectProperty) bool {
+			if property.Group != groupName {
+				return false
+			}
+			if property.Name != propertyName {
+				return false
+			}
+			return true
+		},
+	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Import, unable to fetch all project properties",
-			"Error from: "+err.Error(),
+			"Within Import, unable to locate project property.",
+			"Unexpected error from: "+err.Error(),
 		)
 	}
-
-	filtered := []dtrack.ProjectProperty{}
-	for _, property := range properties {
-		if property.Group != groupName {
-			continue
-		}
-		if property.Name != propertyName {
-			continue
-		}
-		filtered = append(filtered, property)
-	}
-	if len(filtered) == 0 {
-		resp.Diagnostics.AddError(
-			"Within Import, unable to locate property.",
-			"No such property on project",
-		)
-		return
-	} else if len(filtered) > 1 {
-		resp.Diagnostics.AddError(
-			"Within Import, found multiple matching properties.",
-			"This is supposed to be an impossible situation.",
-		)
-		return
-	}
-	property := filtered[0]
 	propertyState := projectPropertyResourceModel{
 		ID:          types.StringValue(fmt.Sprintf("%s/%s/%s", uuid.String(), property.Group, property.Name)),
 		Project:     types.StringValue(uuid.String()),

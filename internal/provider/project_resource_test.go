@@ -33,6 +33,7 @@ resource "dependencytrack_project" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_project.test", "id"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "name", "Test_Project"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "active", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "description", ""),

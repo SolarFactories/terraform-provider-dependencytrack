@@ -22,12 +22,12 @@ Uses [Terraform Plugin Framework]("https://github.com/hashicorp/terraform-plugin
 1. Run `go install` within a shell.
 1. Configure [provider overrides](https://developer.hashicorp.com/terraform/cli/config/config-file#development-overrides-for-provider-developers) so that Terraform uses the local installation
 	```
-provider_installation {
-	dev_overrides {
-		"registry.terraform.io/solarfactories/dependencytrack" = "$HOME/go/bin"
+	provider_installation {
+		dev_overrides {
+			"registry.terraform.io/solarfactories/dependencytrack" = "$HOME/go/bin"
+		}
+		direct {}
 	}
-	direct {}
-}
 	```
 
 ## Contributing

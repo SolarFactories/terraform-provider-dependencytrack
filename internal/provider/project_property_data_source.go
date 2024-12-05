@@ -93,40 +93,28 @@ func (d *projectPropertyDataSource) Read(ctx context.Context, req datasource.Rea
 		)
 		return
 	}
-	properties, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
-		return d.client.ProjectProperty.GetAll(ctx, uuid, po)
-	})
+	property, err := FindPaged(
+		func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
+			return d.client.ProjectProperty.GetAll(ctx, uuid, po)
+		},
+		func(property dtrack.ProjectProperty) bool {
+			if property.Group != state.Group.ValueString() {
+				return false
+			}
+			if property.Name != state.Name.ValueString() {
+				return false
+			}
+			return true
+		},
+	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to fetch all project properties",
-			"Error from: "+err.Error(),
+			"Within Read, unable to locate project property.",
+			"Unexpected error within: "+err.Error(),
 		)
+		return
 	}
 
-	filtered := []dtrack.ProjectProperty{}
-	for _, property := range properties {
-		if property.Group != state.Group.ValueString() {
-			continue
-		}
-		if property.Name != state.Name.ValueString() {
-			continue
-		}
-		filtered = append(filtered, property)
-	}
-	if len(filtered) == 0 {
-		resp.Diagnostics.AddError(
-			"Within Read, unable to locate property.",
-			"No such property on project",
-		)
-		return
-	} else if len(filtered) > 1 {
-		resp.Diagnostics.AddError(
-			"Within Read, found multiple matching properties.",
-			"This is supposed to be an impossible situation.",
-		)
-		return
-	}
-	property := filtered[0]
 	propertyState := projectPropertyDataSourceModel{
 		Project:     types.StringValue(uuid.String()),
 		Group:       types.StringValue(property.Group),
