@@ -28,6 +28,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: cdktf-typescript
-          path: *.tgz
+          path: "*.tgz"
           if-no-files-found: "error"
           compression-level: 0
