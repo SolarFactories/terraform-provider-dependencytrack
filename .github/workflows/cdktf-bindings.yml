@@ -15,8 +15,8 @@ jobs:
           fetch-depth: 0
       - name: Generate bindings
         run: |
-        cd cdktf/typescript
-        cdktf get
+          cd cdktf/typescript
+          cdktf get
       - name: Transpile to Javascript
         run: |
           mkdir dist
