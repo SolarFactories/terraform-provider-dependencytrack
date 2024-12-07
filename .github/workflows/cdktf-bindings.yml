@@ -1,0 +1,33 @@
+name: CDKTF Bindings
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Generate bindings
+        run: |
+        cd cdktf/typescript
+        cdktf get
+      - name: Transpile to Javascript
+        run: |
+          mkdir dist
+          npm install
+          touch .gen/providers/dependencytrack/tsconfig.json
+          tsc --project .gen/providers/dependencytrack --declaration --strict --outDir dist --lib esnext
+      - name: Package
+        run: npm pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cdktf-typescript
+          path: *.tgz
+          if-no-files-found: "error"
+          compression-level: 0
