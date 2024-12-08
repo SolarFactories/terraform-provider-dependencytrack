@@ -48,6 +48,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: cdktf-typescript
-          path: "*.tgz"
+          path: "cdktf/typescript/solarfactories-cdktf-provider-dependencytrack-${PROVIDER_VERSION}.tgz"
           if-no-files-found: "error"
           compression-level: 0
