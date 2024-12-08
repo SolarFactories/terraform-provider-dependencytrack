@@ -64,7 +64,7 @@ jobs:
       - name: Generate bindings
         working-directory: cdktf/python
         run: |
-          npm install --global cdktf cdktf-cli
+          npm install --global cdktf cdktf-cli typescript
           python -m pip install cdktf
           cdktf get
       - name: Prepare build directory
