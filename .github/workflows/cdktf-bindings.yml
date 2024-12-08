@@ -19,6 +19,7 @@ jobs:
           fetch-depth: 0
       - name: Generate bindings
         run: |
+          npm install --global cdktf cdktf-cli
           cd cdktf/typescript
           cdktf get
       - name: Get Provider version
