@@ -1,7 +1,7 @@
 {
   "name": "@solarfactories/cdktf-provider-dependencytrack",
   "description": "Prebuilt CDKTF bindings for DependencyTrack Terraform Provider.",
-  "version": "1.0.0",
+  "version": "REPLACED_WITH_PROVIDER_VERSION",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {},
