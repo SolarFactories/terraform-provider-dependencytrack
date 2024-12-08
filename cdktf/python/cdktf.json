@@ -1,0 +1,11 @@
+{
+	"language": "python",
+	"app": "exit 0",
+	"projectId": "00000000-0000-0000-0000-000000000000",
+	"sendCrashReports": "false",
+	"terraformProviders": [
+		"solarfactories/dependencytrack"
+	],
+	"terraformModules": [],
+	"context": {}
+}

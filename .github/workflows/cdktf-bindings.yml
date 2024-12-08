@@ -17,9 +17,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-
       - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
-
       - name: Generate bindings
         working-directory: cdktf/typescript
         run: |
@@ -49,5 +47,51 @@ jobs:
         with:
           name: cdktf-typescript
           path: "cdktf/typescript/solarfactories-cdktf-provider-dependencytrack-*.tgz"
+          if-no-files-found: "error"
+          compression-level: 0
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      - name: Initialise python venv
+        working-directory: cdktf/python
+        run: |
+          python -m venv .venv
+          source .venv/bin/activate
+      - name: Generate bindings
+        working-directory: cdktf/python
+        run: |
+          npm install --global cdktf cdktf-cli
+          python -m pip install cdktf
+          cdktf get
+      - name: Prepare build directory
+        working-directory: cdktf/python
+        run: |
+          mkdir -p build/src
+          cp -r .gen/dependencytrack build/src/solarfactories_cdktf_provider_dependencytrack
+          cp LICENCE build
+          cp pyproject.toml build
+          cp README.md build
+      - name: Get Provider version
+        working-directory: cdktf/python
+        run: |
+          PROVIDER_VERSION="$(cat .gen/versions.json | jq -r '."registry.terraform.io/solarfactories/dependencytrack"')"
+          echo "PROVIDER_VERSION=${PROVIDER_VERSION}" >> $GITHUB_ENV
+      - name: Set Provider version in package
+        working-directory: cdktf/python/build
+        run: |
+          sed -i -e "s/REPLACED_WITH_PROVIDER_VERSION/${PROVIDER_VERSION}/g" pyproject.toml
+      - name: Build distributions
+        working-directory: cdktf/python/build
+        run: |
+          python -m pip install --upgrade build
+          python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cdktf-python
+          path: "cdktf/python/build/dist"
           if-no-files-found: "error"
           compression-level: 0
