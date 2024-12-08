@@ -28,10 +28,11 @@ jobs:
       - name: Get Provider version
         run:
           PROVIDER_VERSION="$(cat .gen/versions.json | jq -r '."registry.terraform.io/solarfactories/dependencytrack"')"
-          echo "PROVIDER_VERSION=${PROVIDER_VERSION}" >> "${GITHUB_ENV}"
+          echo "PROVIDER_VERSION=${PROVIDER_VERSION}" >> $GITHUB_ENV
       - name: Generate package.json
         run: |
           cat package.template.json | jq ".version=\"${PROVIDER_VERSION}\"" > package.json
+          cat package.json
       - name: Transpile to Javascript
         run: |
           mkdir dist
