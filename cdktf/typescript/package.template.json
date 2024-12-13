@@ -4,10 +4,11 @@
   "version": "REPLACED_WITH_PROVIDER_VERSION",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "repository": "https://github.com/SolarFactories/terraform-provider-dependencytrack",
   "scripts": {},
   "author": {
     "name": "SolarFactories",
-    "url": "https://github.com/SolarFactories/terraform-provider-dependencytrack"
+    "url": "https://github.com/SolarFactories"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
