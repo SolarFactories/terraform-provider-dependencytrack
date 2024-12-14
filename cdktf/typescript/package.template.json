@@ -4,7 +4,7 @@
   "version": "REPLACED_WITH_PROVIDER_VERSION",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "repository": "https://github.com/SolarFactories/terraform-provider-dependencytrack",
+  "repository": "https://github.com/SolarFactories/terraform-provider-dependencytrack.git",
   "scripts": {},
   "author": {
     "name": "SolarFactories",
@@ -25,6 +25,9 @@
     "terraform",
     "dependencytrack"
   ],
+  "publishConfig": {
+  	"registry": "https://npm.pkg.github.com"
+  },
   "files": ["package.json", "dist"],
   "license": "ISC"
 }
