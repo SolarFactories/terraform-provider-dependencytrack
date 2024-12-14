@@ -51,6 +51,7 @@ jobs:
           compression-level: 0
       - name: Publish
         run: npm publish
+        working-directory: cdktf/typescript
   python:
     runs-on: ubuntu-latest
     # Works locally, but fails without helpful errors in pipeline, so disable for now.
