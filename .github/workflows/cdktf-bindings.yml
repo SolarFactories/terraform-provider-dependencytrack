@@ -56,6 +56,9 @@ jobs:
         with:
           fetch-depth: 0
       - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 23
       - name: Initialise python venv
         working-directory: cdktf/python
         run: |
