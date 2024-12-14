@@ -67,7 +67,10 @@ jobs:
           source .venv/bin/activate
           npm install --global cdktf cdktf-cli
           python -m pip install cdktf
+          cdktf debug
           cdktf get
+        env:
+          CDKTF_LOG_LEVEL: debug
       - name: Prepare build directory
         working-directory: cdktf/python
         run: |
