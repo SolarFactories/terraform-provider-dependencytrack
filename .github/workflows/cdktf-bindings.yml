@@ -111,13 +111,12 @@ jobs:
           name: cdktf-typescript
       - name: Extract package
         run: tar -xf "solarfactories-cdktf-provider-dependencytrack-*.tgz"
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@solarfactories"
       - name: Publish
-        run: |
-          npm adduser --registry https://npm.pkg.github.com --scope @solarfactories
-          npm publish
+        run: npm publish
         working-directory: package
         env:
-          NPM_USERNAME: solarfactories
-          NPM_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

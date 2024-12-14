@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/SolarFactories/terraform-provider-dependencytrack.git"
+    "url": "https://github.com/SolarFactories/terraform-provider-dependencytrack.git"
   },
   "scripts": {},
   "author": {
