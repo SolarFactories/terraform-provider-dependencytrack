@@ -109,10 +109,10 @@ jobs:
       - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: cdktf-typescript
-      - name: List files
-        run: find -maxdepth 3 -ls | grep "cdktf"
       - name: Extract package
-        run: tar -xf "solarfactories-cdktf-provider-dependencytrack-*.tgz"
+        run: |
+          FILENAME="$(find . -type f name 'solarfactories-cdktf-provider-dependencytrack-*.tgz')"
+          tar -xf "${FILENAME}"
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           registry-url: "https://npm.pkg.github.com"
