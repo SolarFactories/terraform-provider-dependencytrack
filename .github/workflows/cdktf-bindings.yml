@@ -111,7 +111,8 @@ jobs:
           name: cdktf-typescript
       - name: Extract package
         run: |
-          FILENAME="$(find . -type f name 'solarfactories-cdktf-provider-dependencytrack-*.tgz')"
+          FILENAME="$(find . -type f -name 'solarfactories-cdktf-provider-dependencytrack-*.tgz')"
+          echo "${FILENAME}"
           tar -xf "${FILENAME}"
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
