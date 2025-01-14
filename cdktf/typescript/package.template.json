@@ -1,0 +1,36 @@
+{
+  "name": "@solarfactories/cdktf-provider-dependencytrack",
+  "description": "Prebuilt CDKTF bindings for DependencyTrack Terraform Provider.",
+  "version": "REPLACED_WITH_PROVIDER_VERSION",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SolarFactories/terraform-provider-dependencytrack.git"
+  },
+  "scripts": {},
+  "author": {
+    "name": "SolarFactories",
+    "url": "https://github.com/SolarFactories"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "cdktf": "^0.20.10",
+    "constructs": "^10.4.2",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "cdktf": "^0.20.10",
+    "constructs": "^10.4.2"
+  },
+  "keywords": [
+    "cdktf",
+    "terraform",
+    "dependencytrack"
+  ],
+  "publishConfig": {
+  	"registry": "https://npm.pkg.github.com"
+  },
+  "files": ["package.json", "dist"],
+  "license": "ISC"
+}

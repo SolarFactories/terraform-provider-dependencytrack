@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling", "cdktf"]
+build-backend = "hatchling.build"
+
+[project]
+name = "solarfactories_cdktf_provider_dependencytrack"
+version = "REPLACED_WITH_PROVIDER_VERSION"
+authors = [
+	{ name="SolarFactories", email="SolarFactories@users.noreply.github.com" },
+]
+description = "CDKTF Bindings for dependencytrack Terraform provider"
+requires-python = ">=3.8"
+classifiers = [
+	"Programming Language :: Python :: 3",
+	"License :: OSI Approved :: MIT License",
+	"Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/SolarFactories/terraform-provider-dependencytrack"
+Issues = "https://github.com/SolarFactories/terraform-provider-dependencytrack/issues"
