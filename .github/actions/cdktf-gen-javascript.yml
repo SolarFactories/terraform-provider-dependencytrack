@@ -9,23 +9,23 @@ inputs:
     description: "Artifact name of the generated Javascript bindings to upload"
     required: true
 
-runs:
-  using: composite
-  steps:
-    - name: Download Typescript Artifact
-      uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-      with:
-        name: ${{ inputs.typescript-artifact-name }}
-    - name: Extract
-      run: tar -xf ${{ inputs.typescript-artifact-name }}.tar.gz
-    - name: Transpile to Javascript
-      run: |
-        mkdir dist
-        npm install
-        touch tsconfig.json
-        tsc --declaration --strict --outDir dist --lib esnext
-    - name: Upload Javascript Artifact
-      uses: actions/upload-artifact@v4
-      with:
-          name: ${{ inputs.javascript-artifact-name }}
-          if-no-files-found: "error"
+jobs:
+  Transpile:
+    steps:
+      - name: Download Typescript Artifact
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: ${{ inputs.typescript-artifact-name }}
+      - name: Extract
+        run: tar -xf ${{ inputs.typescript-artifact-name }}.tar.gz
+      - name: Transpile to Javascript
+        run: |
+          mkdir dist
+          npm install
+          touch tsconfig.json
+          tsc --declaration --strict --outDir dist --lib esnext
+      - name: Upload Javascript Artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: ${{ inputs.javascript-artifact-name }}
+            if-no-files-found: "error"
