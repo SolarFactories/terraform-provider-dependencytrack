@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
-          sparse-checkout: .github/actions
+          #sparse-checkout: .github/actions
       - uses: ./.github/actions/cdktf-gen-typescript.yml
         with:
           typescript-artifact-name: "cdktf-typescript"
@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
-          sparse-checkout: .github/actions
+          #sparse-checkout: .github/actions
       - uses: ./.github/actions/cdktf-gen-javascript.yml
         with:
           typescript-artifact-name: "cdktf-typescript"
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
-          sparse-checkout: .github/actions
+          #sparse-checkout: .github/actions
       - uses: ./.github/actions/cdktf-rel-typescript-github.yml
         with:
           javascript-artifact-name: "cdktf-javascript"
@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
-          sparse-checkout: .github/actions
+          #sparse-checkout: .github/actions
       - uses: ./.github/actions/cdktf-gen-python.yml
         with:
           python-artifact-name: "cdktf-python"
