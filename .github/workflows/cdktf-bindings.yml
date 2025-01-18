@@ -5,7 +5,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      cdktf-bindings
+      - cdktf-bindings
+      - cdktf-bindings-refactor
 
 permissions:
   contents: write
