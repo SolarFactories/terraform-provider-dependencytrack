@@ -4,7 +4,7 @@
 - `golang.org/x/net` `0.28.0` -> `0.33.0`
 - `golangci/golangci-lint-action` `6.1.1` -> `6.2.0`
 
-#### /tools
+##### /tools
 - `golang.org.net` `0.23.0` -> `0.33.0`
 
 ## 1.3.0
