@@ -15,7 +15,7 @@ permissions:
 jobs:
   gen-typescript:
     runs-on: ubuntu-latest
-    uses: ./.github/actions/cdktf-gen-typescript.yml
+    uses: ./.github/workflows/cdktf-gen-typescript.yml
     with:
       typescript-artifact-name: "cdktf-typescript"
 
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - gen-typescript
-    uses: ./.github/actions/cdktf-gen-javascript.yml
+    uses: ./.github/workflows/cdktf-gen-javascript.yml
     with:
       typescript-artifact-name: "cdktf-typescript"
       javascript-artifact-name: "cdktf-javascript"
@@ -32,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - gen-javascript
-    uses: ./.github/actions/cdktf-rel-typescript-github.yml
+    uses: ./.github/workflows/cdktf-rel-typescript-github.yml
     with:
       javascript-artifact-name: "cdktf-javascript"
 
@@ -41,6 +41,6 @@ jobs:
     # Works locally, but fails without helpful errors in pipeline, so disable for now.
     # If required, may still run `cdktf get` locally within a CDKTF project.
     if: false
-    uses: ./.github/actions/cdktf-gen-python.yml
+    uses: ./.github/workflows/cdktf-gen-python.yml
     with:
       python-artifact-name: "cdktf-python"
