@@ -16,8 +16,8 @@ jobs:
   gen-typescript:
     runs-on: ubuntu-latest
     uses: ./.github/actions/cdktf-gen-typescript.yml
-      with:
-        typescript-artifact-name: "cdktf-typescript"
+    with:
+      typescript-artifact-name: "cdktf-typescript"
 
   gen-javascript:
     runs-on: ubuntu-latest
