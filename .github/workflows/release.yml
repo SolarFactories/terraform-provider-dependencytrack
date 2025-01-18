@@ -44,4 +44,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - goreleaser
-    uses: ./.github/workflows/cdktf-bindings.yml
+    steps:
+      - name: Generate Bindings
+        uses: ./.github/workflows/cdktf-bindings.yml
