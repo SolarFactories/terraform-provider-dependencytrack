@@ -1,12 +1,13 @@
 name: CDKTF Release Typescript GitHub
 description: Release Transpiled Typescript Bindings to GitHub Packages
 
-on: workflow_call
-
-inputs:
-  javascript-artifact-name:
-    description: "Name of the Transpiled Javascript Artifact to download"
-    required: true
+on:
+  workflow_call:
+    inputs:
+      javascript-artifact-name:
+        description: "Name of the Transpiled Javascript Artifact to download"
+        required: true
+        type: string
 
 jobs:
   Release:
