@@ -1,6 +1,8 @@
 name: CDKTF Generate Python Bindings
 description: Generate CDKTF Python Bindings, and upload as an artifact
-  
+
+on: workflow_call
+
 inputs:
   python-artifact-name:
     description: "Artifact name of the generated Python bindings to upload"

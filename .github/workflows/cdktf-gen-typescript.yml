@@ -1,6 +1,8 @@
 name: CDKTF Generate Typescript Bindings
 description: Generate CDKTF Typescript Bindings, and upload as an artifact
-  
+
+on: workflow_call
+
 inputs:
   typescript-artifact-name:
     description: "Artifact name of the generated Typescript bindings to upload"

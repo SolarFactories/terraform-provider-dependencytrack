@@ -1,6 +1,8 @@
 name: CFKTF Transpile Javascript Bindings
 description: Download an artifact from generated Typescript, transpile to separate Javascript and Type Definition files, and reupload as an artifact
 
+on: workflow_call
+
 inputs:
   typescript-artifact-name:
     description: "Artifact name of the generated Typescript bindings to download"
