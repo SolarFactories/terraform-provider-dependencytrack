@@ -1,0 +1,39 @@
+name: CDKTF Generate Typescript Bindings
+description: Generate CDKTF Typescript Bindings, and upload as an artifact
+
+inputs:
+  typescript-artifact-name:
+    description: "Artifact name of the generated Typescript bindings to upload"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      with:
+        fetch-depth: 1
+    - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+    - name: Generate bindings
+      working-directory: cdktf/typescript
+      run: |
+        npm install --global cdktf cdktf-cli
+        cdktf get
+    - name: Get Provider version
+      working-directory: cdktf/typescript
+      run: |
+        PROVIDER_VERSION="$(cat .gen/versions.json | jq -r '."registry.terraform.io/solarfactories/dependencytrack"')"
+        echo "PROVIDER_VERSION=${PROVIDER_VERSION}" >> $GITHUB_ENV
+    - name: Generate package.json
+      working-directory: cdktf/typescript
+      run: |
+        cat package.template.json | jq ".version=\"${PROVIDER_VERSION}\"" > package.json
+        cat package.json
+    - name: Package
+      working-directory: cdktf/typescript
+      run: npm pack
+    - uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.typescript-artifact-name }}
+        path: "cdktf/typescript/solarfactories-cdktf-provider-dependencytrack-*.tgz"
+        if-no-files-found: "error"
+        compression-level: 0
