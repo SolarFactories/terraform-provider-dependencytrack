@@ -26,7 +26,7 @@ jobs:
       - name: Extract
         run: |
           tar -xf solarfactories-cdktf-provider-dependencytrack-*.tgz
-          rm solarfactories-cdktf-provider-dependencytack-*.tgz
+          rm solarfactories-cdktf-provider-dependencytrack-*.tgz
       - name: Transpile to Javascript
         run: |
           mkdir dist
