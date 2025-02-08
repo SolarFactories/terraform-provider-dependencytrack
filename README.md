@@ -30,7 +30,7 @@ Uses [Terraform Plugin Framework]("https://github.com/hashicorp/terraform-plugin
 	}
 	```
 1. Create required resources for Data Resource Tests
-	1. Create a `Project` with name `Project_Data_Test`
+	1. Create a `Project` with name `Project_Data_Test` and version `1`
 	1. Create a `ProjectProperty` on `Project_Data_Test` with `Group1`, `Name1`, `Value1`, `STRING`, `Description1`
 	1. Create a `ProjectProperty` on `Project_Data_Test` with `Group2`, `Name2`, `2`, `INTEGER`, `Description2`
 

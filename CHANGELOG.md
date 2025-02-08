@@ -1,3 +1,11 @@
+## 1.3.2
+
+#### DEPENDENCIES
+- `actions/setup-go` `5.2.0` -> `5.3.0`
+- `github.com/hashicorp/terraform-plugin-go` `0.25.0` -> `0.26.0`
+- `actions/setup-node` `4.1.0` -> `4.2.0`
+- `golangci/golangci-lint-action` `6.2.0` -> `6.3.0`
+
 ## 1.3.1
 
 #### DEPENDENCIES
