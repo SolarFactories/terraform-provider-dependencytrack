@@ -24,15 +24,21 @@ jobs:
       - name: List files
         run: ls -Al
       - name: Extract
-        run: tar -xf ${{ inputs.typescript-artifact-name }}.tar.gz
+        run: |
+          tar -xf solarfactories-cdktf-provider-dependencytrack-*.tgz
+          rm solarfactories-cdktf-provider-dependencytack-*.tgz
       - name: Transpile to Javascript
         run: |
           mkdir dist
           npm install
           touch tsconfig.json
           tsc --declaration --strict --outDir dist --lib esnext
+      - name: Package
+        working-directory: .
+        run: npm pack
       - name: Upload Javascript Artifact
         uses: actions/upload-artifact@v4
         with:
             name: ${{ inputs.javascript-artifact-name }}
+            path: "solarfactories-cdktf-provider-dependencytrack-*.tgz"
             if-no-files-found: "error"
