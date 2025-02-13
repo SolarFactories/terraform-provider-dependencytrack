@@ -1,3 +1,10 @@
+## 1.3.3
+
+#### DEPENDENCIES
+- `github.com/DependencyTrack/client-go` `0.14.0` -> `0.15.0`
+- `golang/golangci-lint-action` `6.3.0` -> `6.3.3`
+- `goreleaser/goreleaser-action` `6.1.0` -> `6.2.1`
+
 ## 1.3.2
 
 #### DEPENDENCIES
