@@ -1,3 +1,18 @@
+## 1.4.0
+
+#### FEATURES
+- `dependencytrack_config_property` Resource, to manage a config property.
+- `dependencytrack_config_property` DataSource, to retrieve a config property.
+- `dependencytrack_config_properties` Resource, to manage multiple config properties more efficiently.
+
+#### MISC
+- Added automated testing against Terraform `1.10.x`.
+- Disabled CDKTF binding generation, while it is not fully featured.
+- Removed workflow to mark inactive issues as resolved.
+
+#### DEPENDENCIES
+- `golang/golangci-lint-action` `6.3.3` -> `6.4.0`
+
 ## 1.3.3
 
 #### DEPENDENCIES
@@ -36,24 +51,24 @@
 
 ## 1.2.0
 
-#### FEATURES:
+#### FEATURES
 - `dependencytrack` Provider - Added options for setting additional custom headers.
 
 ## 1.1.0
 
-#### FEATURES:
+#### FEATURES
 - `dependencytrack_project_property` Resource, to manage a project property.
 - `dependencytrack_project_property` DataSource, to retrieve a singular property.
 
-#### ISSUES:
+#### ISSUES
 - Unable to delete project property within DependencyTrack, when using `dependencytrack_project_property` resource.
 
-#### FIXES:
+#### FIXES
 - Removed erroneous configuration of attributes on `dependencytrack_project_property` from being labelled as not changing.
 
 ## 1.0.0
 
-#### FEATURES:
+#### FEATURES
 - Provider authentication via API Key, optionally reading from environment variable.
 - `dependencytrack_project` Resource, for Projects, able to set minimal functionality.
 - `dependencytrack_project` DataSource, to identify from a Project name and version, able to access properties.
