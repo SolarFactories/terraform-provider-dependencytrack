@@ -145,6 +145,7 @@ func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resour
 		NewTeamPermissionResource,
 		NewTeamApiKeyResource,
 		NewConfigPropertyResource,
+		NewConfigPropertiesResource,
 	}
 }
 
