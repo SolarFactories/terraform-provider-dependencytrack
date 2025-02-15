@@ -144,6 +144,8 @@ func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resour
 		NewTeamResource,
 		NewTeamPermissionResource,
 		NewTeamApiKeyResource,
+		NewConfigPropertyResource,
+		NewConfigPropertiesResource,
 	}
 }
 
@@ -152,6 +154,7 @@ func (p *dependencyTrackProvider) DataSources(ctx context.Context) []func() data
 		NewProjectDataSource,
 		NewProjectPropertyDataSource,
 		NewTeamDataSource,
+		NewConfigPropertyDataSource,
 	}
 }
 

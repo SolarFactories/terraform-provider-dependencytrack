@@ -1,0 +1,1 @@
+terraform import dependencytrack_config_property.example general/base.url
