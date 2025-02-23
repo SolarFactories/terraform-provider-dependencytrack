@@ -274,7 +274,7 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		"group":   groupName,
 		"name":    propertyName,
 	})
-	/*err = r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
+	err = r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete project property.",
@@ -282,11 +282,7 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted project property.")*/
-	resp.Diagnostics.AddWarning(
-		"Project property has not been deleted.",
-		"Due to an error when using the SDK, this provider is unable to delete project properties.",
-	)
+	tflog.Debug(ctx, "Deleted project property.")
 }
 
 func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
