@@ -82,7 +82,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Description: plan.Description.ValueString(),
 		Active:      plan.Active.ValueBool(),
 	}
-	if (plan.Active.IsUnknown()) {
+	if plan.Active.IsUnknown() {
 		projectReq.Active = true
 	}
 
@@ -175,7 +175,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		Description: plan.Description.ValueString(),
 		Active:      plan.Active.ValueBool(),
 	}
-	if (plan.Active.IsUnknown()) {
+	if plan.Active.IsUnknown() {
 		projectReq.Active = true
 	}
 
