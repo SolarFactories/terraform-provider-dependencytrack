@@ -91,11 +91,11 @@ func (r *repositoryResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			},
 			"username": schema.StringAttribute{
 				Description: "Username to use for Authentication to Repository.",
-				Optional:    true,
+				Required:    true,
 			},
 			"password": schema.StringAttribute{
 				Description: "Password to use for Authentication to Repository.",
-				Optional:    true,
+				Required:    true,
 				Sensitive:   true,
 			},
 		},
