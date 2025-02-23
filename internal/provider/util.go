@@ -2,7 +2,7 @@ package provider
 
 import (
 	"errors"
-	"github.com/DependencyTrack/client-go"
+	dtrack "github.com/DependencyTrack/client-go"
 )
 
 func Filter[T any](items []T, filter func(T) bool) []T {

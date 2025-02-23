@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/DependencyTrack/client-go"
+	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -146,6 +146,7 @@ func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resour
 		NewTeamApiKeyResource,
 		NewConfigPropertyResource,
 		NewConfigPropertiesResource,
+		NewRepositoryResource,
 	}
 }
 
