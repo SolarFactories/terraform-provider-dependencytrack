@@ -175,15 +175,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	// Execute
 	tflog.Debug(ctx, "Updating project with id: "+id.String())
-	_, err = r.client.Project.Update(ctx, projectReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to update project",
-			"Error in: "+id.String()+", from: "+err.Error(),
-		)
-		return
-	}
-	projectRes, err := r.client.Project.Get(ctx, id)
+	projectRes, err := r.client.Project.Update(ctx, projectReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update project",
