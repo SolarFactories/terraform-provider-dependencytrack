@@ -82,6 +82,9 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Description: plan.Description.ValueString(),
 		Active:      plan.Active.ValueBool(),
 	}
+	if (plan.Active.IsUnknown()) {
+		projectReq.Active = true
+	}
 
 	tflog.Debug(ctx, "Creating a new project, with name: "+projectReq.Name)
 	projectRes, err := r.client.Project.Create(ctx, projectReq)
@@ -171,6 +174,9 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
 		Active:      plan.Active.ValueBool(),
+	}
+	if (plan.Active.IsUnknown()) {
+		projectReq.Active = true
 	}
 
 	// Execute
