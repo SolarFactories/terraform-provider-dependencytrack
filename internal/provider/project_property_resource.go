@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 	"strings"
 
-	"github.com/DependencyTrack/client-go"
+	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -83,6 +83,9 @@ func (r *projectPropertyResource) Schema(_ context.Context, _ resource.SchemaReq
 			"type": schema.StringAttribute{
 				Description: "Type of the Project Property. See DependencyTrack for valid enum values.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the Project Property.",
@@ -274,7 +277,8 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		"group":   groupName,
 		"name":    propertyName,
 	})
-	/*err = r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
+	// NOTE: Has a patch applied in `http_client.go`
+	err = r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete project property.",
@@ -282,11 +286,7 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted project property.")*/
-	resp.Diagnostics.AddWarning(
-		"Project property has not been deleted.",
-		"Due to an error when using the SDK, this provider is unable to delete project properties.",
-	)
+	tflog.Debug(ctx, "Deleted project property.")
 }
 
 func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -294,7 +294,7 @@ func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.
 	if len(idParts) != 3 || idParts[0] == "" || idParts[1] == "" || idParts[2] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected import id",
-			fmt.Sprintf("Expected id in format <UUID>/<Group>/<Name>. Received %s", req.ID),
+			"Expected id in format <UUID>/<Group>/<Name>. Received "+req.ID,
 		)
 		return
 	}

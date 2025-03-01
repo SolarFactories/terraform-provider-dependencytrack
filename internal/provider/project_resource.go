@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 
-	"github.com/DependencyTrack/client-go"
+	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -81,6 +81,9 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
 		Active:      plan.Active.ValueBool(),
+	}
+	if plan.Active.IsUnknown() {
+		projectReq.Active = true
 	}
 
 	tflog.Debug(ctx, "Creating a new project, with name: "+projectReq.Name)
@@ -172,18 +175,13 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		Description: plan.Description.ValueString(),
 		Active:      plan.Active.ValueBool(),
 	}
+	if plan.Active.IsUnknown() {
+		projectReq.Active = true
+	}
 
 	// Execute
 	tflog.Debug(ctx, "Updating project with id: "+id.String())
-	_, err = r.client.Project.Update(ctx, projectReq)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to update project",
-			"Error in: "+id.String()+", from: "+err.Error(),
-		)
-		return
-	}
-	projectRes, err := r.client.Project.Get(ctx, id)
+	projectRes, err := r.client.Project.Update(ctx, projectReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update project",

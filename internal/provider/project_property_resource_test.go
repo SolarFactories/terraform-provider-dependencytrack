@@ -51,8 +51,8 @@ resource "dependencytrack_project_property" "test" {
 	project = dependencytrack_project.test.id
 	group = "A"
 	name = "B"
-	value = "C2"
-	type = "STRING"
+	value = "2"
+	type = "INTEGER"
 	description = "D"
 }
 `,
@@ -61,8 +61,8 @@ resource "dependencytrack_project_property" "test" {
 					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "project"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "group", "A"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "name", "B"),
-					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "value", "C2"),
-					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "type", "STRING"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "value", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "type", "INTEGER"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "description", "D"),
 				),
 			},

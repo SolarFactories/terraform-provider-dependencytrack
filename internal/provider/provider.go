@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/DependencyTrack/client-go"
+	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -38,12 +38,12 @@ type dependencyTrackProviderHeadersModel struct {
 	Value types.String `tfsdk:"value"`
 }
 
-func (p *dependencyTrackProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+func (p *dependencyTrackProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "dependencytrack"
 	resp.Version = p.version
 }
 
-func (p *dependencyTrackProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (p *dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Interact with DependencyTrack.",
 		Attributes: map[string]schema.Attribute{
@@ -123,7 +123,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 		return
 	}
 	tflog.Debug(ctx, "Creating DependencyTrack client")
-	httpClient := NewHttpClient(headers)
+	httpClient := NewHTTPClient(headers)
 	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(&httpClient), dtrack.WithAPIKey(key))
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -137,19 +137,20 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	tflog.Info(ctx, "Configured DependencyTrack client", map[string]any{"success": true})
 }
 
-func (p *dependencyTrackProvider) Resources(ctx context.Context) []func() resource.Resource {
+func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewProjectResource,
 		NewProjectPropertyResource,
 		NewTeamResource,
 		NewTeamPermissionResource,
-		NewTeamApiKeyResource,
+		NewTeamAPIKeyResource,
 		NewConfigPropertyResource,
 		NewConfigPropertiesResource,
+		NewRepositoryResource,
 	}
 }
 
-func (p *dependencyTrackProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+func (p *dependencyTrackProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewProjectDataSource,
 		NewProjectPropertyDataSource,

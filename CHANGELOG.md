@@ -1,3 +1,26 @@
+## 1.5.0
+
+#### FEATURES
+- `dependencytrack_repository` Resource, to manage an external source repository.
+- Added HTTP interception patching for select API requests, for which the SDK does not provide a working function.
+
+#### MISC
+- Added automated testing against Terraform `1.11.x`.
+- Swapped `golangci-lint` rules from `enable` specific set, to `enable-all`, with specific `disable` to increase range of linters used.
+- Reviewed linting rules, actioning, or identifying where not actioning.
+- Added named import for `github.com/DependencyTrack/client-go` to resolve typecheck errors due to updated golang version.
+- Removed secondary `Get` request when updating `dependencytrack_project`, instead using the return type of `Update` function.
+- Added property tests for configuring properties within `dependencytrack_project`.
+
+#### FIXES
+- Fixed inability to delete a `dependencytrack_project_property`, as raised in `1.1.0`.
+- Marked `type` as requiring replace when updated within `dependencytrack_project_property`.
+- Fixed `active` not defaulting to `true` within `dependencytrack_project`.
+
+#### DEPENDENCIES
+- `actions/download-artifact` `4.1.8` -> `4.1.9`
+- `github.com/hashicorp/terraform-plugin-framework` `v1.13.0` -> `v1.14.1`
+
 ## 1.4.0
 
 #### FEATURES
@@ -61,10 +84,8 @@
 - `dependencytrack_project_property` DataSource, to retrieve a singular property.
 
 #### ISSUES
-- Unable to delete project property within DependencyTrack, when using `dependencytrack_project_property` resource.
-
-#### FIXES
-- Removed erroneous configuration of attributes on `dependencytrack_project_property` from being labelled as not changing.
+- [Fixed in `1.5.0`] Unable to delete project property within DependencyTrack, when using `dependencytrack_project_property` resource.
+- [Fixed in `1.5.0`] Updating `type` on `dependencytrack_project_property` does not recreate the resource, which is required to change the `type`.
 
 ## 1.0.0
 
@@ -72,3 +93,6 @@
 - Provider authentication via API Key, optionally reading from environment variable.
 - `dependencytrack_project` Resource, for Projects, able to set minimal functionality.
 - `dependencytrack_project` DataSource, to identify from a Project name and version, able to access properties.
+
+#### ISSUES
+- [Fixed in `1.5.0`] `dependencytrack_project.active` does not default to `true`.
