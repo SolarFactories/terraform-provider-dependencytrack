@@ -1,27 +1,35 @@
 # Visit https://golangci-lint.run/ for usage documentation
 # and information on other useful linters
 issues:
-  max-per-linter: 0
   max-same-issues: 0
 
 linters:
-  disable-all: true
-  enable:
-    - durationcheck
-    - errcheck
-    - copyloopvar
-    - forcetypeassert
-    - godot
-    - gofmt
+  enable-all: true
+  disable:
+    - tenv # Replaced by usetesting
+    # Identiying raised
+    - wsl
+    - wrapcheck
+    - varnamelen
+    - usestdlibvars
+    - testpackage
+    - perfsprint
+    - paralleltest
+    - nlreturn
+    - lll
     - gosimple
-    - ineffassign
-    - makezero
-    - misspell
-    - nilerr
-    - predeclared
-    - staticcheck
-    - tenv
-    - unconvert
-    - unparam
-    - unused
-    - govet
+    - ireturn
+    - gofumpt
+    - goimports
+    - godox
+    - gci
+    - gochecknoglobals
+    - funlen
+    - exhaustruct
+    - depguard
+    - cyclop
+    - revive
+    - gosec
+    - stylecheck
+    - err113
+    - dupl
