@@ -17,31 +17,31 @@ import (
 )
 
 var (
-	_ resource.Resource                = &teamApiKeyResource{}
-	_ resource.ResourceWithConfigure   = &teamApiKeyResource{}
-	_ resource.ResourceWithImportState = &teamApiKeyResource{}
+	_ resource.Resource                = &teamAPIKeyResource{}
+	_ resource.ResourceWithConfigure   = &teamAPIKeyResource{}
+	_ resource.ResourceWithImportState = &teamAPIKeyResource{}
 )
 
-func NewTeamApiKeyResource() resource.Resource {
-	return &teamApiKeyResource{}
+func NewTeamAPIKeyResource() resource.Resource {
+	return &teamAPIKeyResource{}
 }
 
-type teamApiKeyResource struct {
+type teamAPIKeyResource struct {
 	client *dtrack.Client
 }
 
-type teamApiKeyResourceModel struct {
+type teamAPIKeyResourceModel struct {
 	ID      types.String `tfsdk:"id"`
 	TeamID  types.String `tfsdk:"team"`
 	Key     types.String `tfsdk:"key"`
 	Comment types.String `tfsdk:"comment"`
 }
 
-func (r *teamApiKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *teamAPIKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_apikey"
 }
 
-func (r *teamApiKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *teamAPIKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an API Key for a Team.",
 		Attributes: map[string]schema.Attribute{
@@ -76,8 +76,8 @@ func (r *teamApiKeyResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	}
 }
 
-func (r *teamApiKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan teamApiKeyResourceModel
+func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan teamAPIKeyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -129,9 +129,9 @@ func (r *teamApiKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	tflog.Debug(ctx, "Created API Key for team, with id: "+team.String())
 }
 
-func (r *teamApiKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Fetch state
-	var state teamApiKeyResourceModel
+	var state teamAPIKeyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -181,9 +181,9 @@ func (r *teamApiKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 	tflog.Debug(ctx, "Refreshed API Key for team with id: "+state.TeamID.ValueString())
 }
 
-func (r *teamApiKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get State
-	var plan teamApiKeyResourceModel
+	var plan teamAPIKeyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -211,9 +211,9 @@ func (r *teamApiKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 	tflog.Debug(ctx, "Updated API Key for team with id: "+plan.TeamID.ValueString())
 }
 
-func (r *teamApiKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Load state
-	var state teamApiKeyResourceModel
+	var state teamAPIKeyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -244,12 +244,12 @@ func (r *teamApiKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 	tflog.Debug(ctx, "Deleted API Key from team with id: "+team.String())
 }
 
-func (r *teamApiKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *teamAPIKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	idParts := strings.Split(req.ID, "/")
 	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected import id",
-			fmt.Sprintf("Expected id in format <UUID>/<Key>. Received %s", req.ID),
+			"Expected id in format <UUID>/<Key>. Received "+req.ID,
 		)
 		return
 	}
@@ -279,7 +279,7 @@ func (r *teamApiKeyResource) ImportState(ctx context.Context, req resource.Impor
 		return
 	}
 
-	keyState := teamApiKeyResourceModel{
+	keyState := teamAPIKeyResourceModel{
 		ID:      types.StringValue(fmt.Sprintf("%s/%s", uuid.String(), apiKey.Key)),
 		TeamID:  types.StringValue(uuid.String()),
 		Key:     types.StringValue(apiKey.Key),
@@ -294,7 +294,7 @@ func (r *teamApiKeyResource) ImportState(ctx context.Context, req resource.Impor
 	tflog.Debug(ctx, "Imported a project property.")
 }
 
-func (r *teamApiKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *teamAPIKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}

@@ -252,7 +252,7 @@ func (r *configPropertyResource) ImportState(ctx context.Context, req resource.I
 	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected import id",
-			fmt.Sprintf("Expected id in format <Group>/<Name>. Received %s", req.ID),
+			"Expected id in format <Group>/<Name>. Received "+req.ID,
 		)
 		return
 	}

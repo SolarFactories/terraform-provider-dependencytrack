@@ -182,10 +182,7 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 			return r.client.Repository.GetByType(ctx, dtrack.RepositoryType(repoType), po)
 		},
 		func(repo dtrack.Repository) bool {
-			if repo.UUID != id {
-				return false
-			}
-			return true
+			return repo.UUID == id
 		},
 	)
 

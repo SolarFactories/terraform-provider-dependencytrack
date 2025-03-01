@@ -294,7 +294,7 @@ func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.
 	if len(idParts) != 3 || idParts[0] == "" || idParts[1] == "" || idParts[2] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected import id",
-			fmt.Sprintf("Expected id in format <UUID>/<Group>/<Name>. Received %s", req.ID),
+			"Expected id in format <UUID>/<Group>/<Name>. Received "+req.ID,
 		)
 		return
 	}

@@ -20,7 +20,7 @@ type transport struct {
 }
 
 var (
-	projectPropertyUrlRegex *regexp.Regexp = regexp.MustCompile("^/api/v1/project/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/property$")
+	projectPropertyURLRegex *regexp.Regexp = regexp.MustCompile("^/api/v1/project/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/property$")
 )
 
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -28,7 +28,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		req.Header.Add(header.Name, header.Value)
 	}
 	// Patch bugs in SDK
-	if req.URL.Path == "/api/v1/repository" && (req.Method == "PUT" || req.Method == "POST") {
+	if req.URL.Path == "/api/v1/repository" && (req.Method == http.MethodPut || req.Method == http.MethodPost) {
 		// Missing authenticationRequired field when creating / updating a repository, resulting in 500 InternalServerError from API
 		var repo dtrack.Repository
 		err := json.NewDecoder(req.Body).Decode(&repo)
@@ -50,7 +50,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 		req.Body = io.NopCloser(bodyBuf)
 	}
-	if projectPropertyUrlRegex.MatchString(req.URL.Path) && req.Method == "DELETE" {
+	if projectPropertyURLRegex.MatchString(req.URL.Path) && req.Method == http.MethodDelete {
 		// Missing PropertyType accepted by SDK method when deleting a ProjectProperty Config value
 		var property dtrack.ProjectProperty
 		err := json.NewDecoder(req.Body).Decode(&property)
@@ -71,7 +71,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.inner.RoundTrip(req)
 }
 
-func NewHttpClient(headers []Header) http.Client {
+func NewHTTPClient(headers []Header) http.Client {
 	return http.Client{
 		Timeout: dtrack.DefaultTimeout,
 		Transport: &transport{
