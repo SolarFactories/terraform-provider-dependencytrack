@@ -83,6 +83,9 @@ func (r *projectPropertyResource) Schema(_ context.Context, _ resource.SchemaReq
 			"type": schema.StringAttribute{
 				Description: "Type of the Project Property. See DependencyTrack for valid enum values.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the Project Property.",
