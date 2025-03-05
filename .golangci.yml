@@ -1,27 +1,29 @@
 # Visit https://golangci-lint.run/ for usage documentation
 # and information on other useful linters
 issues:
-  max-per-linter: 0
   max-same-issues: 0
 
 linters:
-  disable-all: true
-  enable:
-    - durationcheck
-    - errcheck
-    - copyloopvar
-    - forcetypeassert
-    - godot
-    - gofmt
-    - gosimple
-    - ineffassign
-    - makezero
-    - misspell
-    - nilerr
-    - predeclared
-    - staticcheck
-    - tenv
-    - unconvert
-    - unparam
-    - unused
-    - govet
+  enable-all: true
+  disable:
+    - tenv # Replaced by usetesting
+    - err113 # False positives
+    - depguard # Not using depguard
+    - funlen # Test function names
+    - gochecknoglobals # Test setup with provider
+    - gci # Not informative - as gofmt does not satsify
+    - goimports # ^
+    - gofumpt # ^
+    - lll # Long lines
+    - nlreturn # Would require blank line before return
+    - paralleltest # TF Tests don't need to call parallel
+    - testpackage # Would require moving tests to `provider_test` package
+    - varnamelen # id is intentionally used as special meaning in context of terraform
+    - wrapcheck # Exposing errors from dependencies / stdlib
+    - wsl # Non-issues of expressions at end of blocks, after a return on error
+    # Future review
+    - ireturn # New<Resource/DataSource>Resource() returns resource.Resource / datasource.DataSource
+    - gosec # int -> int32 conversion
+    - exhaustruct
+    - cyclop # Patches in http_client.go
+    - dupl

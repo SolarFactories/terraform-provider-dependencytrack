@@ -2,7 +2,7 @@ package provider
 
 import (
 	"errors"
-	"github.com/DependencyTrack/client-go"
+	dtrack "github.com/DependencyTrack/client-go"
 )
 
 func Filter[T any](items []T, filter func(T) bool) []T {
@@ -19,9 +19,9 @@ func Filter[T any](items []T, filter func(T) bool) []T {
 func Find[T any](items []T, filter func(T) bool) (*T, error) {
 	filtered := Filter(items, filter)
 	if len(filtered) == 0 {
-		return nil, errors.New("Did not find item.")
+		return nil, errors.New("did not find item")
 	} else if len(filtered) > 1 {
-		return nil, errors.New("Found multiple items.")
+		return nil, errors.New("found multiple items")
 	}
 	item := filtered[0]
 	return &item, nil
@@ -50,9 +50,9 @@ func FindPaged[T any](
 		return nil, err
 	}
 	if len(filtered) == 0 {
-		return nil, errors.New("Did not find item.")
+		return nil, errors.New("did not find item")
 	} else if len(filtered) > 1 {
-		return nil, errors.New("Found multiple items.")
+		return nil, errors.New("found multiple items")
 	}
 	item := filtered[0]
 	return &item, nil

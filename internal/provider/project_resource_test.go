@@ -17,7 +17,12 @@ resource "dependencytrack_project" "test" {
 	active = true
 }
 `,
-				Check: resource.ComposeAggregateTestCheckFunc(),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_project.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "name", "Test_Project"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "active", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "description", ""),
+				),
 			},
 			// ImportState testing
 			{
@@ -29,12 +34,12 @@ resource "dependencytrack_project" "test" {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
-	name = "Test_Project"
+	name = "Test_Project_With_Change"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_project.test", "id"),
-					resource.TestCheckResourceAttr("dependencytrack_project.test", "name", "Test_Project"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "name", "Test_Project_With_Change"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "active", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "description", ""),
 				),

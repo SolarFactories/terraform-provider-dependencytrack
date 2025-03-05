@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/DependencyTrack/client-go"
+	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -252,7 +252,7 @@ func (r *configPropertyResource) ImportState(ctx context.Context, req resource.I
 	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected import id",
-			fmt.Sprintf("Expected id in format <Group>/<Name>. Received %s", req.ID),
+			"Expected id in format <Group>/<Name>. Received "+req.ID,
 		)
 		return
 	}
