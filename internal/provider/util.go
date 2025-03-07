@@ -64,7 +64,7 @@ type OIDCMappingInfo struct {
 	Group uuid.UUID
 }
 
-func FindOidcMapping(
+func FindPagedOidcMapping(
 	mappingUUID uuid.UUID,
 	teamsFetchFunc func(dtrack.PageOptions) (dtrack.Page[dtrack.Team], error),
 ) (*OIDCMappingInfo, error) {

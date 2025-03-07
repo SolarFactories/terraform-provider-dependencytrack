@@ -131,26 +131,26 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshing oidc group mapping for team: "+state.Team.ValueString()+" and group: "+state.Group.ValueString())
+	tflog.Debug(ctx, "Refreshing oidc group mapping with id: "+state.ID.ValueString()+", for team: "+state.Team.ValueString()+", and group: "+state.Group.ValueString())
 
 	// Refresh
 	id, err := uuid.Parse(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
+			path.Root("id"),
 			"Within Read, unable to parse id into UUID",
 			"Error from: "+err.Error(),
 		)
 		return
 	}
-	mappingInfo, err := FindOidcMapping(id, func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
+	mappingInfo, err := FindPagedOidcMapping(id, func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
 		return r.client.Team.GetAll(ctx, po)
 	})
 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Read",
-			"Error with reading mapping for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String()+", in original error: "+err.Error(),
+			"Error with reading mapping with id: "+id.String()+", for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
@@ -170,7 +170,6 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Nothing to Update. This resource only has Create, Delete actions. Still verifies existence.
 	// Get State
 	var plan oidcGroupMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -189,13 +188,13 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	mappingInfo, err := FindOidcMapping(id, func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
+	mappingInfo, err := FindPagedOidcMapping(id, func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
 		return r.client.Team.GetAll(ctx, po)
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Update",
-			"Error with reading mapping for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String()+", in original error: "+err.Error(),
+			"Error with reading mapping with id: "+id.String()+", for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
@@ -212,7 +211,7 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated group mapping for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String())
+	tflog.Debug(ctx, "Updated group mapping with id: "+id.String()+", for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String())
 }
 
 func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -241,7 +240,7 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete group mapping",
-			"Unexpected error when trying to delete oidc group mapping: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete oidc group mapping with id: "+id.String()+", error: "+err.Error(),
 		)
 		return
 	}

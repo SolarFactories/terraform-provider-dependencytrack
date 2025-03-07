@@ -1,0 +1,1 @@
+terraform import dependencytrack_repository.example ecc8e95f-6879-4d2c-9cc5-446543c611da
