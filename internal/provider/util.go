@@ -3,6 +3,7 @@ package provider
 import (
 	"errors"
 	dtrack "github.com/DependencyTrack/client-go"
+	"github.com/google/uuid"
 )
 
 func Filter[T any](items []T, filter func(T) bool) []T {
@@ -56,4 +57,38 @@ func FindPaged[T any](
 	}
 	item := filtered[0]
 	return &item, nil
+}
+
+type OIDCMappingInfo struct {
+	Team  uuid.UUID
+	Group uuid.UUID
+}
+
+func FindOidcMapping(
+	mappingUUID uuid.UUID,
+	teamsFetchFunc func(dtrack.PageOptions) (dtrack.Page[dtrack.Team], error),
+) (*OIDCMappingInfo, error) {
+	filter := func(team dtrack.Team) bool {
+		for _, mappedGroup := range team.MappedOIDCGroups {
+			if mappedGroup.UUID == mappingUUID {
+				return true
+			}
+		}
+		return false
+	}
+	team, err := FindPaged(teamsFetchFunc, filter)
+	if err != nil {
+		return nil, err
+	}
+	group, err := Find(team.MappedOIDCGroups, func(mapping dtrack.OIDCMapping) bool {
+		return mapping.UUID == mappingUUID
+	})
+	if err != nil {
+		return nil, err
+	}
+	info := OIDCMappingInfo{
+		Team:  team.UUID,
+		Group: group.Group.UUID,
+	}
+	return &info, nil
 }

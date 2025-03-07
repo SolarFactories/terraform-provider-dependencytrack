@@ -117,7 +117,7 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get updated oidcGroup",
+			"Unable to get updated oidc group",
 			"Error with reading oidc group: "+id.String()+", in original error: "+err.Error(),
 		)
 		return
@@ -183,7 +183,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated oidcGroup with id: "+id.String())
+	tflog.Debug(ctx, "Updated oidc group with id: "+id.String())
 }
 
 func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -212,11 +212,11 @@ func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete oidc group",
-			"Unexpected error when trying to delete oidcGroup: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete oidc group: "+id.String()+", error: "+err.Error(),
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted oidcGroup with id: "+id.String())
+	tflog.Debug(ctx, "Deleted oidc group with id: "+id.String())
 }
 
 func (r *oidcGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
