@@ -120,7 +120,7 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Assigned group with id "+mappingRes.Group.UUID.String()+" to team, with id: "+team.String())
+	tflog.Debug(ctx, "Created mapping with id: "+mappingRes.UUID.String()+", for group with id: "+mappingRes.Group.UUID.String()+" to team, with id: "+team.String())
 }
 
 func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -235,7 +235,7 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting group mapping with id: "+id.String())
+	tflog.Debug(ctx, "Deleting group mapping with id: "+id.String()+", for group with id: "+state.Group.ValueString()+", and team with id: "+state.Team.ValueString())
 	err = r.client.OIDC.RemoveTeamMapping(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
