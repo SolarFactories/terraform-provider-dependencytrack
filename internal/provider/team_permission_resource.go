@@ -70,7 +70,7 @@ func (r *teamPermissionResource) Create(ctx context.Context, req resource.Create
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("team"),
-			"Within Create, unable to parse id into UUID",
+			"Within Create, unable to parse team into UUID",
 			"Error from: "+err.Error(),
 		)
 		return

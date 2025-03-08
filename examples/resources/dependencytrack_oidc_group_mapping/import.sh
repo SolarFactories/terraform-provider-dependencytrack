@@ -1,0 +1,1 @@
+terraform import dependencytrack_oidc_group_mapping.example 1362ea68-9443-45c8-834a-8e7bd5006254

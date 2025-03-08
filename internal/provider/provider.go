@@ -147,6 +147,8 @@ func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource
 		NewConfigPropertyResource,
 		NewConfigPropertiesResource,
 		NewRepositoryResource,
+		NewOidcGroupResource,
+		NewOidcGroupMappingResource,
 	}
 }
 

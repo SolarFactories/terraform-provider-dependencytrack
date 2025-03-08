@@ -1,3 +1,15 @@
+## 1.6.0
+
+#### FEATURES
+- `dependencytrack_oidc_group` Resource, to manage an OIDC Group.
+- `dependencytrack_oidc_group_mapping` Resource, to manage a mapping from an OIDC Group to a Team.
+
+#### MISC
+- Added examples for `dependencytrack_repository` due to being absent within `1.5.0` release.
+
+#### DEPENDENCIES
+- `golangci/golangci-lint-action` `6.4.0` -> `6.5.0`
+
 ## 1.5.0
 
 #### FEATURES
@@ -34,7 +46,7 @@
 - Removed workflow to mark inactive issues as resolved.
 
 #### DEPENDENCIES
-- `golang/golangci-lint-action` `6.3.3` -> `6.4.0`
+- `golangci/golangci-lint-action` `6.3.3` -> `6.4.0`
 
 ## 1.3.3
 
