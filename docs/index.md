@@ -31,6 +31,7 @@ provider "dependencytrack" {
 ### Optional
 
 - `headers` (Attributes List) Add additional headers to client API requests. Useful for proxy authentication. (see [below for nested schema](#nestedatt--headers))
+- `root_ca` (String) Root CA Certificate(s) used for TLS connection to the DependencyTrack API in PEM format.
 
 <a id="nestedatt--headers"></a>
 ### Nested Schema for `headers`

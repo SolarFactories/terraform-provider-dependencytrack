@@ -31,6 +31,7 @@ type dependencyTrackProviderModel struct {
 	Host    types.String                          `tfsdk:"host"`
 	Key     types.String                          `tfsdk:"key"`
 	Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
+	RootCA  types.String                          `tfsdk:"root_ca"`
 }
 
 type dependencyTrackProviderHeadersModel struct {
@@ -72,6 +73,10 @@ func (p *dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReq
 					},
 				},
 			},
+			"root_ca": schema.StringAttribute{
+				Description: "Root CA Certificate(s) used for TLS connection to the DependencyTrack API in PEM format.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -87,6 +92,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	host := config.Host.ValueString()
 	key := config.Key.ValueString()
 	headers := make([]Header, 0, len(config.Headers))
+	rootCAs := config.RootCA.ValueString()
 
 	if host == "" {
 		resp.Diagnostics.AddAttributeError(
@@ -106,6 +112,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"API Key for DependencyTrack was provided, but it was empty.",
 		)
 	}
+	// Headers
 	for _, header := range config.Headers {
 		name := header.Name.ValueString()
 		value := header.Value.ValueString()
@@ -123,8 +130,15 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 		return
 	}
 	tflog.Debug(ctx, "Creating DependencyTrack client")
-	httpClient := NewHTTPClient(headers)
-	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(&httpClient), dtrack.WithAPIKey(key))
+	httpClient, err := NewHTTPClient(headers, []byte(rootCAs))
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create HTTP Client",
+			"An unexpected error occurred when creating the HTTP Client in error: "+err.Error(),
+		)
+		return
+	}
+	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(httpClient), dtrack.WithAPIKey(key))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create DependencyTrack API Client",
