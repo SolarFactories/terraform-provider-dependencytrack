@@ -75,7 +75,7 @@ func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	return t.inner.RoundTrip(req)
 }
 
-func NewHTTPClient(headers []Header, pemCerts []byte) (*http.Client, error) {
+func NewHTTPClient(headers []Header, pemCerts []byte, clientCertFile string, clientKeyFile string) (*http.Client, error) {
 	// Create x509.CertPool for RootCA
 	rootCAs, err := newCertPool(pemCerts)
 	if err != nil {
@@ -88,6 +88,15 @@ func NewHTTPClient(headers []Header, pemCerts []byte) (*http.Client, error) {
 	}
 	innerTransport.TLSClientConfig = &tls.Config{
 		RootCAs: rootCAs,
+	}
+	// mTLS
+	if clientCertFile != "" && clientKeyFile != "" {
+		innerTransport.TLSClientConfig.MinVersion = tls.VersionTLS13
+		keypair, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
+		if err != nil {
+			return nil, err
+		}
+		innerTransport.TLSClientConfig.Certificates = []tls.Certificate{keypair}
 	}
 	return &http.Client{
 		Timeout: dtrack.DefaultTimeout,

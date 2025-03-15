@@ -31,7 +31,8 @@ provider "dependencytrack" {
 ### Optional
 
 - `headers` (Attributes List) Add additional headers to client API requests. Useful for proxy authentication. (see [below for nested schema](#nestedatt--headers))
-- `root_ca` (String) Root CA Certificate(s) used for TLS connection to the DependencyTrack API in PEM format.
+- `mtls` (Attributes) Client Key and Certificate paths to use for mTLS connection to DependencyTrack API. (see [below for nested schema](#nestedatt--mtls))
+- `root_ca` (String) Root CA Certificate(s) used for TLS connection to DependencyTrack API in PEM format.
 
 <a id="nestedatt--headers"></a>
 ### Nested Schema for `headers`
@@ -40,3 +41,12 @@ Required:
 
 - `name` (String) Name of the header to specify.
 - `value` (String) Value of the header to specify.
+
+
+<a id="nestedatt--mtls"></a>
+### Nested Schema for `mtls`
+
+Required:
+
+- `cert_path` (String) Path to the file containing the client certificate.
+- `key_path` (String) Path to the file containing the client key.
