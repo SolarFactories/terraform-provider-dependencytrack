@@ -127,6 +127,6 @@ jobs:
       - run: go mod download
       - env:
           TF_ACC: "1"
-		  DEPENDENCYTRACK_TEST_PROVIDER: ${{ matrix.provider }}
+          DEPENDENCYTRACK_TEST_PROVIDER: ${{ matrix.provider }}
         run: go test -v -cover ./internal/provider/
         timeout-minutes: 10
