@@ -125,7 +125,7 @@ jobs:
           sudo apt-get install nginx
           sudo mkdir -p /etc/nginx
           sudo cp nginx.conf /etc/nginx/
-          nginx
+          sudo nginx
 
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
         with:
