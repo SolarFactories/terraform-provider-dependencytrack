@@ -10,7 +10,7 @@ var (
 	providerConfig = func() string {
 		option := os.Getenv("DEPENDENCYTRACK_TEST_PROVIDER")
 		if option == "rootCA" {
-			rootCa, err := os.ReadFile("/opt/root_ca")
+			rootCa, err := os.ReadFile("/opt/server_cert.pem")
 			if err != nil {
 				panic("Root CA file is unable to be read: " + err.Error())
 			}
@@ -25,8 +25,8 @@ var (
 				host = "https://localhost:8083"
 				key = "OS_ENV"
 				mtls = {
-					key_path = "/opt/tls_key.pem",
-					cert_path = "/opt/tls_cert.pem",
+					key_path = "/opt/client_key.pem",
+					cert_path = "/opt/client_cert.pem",
 				}
 			}`
 		}
@@ -40,8 +40,8 @@ var (
 				key = "OS_ENV"
 				root_ca = "` + string(rootCa) + `"
 				mtls = {
-					key_path = "/opt/tls_key.pem",
-					cert_path = "/opt/tls_cert.pem",
+					key_path = "/opt/client_key.pem",
+					cert_path = "/opt/client_cert.pem",
 				}
 			}`
 		}
