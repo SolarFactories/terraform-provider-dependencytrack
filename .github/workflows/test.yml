@@ -123,8 +123,8 @@ jobs:
           openssl req -newkey rsa:4096 -noenc -keyout /opt/server_key.pem -x509 -days 1 -out /opt/server_cert.pem -subj '/OU=DT_API'
           openssl req -newkey rsa:4096 -noenc -keyout /opt/client_key.pem -x509 -days 1 -out /opt/client_cert.pem -subj '/OU=DT_Provider'
           sudo apt-get install nginx
-          mkdir -p /etc/nginx
-          cp nginx.conf /etc/nginx/
+          sudo mkdir -p /etc/nginx
+          sudo cp nginx.conf /etc/nginx/
           nginx -g daemon off;
 
       - uses: actions/setup-go@f111f3307d8850f501ac008e886eec1fd1932a34 # v5.3.0
