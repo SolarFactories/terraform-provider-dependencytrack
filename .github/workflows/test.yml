@@ -120,7 +120,7 @@ jobs:
         shell: bash
         run: |
           set -eu
-          openssl req -newkey rsa:4096 -noenc -keyout /opt/server_key.pem -x509 -days 1 -out /opt/server_cert.pem -subj '/OU=DT_API /CN=localhost'
+          openssl req -newkey rsa:4096 -noenc -keyout /opt/server_key.pem -x509 -days 1 -out /opt/server_cert.pem -subj '/OU=DT_API /CN=localhost' -addext "subjectAltName=DNS:localhost"
           openssl req -newkey rsa:4096 -noenc -keyout /opt/client_key.pem -x509 -days 1 -out /opt/client_cert.pem -subj '/OU=DT_Provider'
           sudo apt-get install nginx
           sudo mkdir -p /etc/nginx
