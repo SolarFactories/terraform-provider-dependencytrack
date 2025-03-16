@@ -1,3 +1,20 @@
+## 1.7.0
+
+#### FEATURES
+- Added `root_ca` option to `dependencytrack` Provider, to allow for setting a custom certificate for API TLS verification, defaulting to system certificates.
+- Added `mtls` option to `dependencytrack` Provider, to allow for configuring client side TLS, which when `host` is using `https` results in `mTLS`.
+
+#### MISC
+- Added `nginx` instance to pipeline tests to test the different combinations of `root_ca` and `mtls` options on Provider.
+- Added bash flags to git hooks and scripts, to increase error checking.
+- Increased `go` version in `go.mod` from `1.22.7` -> `1.23.0`
+- Introduced `toolchain` requirement in `go.mod` of `1.24.1`
+
+#### DEPENDENCIES
+- `golangci/golangci-lint-action` `6.5.0` -> `6.5.1`
+- `golang.org/x/net` `0.33.0` -> `0.36.0` in `/tools`
+- `golang.org/x/net` `0.34.0` -> `0.36.0`
+
 ## 1.6.0
 
 #### FEATURES
