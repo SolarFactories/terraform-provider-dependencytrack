@@ -40,6 +40,7 @@ type projectResourceModel struct {
 	Group       types.String `tfsdk:"group"`
 	PURL        types.String `tfsdk:"purl"`
 	CPE         types.String `tfsdk:"cpe"`
+	SWID        types.String `tfsdk:"swid"`
 }
 
 func (r *projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -100,6 +101,11 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:    true,
 				Computed:    true,
 			},
+			"swid": schema.StringAttribute{
+				Description: "SWID Tag ID. ISO/IEC 19770-2:2015.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -122,6 +128,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Group:       plan.Group.ValueString(),
 		PURL:        plan.PURL.ValueString(),
 		CPE:         plan.CPE.ValueString(),
+		SWIDTagID:   plan.SWID.ValueString(),
 	}
 	if !plan.Parent.IsNull() {
 		parentID, err := uuid.Parse(plan.Parent.ValueString())
@@ -162,6 +169,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	plan.Group = types.StringValue(projectRes.Group)
 	plan.PURL = types.StringValue(projectRes.PURL)
 	plan.CPE = types.StringValue(projectRes.CPE)
+	plan.SWID = types.StringValue(projectRes.SWIDTagID)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
@@ -213,6 +221,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	state.Group = types.StringValue(project.Group)
 	state.PURL = types.StringValue(project.PURL)
 	state.CPE = types.StringValue(project.CPE)
+	state.SWID = types.StringValue(project.SWIDTagID)
 	if project.ParentRef != nil {
 		state.Parent = types.StringValue(project.ParentRef.UUID.String())
 	} else {
@@ -263,6 +272,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	project.Group = plan.Group.ValueString()
 	project.PURL = plan.PURL.ValueString()
 	project.CPE = plan.CPE.ValueString()
+	project.SWIDTagID = plan.SWID.ValueString()
 
 	if plan.Active.IsUnknown() {
 		project.Active = true
@@ -308,6 +318,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	plan.Group = types.StringValue(projectRes.Group)
 	plan.PURL = types.StringValue(projectRes.PURL)
 	plan.CPE = types.StringValue(projectRes.CPE)
+	plan.SWID = types.StringValue(projectRes.SWIDTagID)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
