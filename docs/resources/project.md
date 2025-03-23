@@ -31,6 +31,7 @@ resource "dependencytrack_project" "example" {
 - `active` (Boolean) Whether the Project is active. Defaults to true.
 - `classifier` (String) Classifier of the Project. Defaults to APPLICATION. See DependencyTrack for valid options.
 - `description` (String) Description of the Project.
+- `group` (String) Namespace / group / vendor.
 - `parent` (String) UUID of a parent project, to allow for nesting.
 - `version` (String) Version of the project.
 

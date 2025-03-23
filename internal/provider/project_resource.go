@@ -37,6 +37,7 @@ type projectResourceModel struct {
 	Version     types.String `tfsdk:"version"`
 	Parent      types.String `tfsdk:"parent"`
 	Classifier  types.String `tfsdk:"classifier"`
+	Group       types.String `tfsdk:"group"`
 }
 
 func (r *projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -82,6 +83,11 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:    true,
 				Computed:    true,
 			},
+			"group": schema.StringAttribute{
+				Description: "Namespace / group / vendor.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -101,6 +107,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Version:     plan.Version.ValueString(),
 		ParentRef:   nil,
 		Classifier:  plan.Classifier.ValueString(),
+		Group:       plan.Group.ValueString(),
 	}
 	if !plan.Parent.IsNull() {
 		parentID, err := uuid.Parse(plan.Parent.ValueString())
@@ -138,6 +145,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	plan.Active = types.BoolValue(projectRes.Active)
 	plan.Version = types.StringValue(projectRes.Version)
 	plan.Classifier = types.StringValue(projectRes.Classifier)
+	plan.Group = types.StringValue(projectRes.Group)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
@@ -186,6 +194,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	state.Active = types.BoolValue(project.Active)
 	state.Version = types.StringValue(project.Version)
 	state.Classifier = types.StringValue(project.Classifier)
+	state.Group = types.StringValue(project.Group)
 	if project.ParentRef != nil {
 		state.Parent = types.StringValue(project.ParentRef.UUID.String())
 	} else {
@@ -233,6 +242,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	project.Active = plan.Active.ValueBool()
 	project.Version = plan.Version.ValueString()
 	project.Classifier = plan.Classifier.ValueString()
+	project.Group = plan.Group.ValueString()
 
 	if plan.Active.IsUnknown() {
 		project.Active = true
@@ -275,6 +285,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	plan.Active = types.BoolValue(projectRes.Active)
 	plan.Version = types.StringValue(projectRes.Version)
 	plan.Classifier = types.StringValue(projectRes.Classifier)
+	plan.Group = types.StringValue(projectRes.Group)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
