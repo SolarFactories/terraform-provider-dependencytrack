@@ -39,6 +39,7 @@ type projectResourceModel struct {
 	Classifier  types.String `tfsdk:"classifier"`
 	Group       types.String `tfsdk:"group"`
 	PURL        types.String `tfsdk:"purl"`
+	CPE         types.String `tfsdk:"cpe"`
 }
 
 func (r *projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -94,6 +95,11 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:    true,
 				Computed:    true,
 			},
+			"cpe": schema.StringAttribute{
+				Description: "Common Platform Enumeration of the Project. Standardised format v2.2 / v2.3 from MITRE / NIST.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -115,6 +121,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Classifier:  plan.Classifier.ValueString(),
 		Group:       plan.Group.ValueString(),
 		PURL:        plan.PURL.ValueString(),
+		CPE:         plan.CPE.ValueString(),
 	}
 	if !plan.Parent.IsNull() {
 		parentID, err := uuid.Parse(plan.Parent.ValueString())
@@ -154,6 +161,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	plan.Classifier = types.StringValue(projectRes.Classifier)
 	plan.Group = types.StringValue(projectRes.Group)
 	plan.PURL = types.StringValue(projectRes.PURL)
+	plan.CPE = types.StringValue(projectRes.CPE)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
@@ -204,6 +212,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	state.Classifier = types.StringValue(project.Classifier)
 	state.Group = types.StringValue(project.Group)
 	state.PURL = types.StringValue(project.PURL)
+	state.CPE = types.StringValue(project.CPE)
 	if project.ParentRef != nil {
 		state.Parent = types.StringValue(project.ParentRef.UUID.String())
 	} else {
@@ -253,6 +262,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	project.Classifier = plan.Classifier.ValueString()
 	project.Group = plan.Group.ValueString()
 	project.PURL = plan.PURL.ValueString()
+	project.CPE = plan.CPE.ValueString()
 
 	if plan.Active.IsUnknown() {
 		project.Active = true
@@ -297,6 +307,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	plan.Classifier = types.StringValue(projectRes.Classifier)
 	plan.Group = types.StringValue(projectRes.Group)
 	plan.PURL = types.StringValue(projectRes.PURL)
+	plan.CPE = types.StringValue(projectRes.CPE)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
