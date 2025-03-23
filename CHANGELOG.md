@@ -1,3 +1,13 @@
+## 1.7.1
+
+#### DEPENDENCIES
+- `github.com/hashicorp/teraform-plugin-testing` `1.11.0` -> `1.12.0`
+- `actions/setup-go` `5.3.0` -> `5.4.0`
+- `actions/download-artifact` `4.1.9` -> `4.2.0`
+- `golangci/golangci-lint-action` `6.5.1` -> `6.5.2`
+- `actions/setup-node` `4.2.0` -> `4.3.0` for `CDKTF`
+- `github.com/golang-jwt/jwt/v4` `4.5.1` -> `4.5.2` in `/tools`
+
 ## 1.7.0
 
 #### FEATURES
@@ -125,3 +135,4 @@
 
 #### ISSUES
 - [Fixed in `1.5.0`] `dependencytrack_project.active` does not default to `true`.
+- `dependencytrack_project` overrides non-managed properties on resources, when updating
