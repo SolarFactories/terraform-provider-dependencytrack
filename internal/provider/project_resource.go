@@ -3,9 +3,9 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	dtrack "github.com/DependencyTrack/client-go"
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -34,6 +34,8 @@ type projectResourceModel struct {
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
 	Active      types.Bool   `tfsdk:"active"`
+	Version     types.String `tfsdk:"version"`
+	Parent      types.String `tfsdk:"parent"`
 }
 
 func (r *projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -65,6 +67,15 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:    true,
 				Computed:    true,
 			},
+			"version": schema.StringAttribute{
+				Description: "Version of the project.",
+				Optional:    true,
+				Computed:    true,
+			},
+			"parent": schema.StringAttribute{
+				Description: "UUID of a parent project, to allow for nesting.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -81,6 +92,22 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
 		Active:      plan.Active.ValueBool(),
+		Version:     plan.Version.ValueString(),
+		ParentRef:   nil,
+	}
+	if !plan.Parent.IsNull() {
+		parentID, err := uuid.Parse(plan.Parent.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("parent"),
+				"Could not parse parent id into UUID.",
+				"Error from: "+err.Error(),
+			)
+			return
+		}
+		projectReq.ParentRef = &dtrack.ParentRef{
+			UUID: parentID,
+		}
 	}
 	if plan.Active.IsUnknown() {
 		projectReq.Active = true
@@ -99,6 +126,12 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	plan.Name = types.StringValue(projectRes.Name)
 	plan.Description = types.StringValue(projectRes.Description)
 	plan.Active = types.BoolValue(projectRes.Active)
+	plan.Version = types.StringValue(projectRes.Version)
+	if projectRes.ParentRef != nil {
+		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
+	} else {
+		plan.Parent = types.StringNull()
+	}
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -140,6 +173,12 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	state.Name = types.StringValue(project.Name)
 	state.Description = types.StringValue(project.Description)
 	state.Active = types.BoolValue(project.Active)
+	state.Version = types.StringValue(project.Version)
+	if project.ParentRef != nil {
+		state.Parent = types.StringValue(project.ParentRef.UUID.String())
+	} else {
+		state.Parent = types.StringNull()
+	}
 
 	// Update state
 	diags = resp.State.Set(ctx, &state)
@@ -169,19 +208,42 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		)
 		return
 	}
-	projectReq := dtrack.Project{
-		UUID:        id,
-		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
-		Active:      plan.Active.ValueBool(),
+	project, err := r.client.Project.Get(ctx, id)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Within Update, unable to retrieve current Project",
+			"Error from: "+err.Error(),
+		)
+		return
 	}
+	project.Name = plan.Name.ValueString()
+	project.Description = plan.Description.ValueString()
+	project.Active = plan.Active.ValueBool()
+	project.Version = plan.Version.ValueString()
+
 	if plan.Active.IsUnknown() {
-		projectReq.Active = true
+		project.Active = true
+	}
+	if !plan.Parent.IsNull() {
+		parentID, err := uuid.Parse(plan.Parent.ValueString())
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("parent"),
+				"Unable to parse parent ID into UUID",
+				"Error from: "+err.Error(),
+			)
+			return
+		}
+		project.ParentRef = &dtrack.ParentRef{
+			UUID: parentID,
+		}
+	} else {
+		project.ParentRef = nil
 	}
 
 	// Execute
 	tflog.Debug(ctx, "Updating project with id: "+id.String())
-	projectRes, err := r.client.Project.Update(ctx, projectReq)
+	projectRes, err := r.client.Project.Update(ctx, project)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update project",
@@ -195,6 +257,12 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	plan.Name = types.StringValue(projectRes.Name)
 	plan.Description = types.StringValue(projectRes.Description)
 	plan.Active = types.BoolValue(projectRes.Active)
+	plan.Version = types.StringValue(projectRes.Version)
+	if projectRes.ParentRef != nil {
+		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
+	} else {
+		plan.Parent = types.StringNull()
+	}
 
 	// Update State
 	diags = resp.State.Set(ctx, plan)

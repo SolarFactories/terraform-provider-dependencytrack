@@ -30,6 +30,8 @@ resource "dependencytrack_project" "example" {
 
 - `active` (Boolean) Whether the Project is active. Defaults to true.
 - `description` (String) Description of the Project.
+- `parent` (String) UUID of a parent project, to allow for nesting.
+- `version` (String) Version of the project.
 
 ### Read-Only
 
