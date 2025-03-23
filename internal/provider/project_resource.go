@@ -36,6 +36,7 @@ type projectResourceModel struct {
 	Active      types.Bool   `tfsdk:"active"`
 	Version     types.String `tfsdk:"version"`
 	Parent      types.String `tfsdk:"parent"`
+	Classifier  types.String `tfsdk:"classifier"`
 }
 
 func (r *projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -76,6 +77,11 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Description: "UUID of a parent project, to allow for nesting.",
 				Optional:    true,
 			},
+			"classifier": schema.StringAttribute{
+				Description: "Classifier of the Project. Defaults to APPLICATION. See DependencyTrack for valid options.",
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -94,6 +100,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Active:      plan.Active.ValueBool(),
 		Version:     plan.Version.ValueString(),
 		ParentRef:   nil,
+		Classifier:  plan.Classifier.ValueString(),
 	}
 	if !plan.Parent.IsNull() {
 		parentID, err := uuid.Parse(plan.Parent.ValueString())
@@ -112,6 +119,9 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	if plan.Active.IsUnknown() {
 		projectReq.Active = true
 	}
+	if plan.Classifier.IsUnknown() {
+		projectReq.Classifier = "APPLICATION"
+	}
 
 	tflog.Debug(ctx, "Creating a new project, with name: "+projectReq.Name)
 	projectRes, err := r.client.Project.Create(ctx, projectReq)
@@ -127,6 +137,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	plan.Description = types.StringValue(projectRes.Description)
 	plan.Active = types.BoolValue(projectRes.Active)
 	plan.Version = types.StringValue(projectRes.Version)
+	plan.Classifier = types.StringValue(projectRes.Classifier)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
@@ -174,6 +185,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	state.Description = types.StringValue(project.Description)
 	state.Active = types.BoolValue(project.Active)
 	state.Version = types.StringValue(project.Version)
+	state.Classifier = types.StringValue(project.Classifier)
 	if project.ParentRef != nil {
 		state.Parent = types.StringValue(project.ParentRef.UUID.String())
 	} else {
@@ -220,9 +232,13 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	project.Description = plan.Description.ValueString()
 	project.Active = plan.Active.ValueBool()
 	project.Version = plan.Version.ValueString()
+	project.Classifier = plan.Classifier.ValueString()
 
 	if plan.Active.IsUnknown() {
 		project.Active = true
+	}
+	if plan.Classifier.IsUnknown() {
+		project.Classifier = "APPLICATION"
 	}
 	if !plan.Parent.IsNull() {
 		parentID, err := uuid.Parse(plan.Parent.ValueString())
@@ -258,6 +274,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	plan.Description = types.StringValue(projectRes.Description)
 	plan.Active = types.BoolValue(projectRes.Active)
 	plan.Version = types.StringValue(projectRes.Version)
+	plan.Classifier = types.StringValue(projectRes.Classifier)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
