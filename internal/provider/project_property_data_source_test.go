@@ -27,14 +27,20 @@ data "dependencytrack_project_property" "test1" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.dependencytrack_project_property.test0", "project"),
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_project_property.test0", "project",
+						"data.dependencytrack_project.test", "id",
+					),
 					resource.TestCheckResourceAttr("data.dependencytrack_project_property.test0", "group", "Group1"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project_property.test0", "name", "Name1"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project_property.test0", "value", "Value1"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project_property.test0", "type", "STRING"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project_property.test0", "description", "Description1"),
 					//
-					resource.TestCheckResourceAttrSet("data.dependencytrack_project_property.test1", "project"),
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_project_property.test1", "project",
+						"data.dependencytrack_project.test", "id",
+					),
 					resource.TestCheckResourceAttr("data.dependencytrack_project_property.test1", "group", "Group2"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project_property.test1", "name", "Name2"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project_property.test1", "value", "2"),
