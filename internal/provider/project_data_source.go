@@ -30,6 +30,12 @@ type projectDataSourceModel struct {
 	Version    types.String             `tfsdk:"version"`
 	ID         types.String             `tfsdk:"id"`
 	Properties []projectPropertiesModel `tfsdk:"properties"`
+	Classifier types.String             `tfsdk:"classifier"`
+	CPE        types.String             `tfsdk:"cpe"`
+	Group      types.String             `tfsdk:"group"`
+	Parent     types.String             `tfsdk:"parent"`
+	PURL       types.String             `tfsdk:"purl"`
+	SWID       types.String             `tfsdk:"swid"`
 }
 
 type projectPropertiesModel struct {
@@ -88,6 +94,31 @@ func (d *projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 					},
 				},
 			},
+			"classifier": schema.StringAttribute{
+				Description: "Classifier of the Project. See DependencyTrack for possible enum values.",
+				Computed:    true,
+			},
+			"cpe": schema.StringAttribute{
+				Description: "Common Platform Enumeration for the Project. Standardised format v2.2 / v2.3 from MITRE / NIST",
+				Computed:    true,
+			},
+			"group": schema.StringAttribute{
+				Description: "Namespace / group / vendor of the Project.",
+				Computed:    true,
+			},
+			"parent": schema.StringAttribute{
+				Description: "UUID of a parent project, if nested.",
+				Computed:    true,
+				Optional:    true,
+			},
+			"purl": schema.StringAttribute{
+				Description: "Package URL of the Project. Follows standardised format.",
+				Computed:    true,
+			},
+			"swid": schema.StringAttribute{
+				Description: "SWID Tag ID. ISO/IEC 19770-2:2015",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -115,6 +146,15 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		Version:    types.StringValue(project.Version),
 		ID:         types.StringValue(project.UUID.String()),
 		Properties: make([]projectPropertiesModel, 0),
+		Classifier: types.StringValue(project.Classifier),
+		CPE:        types.StringValue(project.CPE),
+		Group:      types.StringValue(project.Group),
+		PURL:       types.StringValue(project.PURL),
+		SWID:       types.StringValue(project.SWIDTagID),
+		Parent:     types.StringNull(),
+	}
+	if project.ParentRef != nil {
+		projectState.Parent = types.StringValue(project.ParentRef.UUID.String())
 	}
 	for _, property := range project.Properties {
 		tflog.Debug(ctx, "Found property with group"+property.Group)
