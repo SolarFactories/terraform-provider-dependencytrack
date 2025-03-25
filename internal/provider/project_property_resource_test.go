@@ -27,7 +27,10 @@ resource "dependencytrack_project_property" "test" {
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "id"),
-					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "project"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_project_property.test", "project",
+						"dependencytrack_project.test", "id",
+					),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "group", "A"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "name", "B"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "value", "C"),
@@ -58,7 +61,10 @@ resource "dependencytrack_project_property" "test" {
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "id"),
-					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "project"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_project_property.test", "project",
+						"dependencytrack_project.test", "id",
+					),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "group", "A"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "name", "B"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "value", "2"),

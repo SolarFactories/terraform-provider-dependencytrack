@@ -27,10 +27,19 @@ data "dependencytrack_project" "example" {
 - `name` (String) Name of the project to find.
 - `version` (String) Version of the project to find.
 
+### Optional
+
+- `parent` (String) UUID of a parent project, if nested.
+
 ### Read-Only
 
+- `classifier` (String) Classifier of the Project. See DependencyTrack for possible enum values.
+- `cpe` (String) Common Platform Enumeration for the Project. Standardised format v2.2 / v2.3 from MITRE / NIST
+- `group` (String) Namespace / group / vendor of the Project.
 - `id` (String) UUID of the project located.
 - `properties` (Attributes List) Existing properties within the Project. (see [below for nested schema](#nestedatt--properties))
+- `purl` (String) Package URL of the Project. Follows standardised format.
+- `swid` (String) SWID Tag ID. ISO/IEC 19770-2:2015
 
 <a id="nestedatt--properties"></a>
 ### Nested Schema for `properties`

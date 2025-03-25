@@ -25,8 +25,14 @@ resource "dependencytrack_oidc_group_mapping" "test" {
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_oidc_group_mapping.test", "id"),
-					resource.TestCheckResourceAttrSet("dependencytrack_oidc_group_mapping.test", "team"),
-					resource.TestCheckResourceAttrSet("dependencytrack_oidc_group_mapping.test", "group"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_oidc_group_mapping.test", "team",
+						"dependencytrack_team.test", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_oidc_group_mapping.test", "group",
+						"dependencytrack_oidc_group.test", "id",
+					),
 				),
 			},
 			// ImportState testing
@@ -54,8 +60,14 @@ resource "dependencytrack_oidc_group_mapping" "test" {
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_oidc_group_mapping.test", "id"),
-					resource.TestCheckResourceAttrSet("dependencytrack_oidc_group_mapping.test", "team"),
-					resource.TestCheckResourceAttrSet("dependencytrack_oidc_group_mapping.test", "group"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_oidc_group_mapping.test", "team",
+						"dependencytrack_team.test", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_oidc_group_mapping.test", "group",
+						"dependencytrack_oidc_group.test2", "id",
+					),
 				),
 			},
 		},

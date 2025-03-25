@@ -29,7 +29,14 @@ resource "dependencytrack_project" "example" {
 ### Optional
 
 - `active` (Boolean) Whether the Project is active. Defaults to true.
+- `classifier` (String) Classifier of the Project. Defaults to APPLICATION. See DependencyTrack for valid options.
+- `cpe` (String) Common Platform Enumeration of the Project. Standardised format v2.2 / v2.3 from MITRE / NIST.
 - `description` (String) Description of the Project.
+- `group` (String) Namespace / group / vendor of the Project.
+- `parent` (String) UUID of a parent project, to allow for nesting.
+- `purl` (String) Package URL of the Project. MUST be in standardised format to be saved. See DependencyTrack for format.
+- `swid` (String) SWID Tag ID. ISO/IEC 19770-2:2015.
+- `version` (String) Version of the project.
 
 ### Read-Only
 

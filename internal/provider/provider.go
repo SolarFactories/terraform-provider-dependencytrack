@@ -31,11 +31,18 @@ type dependencyTrackProviderModel struct {
 	Host    types.String                          `tfsdk:"host"`
 	Key     types.String                          `tfsdk:"key"`
 	Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
+	RootCA  types.String                          `tfsdk:"root_ca"`
+	MTLS    *dependencyTrackProviderMtlsModel     `tfsdk:"mtls"`
 }
 
 type dependencyTrackProviderHeadersModel struct {
 	Name  types.String `tfsdk:"name"`
 	Value types.String `tfsdk:"value"`
+}
+
+type dependencyTrackProviderMtlsModel struct {
+	KeyPath  types.String `tfsdk:"key_path"`
+	CertPath types.String `tfsdk:"cert_path"`
 }
 
 func (p *dependencyTrackProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -72,6 +79,24 @@ func (p *dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReq
 					},
 				},
 			},
+			"root_ca": schema.StringAttribute{
+				Description: "Root CA Certificate(s) used for TLS connection to DependencyTrack API in PEM format.",
+				Optional:    true,
+			},
+			"mtls": schema.SingleNestedAttribute{
+				Description: "Client Key and Certificate paths to use for mTLS connection to DependencyTrack API.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"key_path": schema.StringAttribute{
+						Description: "Path to the file containing the client key.",
+						Required:    true,
+					},
+					"cert_path": schema.StringAttribute{
+						Description: "Path to the file containing the client certificate.",
+						Required:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -86,7 +111,10 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	}
 	host := config.Host.ValueString()
 	key := config.Key.ValueString()
+	clientCertFile := ""
+	clientKeyFile := ""
 	headers := make([]Header, 0, len(config.Headers))
+	rootCAs := config.RootCA.ValueString()
 
 	if host == "" {
 		resp.Diagnostics.AddAttributeError(
@@ -106,6 +134,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"API Key for DependencyTrack was provided, but it was empty.",
 		)
 	}
+	// Headers
 	for _, header := range config.Headers {
 		name := header.Name.ValueString()
 		value := header.Value.ValueString()
@@ -119,12 +148,24 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 		}
 		headers = append(headers, Header{name, value})
 	}
+	// mTLS
+	if config.MTLS != nil {
+		clientCertFile = config.MTLS.CertPath.ValueString()
+		clientKeyFile = config.MTLS.KeyPath.ValueString()
+	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	tflog.Debug(ctx, "Creating DependencyTrack client")
-	httpClient := NewHTTPClient(headers)
-	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(&httpClient), dtrack.WithAPIKey(key))
+	httpClient, err := NewHTTPClient(headers, []byte(rootCAs), clientCertFile, clientKeyFile)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create HTTP Client",
+			"An unexpected error occurred when creating the HTTP Client in error: "+err.Error(),
+		)
+		return
+	}
+	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(httpClient), dtrack.WithAPIKey(key))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create DependencyTrack API Client",

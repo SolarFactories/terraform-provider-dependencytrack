@@ -40,3 +40,25 @@ jobs:
     uses: ./.github/workflows/cdktf-gen-python.yml
     with:
       python-artifact-name: "cdktf-python"
+
+  rel-typescript-github:
+    runs-on: ubuntu-latest
+    needs: gen-typescript
+    steps:
+      - uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: cdktf-typescript
+      - name: Extract package
+        run: |
+          FILENAME="$(find . -type f -name 'solarfactories-cdktf-provider-dependencytrack-*.tgz')"
+          echo "${FILENAME}"
+          tar -xf "${FILENAME}"
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@solarfactories"
+      - name: Publish
+        run: npm publish
+        working-directory: package
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

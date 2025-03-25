@@ -1,3 +1,43 @@
+## 1.8.0
+
+#### FEATURES
+- Added ability to manage several attributes of `dependencytrack_project` Resource - `version`, `parent`, `classifier`, `cpe`, `group`, `purl`, `swid`.
+- Added several attributes to `dependencytrack_project` DataSource - `parent`, `classifier`, `cpe`, `group`, `purl`, `swid`
+
+#### MISC
+- Increase quality of testing for where two id's are expected to match, rather than just both being set.
+
+#### FIXES
+- Fixed an update to `dependencytrack_project` Resource from overriding existing settings of unmanaged properties, i.e. previosuly `parent` when change `name`.
+	- Now retrieves the current settings, before updating - as unable to use a partial `PATCH` - due to inability to unset optional fields, e.g. `parent`.
+
+## 1.7.1
+
+#### DEPENDENCIES
+- `github.com/hashicorp/teraform-plugin-testing` `1.11.0` -> `1.12.0`
+- `actions/setup-go` `5.3.0` -> `5.4.0`
+- `actions/download-artifact` `4.1.9` -> `4.2.0`
+- `golangci/golangci-lint-action` `6.5.1` -> `6.5.2`
+- `actions/setup-node` `4.2.0` -> `4.3.0` for `CDKTF`
+- `github.com/golang-jwt/jwt/v4` `4.5.1` -> `4.5.2` in `/tools`
+
+## 1.7.0
+
+#### FEATURES
+- Added `root_ca` option to `dependencytrack` Provider, to allow for setting a custom certificate for API TLS verification, defaulting to system certificates.
+- Added `mtls` option to `dependencytrack` Provider, to allow for configuring client side TLS, which when `host` is using `https` results in `mTLS`.
+
+#### MISC
+- Added `nginx` instance to pipeline tests to test the different combinations of `root_ca` and `mtls` options on Provider.
+- Added bash flags to git hooks and scripts, to increase error checking.
+- Increased `go` version in `go.mod` from `1.22.7` -> `1.23.0`
+- Introduced `toolchain` requirement in `go.mod` of `1.24.1`
+
+#### DEPENDENCIES
+- `golangci/golangci-lint-action` `6.5.0` -> `6.5.1`
+- `golang.org/x/net` `0.33.0` -> `0.36.0` in `/tools`
+- `golang.org/x/net` `0.34.0` -> `0.36.0`
+
 ## 1.6.0
 
 #### FEATURES
@@ -108,3 +148,4 @@
 
 #### ISSUES
 - [Fixed in `1.5.0`] `dependencytrack_project.active` does not default to `true`.
+- [Fixed in `1.8.0`] `dependencytrack_project` overrides non-managed properties on resources, when updating

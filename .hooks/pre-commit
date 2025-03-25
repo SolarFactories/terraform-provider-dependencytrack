@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -euo pipefail
 
 make fmt
 if [ -n "$(git status --untracked --short | grep '^ ')" ]; then
