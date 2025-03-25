@@ -7,10 +7,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	dtrack "github.com/DependencyTrack/client-go"
 	"io"
 	"net/http"
 	"regexp"
+
+	dtrack "github.com/DependencyTrack/client-go"
 )
 
 type Header struct {
@@ -24,7 +25,8 @@ type transport struct {
 }
 
 var (
-	projectPropertyURLRegex *regexp.Regexp = regexp.MustCompile("^/api/v1/project/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/property$")
+	uuidRegex                              = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+	projectPropertyURLRegex *regexp.Regexp = regexp.MustCompile("^/api/v1/project/" + uuidRegex + "/property$")
 )
 
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {

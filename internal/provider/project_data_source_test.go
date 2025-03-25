@@ -19,6 +19,12 @@ data "dependencytrack_project" "test" {
 					resource.TestCheckResourceAttrSet("data.dependencytrack_project.test", "id"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "name", "Project_Data_Test"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "version", "1"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "classifier", "APPLICATION"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "cpe", ""),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "group", ""),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "purl", ""),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "swid", ""),
+					resource.TestCheckNoResourceAttr("data.dependencytrack_project.test", "parent"),
 					//
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.#", "2"),
 					//

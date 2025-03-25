@@ -21,7 +21,10 @@ resource "dependencytrack_team_permission" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("dependencytrack_team_permission.test", "team"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_team_permission.test", "team",
+						"dependencytrack_team.test", "id",
+					),
 					resource.TestCheckResourceAttr("dependencytrack_team_permission.test", "permission", "SYSTEM_CONFIGURATION"),
 				),
 			},
@@ -38,7 +41,10 @@ resource "dependencytrack_team_permission" "test" {
 
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("dependencytrack_team_permission.test", "team"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_team_permission.test", "team",
+						"dependencytrack_team.test", "id",
+					),
 					resource.TestCheckResourceAttr("dependencytrack_team_permission.test", "permission", "BOM_UPLOAD"),
 				),
 			},
