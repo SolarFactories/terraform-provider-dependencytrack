@@ -1,3 +1,16 @@
+## 1.8.0
+
+#### FEATURES
+- Added ability to manage several attributes of `dependencytrack_project` Resource - `version`, `parent`, `classifier`, `cpe`, `group`, `purl`, `swid`.
+- Added several attributes to `dependencytrack_project` DataSource - `parent`, `classifier`, `cpe`, `group`, `purl`, `swid`
+
+#### MISC
+- Increase quality of testing for where two id's are expected to match, rather than just both being set.
+
+#### FIXES
+- Fixed an update to `dependencytrack_project` Resource from overriding existing settings of unmanaged properties, i.e. previosuly `parent` when change `name`.
+	- Now retrieves the current settings, before updating - as unable to use a partial `PATCH` - due to inability to unset optional fields, e.g. `parent`.
+
 ## 1.7.1
 
 #### DEPENDENCIES
@@ -135,4 +148,4 @@
 
 #### ISSUES
 - [Fixed in `1.5.0`] `dependencytrack_project.active` does not default to `true`.
-- `dependencytrack_project` overrides non-managed properties on resources, when updating
+- [Fixed in `1.8.0`] `dependencytrack_project` overrides non-managed properties on resources, when updating
