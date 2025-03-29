@@ -1,3 +1,13 @@
+## 1.8.1
+
+#### MISC
+- Document in `README.md`, supported versions of Terraform, and DependencyTrack.
+
+#### FIXES
+- Using `dependencytrack_config_properties`, `dependencytrack_config_property`, or `dependencytrack_project_property`, with a `type` of `"ENCRYPTEDSTRING"`,
+	would result in the value being replaced by the placeholder value from DependencyTrack.
+	- Now the current value is persisted in the statefile, across operations.
+
 ## 1.8.0
 
 #### FEATURES
