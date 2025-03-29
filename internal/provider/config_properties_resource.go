@@ -80,6 +80,9 @@ func (r *configPropertiesResource) Schema(_ context.Context, _ resource.SchemaRe
 						"description": schema.StringAttribute{
 							Description: "Description of the Config Property.",
 							Computed:    true,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 					},
 				},
@@ -96,7 +99,13 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
+	type Identity struct {
+		group string
+		name  string
+	}
+
 	configPropertiesReq := make([]dtrack.ConfigProperty, 0, len(plan.Properties))
+	encryptedStringRetention := map[Identity]string{}
 
 	for _, propertyReq := range plan.Properties {
 		configProperty := dtrack.ConfigProperty{
@@ -105,6 +114,13 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			Value:     propertyReq.Value.ValueString(),
 			Type:      propertyReq.Type.ValueString(),
 		}
+		if configProperty.Type == "ENCRYPTEDSTRING" {
+			encryptedStringRetention[Identity{
+				group: configProperty.GroupName,
+				name:  configProperty.Name,
+			}] = configProperty.Value
+		}
+
 		configPropertiesReq = append(configPropertiesReq, configProperty)
 	}
 
@@ -129,6 +145,12 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			Value:       types.StringValue(propertyRes.Value),
 			Type:        types.StringValue(propertyRes.Type),
 			Description: types.StringValue(propertyRes.Description),
+		}
+		if propertyRes.Type == "ENCRYPTEDSTRING" {
+			model.Value = types.StringValue(encryptedStringRetention[Identity{
+				group: propertyRes.GroupName,
+				name:  propertyRes.Name,
+			}])
 		}
 		configPropertiesState.Properties = append(configPropertiesState.Properties, model)
 	}
@@ -163,6 +185,7 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 	for idx, configPropertyModel := range state.Properties {
 		groupName := configPropertyModel.Group.ValueString()
 		propertyName := configPropertyModel.Name.ValueString()
+		value := configPropertyModel.Value
 		configProperty, err := Find(configPropertiesAll, func(configProperty dtrack.ConfigProperty) bool {
 			if configProperty.GroupName != groupName {
 				return false
@@ -187,6 +210,9 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 			Type:        types.StringValue(configProperty.Type),
 			Description: types.StringValue(configProperty.Description),
 		}
+		if configProperty.Type == "ENCRYPTEDSTRING" {
+			state.Properties[idx].Value = value
+		}
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -207,7 +233,13 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
+	type Identity struct {
+		group string
+		name  string
+	}
+
 	configPropertiesReq := make([]dtrack.ConfigProperty, 0, len(plan.Properties))
+	encryptedStringRetention := map[Identity]string{}
 
 	for _, propertyReq := range plan.Properties {
 		configProperty := dtrack.ConfigProperty{
@@ -215,6 +247,12 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Name:      propertyReq.Name.ValueString(),
 			Value:     propertyReq.Value.ValueString(),
 			Type:      propertyReq.Type.ValueString(),
+		}
+		if configProperty.Type == "ENCRYPTEDSTRING" {
+			encryptedStringRetention[Identity{
+				group: configProperty.GroupName,
+				name:  configProperty.Name,
+			}] = configProperty.Value
 		}
 		configPropertiesReq = append(configPropertiesReq, configProperty)
 	}
@@ -240,6 +278,12 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Value:       types.StringValue(propertyRes.Value),
 			Type:        types.StringValue(propertyRes.Type),
 			Description: types.StringValue(propertyRes.Description),
+		}
+		if propertyRes.Type == "ENCRYPTEDSTRING" {
+			model.Value = types.StringValue(encryptedStringRetention[Identity{
+				group: propertyRes.GroupName,
+				name:  propertyRes.Name,
+			}])
 		}
 		configPropertiesState.Properties = append(configPropertiesState.Properties, model)
 	}

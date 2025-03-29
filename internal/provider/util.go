@@ -2,6 +2,7 @@ package provider
 
 import (
 	"errors"
+
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
 )
