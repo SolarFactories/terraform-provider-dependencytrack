@@ -485,6 +485,12 @@ linters:
       - path: internal/provider/provider.go
         linters:
           - lll
+      - path: internal/provider/config_properties_resource_test.go
+        linters:
+          - lll
+      - path: internal/provider/config_property_resource_test.go
+        linters:
+          - lll
       - path: internal/provider/project_resource.go
         linters:
           - gocyclo
