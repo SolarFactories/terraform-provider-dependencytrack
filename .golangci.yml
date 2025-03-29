@@ -423,7 +423,49 @@ linters:
     generated: "strict" # Default "lax"
     warn-unused: true # Default false
     presets: [] # Default []
-    rules: [] # TODO
+    rules:
+      - path: internal/provider/
+        linters:
+          - wsl
+          - wrapcheck
+          - whitespace
+          - varnamelen
+          - staticcheck
+          - revive
+          - nlreturn
+          - importas
+          - unused
+          - misspell
+          - lll
+          - ireturn
+          - grouper
+          - govet
+          - gosec
+          - godot
+          - gocritic
+          - goconst
+          - gocognit
+          - funlen
+          - gocyclo
+          - gochecknoglobals
+          - exhaustruct
+          - err113
+          - dupl
+          - depguard
+          - decorder
+          - cyclop
+      - path: main.go
+        linters:
+          - revive
+          - importas
+          - depguard
+          - exhaustruct
+          - cyclop
+          - godot
+          - wsl
+      - path: go.mod
+        linters:
+          - gomoddirectives
 
 formatters:
   enable:
@@ -439,7 +481,7 @@ formatters:
 issues:
   max-issues-per-linter: 0 # Default 50
   max-same-issues: 0 # Default 3
-  fix: true # Default false
+  fix: false # Default false
 
 run:
   timeout: "5m" # Default 0 = disabled
