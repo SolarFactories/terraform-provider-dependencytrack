@@ -25,12 +25,18 @@ resource "dependencytrack_config_properties" "test" {
 			name = "subject.prefix"
 			value = "TF Test"
 			type = "STRING"
+		},
+		{
+			group = "email"
+			name = "smtp.password"
+			value = "TEST_PASSWORD"
+			type = "ENCRYPTEDSTRING"
 		}
 	]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.#", "3"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.0.group", "email"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.0.name", "smtp.enabled"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.0.value", "true"),
@@ -42,6 +48,12 @@ resource "dependencytrack_config_properties" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.1.value", "TF Test"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.1.type", "STRING"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.1.description", "The Prefix Subject email to use"),
+					//
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.group", "email"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.name", "smtp.password"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.value", "TEST_PASSWORD"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.type", "ENCRYPTEDSTRING"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.description", "The optional password for the username used for authentication"),
 				),
 			},
 			// Update and Read testing
@@ -60,12 +72,18 @@ resource "dependencytrack_config_properties" "test" {
 			name = "subject.prefix"
 			value = "TF Test With Update"
 			type = "STRING"
+		},
+		{
+			group = "email"
+			name = "smtp.password"
+			value = "TEST_PASSWORD"
+			type = "ENCRYPTEDSTRING"
 		}
 	]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.#", "3"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.0.group", "email"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.0.name", "smtp.enabled"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.0.value", "false"),
@@ -77,6 +95,12 @@ resource "dependencytrack_config_properties" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.1.value", "TF Test With Update"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.1.type", "STRING"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.1.description", "The Prefix Subject email to use"),
+					//
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.group", "email"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.name", "smtp.password"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.value", "TEST_PASSWORD"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.type", "ENCRYPTEDSTRING"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.description", "The optional password for the username used for authentication"),
 				),
 			},
 		},

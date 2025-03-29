@@ -24,6 +24,14 @@ resource "dependencytrack_project_property" "test" {
 	type = "STRING"
 	description = "D"
 }
+resource "dependencytrack_project_property" "testencrypted" {
+	project = dependencytrack_project.test.id
+	group = "G-Enc"
+	name = "N-Enc"
+	value = "TEST_ENCRYPTED_VALUE"
+	type = "ENCRYPTEDSTRING"
+	description = "D-Enc"
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "id"),
@@ -36,6 +44,16 @@ resource "dependencytrack_project_property" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "value", "C"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "type", "STRING"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "description", "D"),
+					//
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_project_property.testencrypted", "project",
+						"dependencytrack_project.test", "id",
+					),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "group", "G-Enc"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "name", "N-Enc"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "value", "TEST_ENCRYPTED_VALUE"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "type", "ENCRYPTEDSTRING"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "description", "D-Enc"),
 				),
 			},
 			// ImportState testing
@@ -43,6 +61,12 @@ resource "dependencytrack_project_property" "test" {
 				ResourceName:      "dependencytrack_project_property.test",
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				ResourceName:            "dependencytrack_project_property.testencrypted",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"value"},
 			},
 			// Update and Read testing
 			{
@@ -58,6 +82,14 @@ resource "dependencytrack_project_property" "test" {
 	type = "INTEGER"
 	description = "D"
 }
+resource "dependencytrack_project_property" "testencrypted" {
+	project = dependencytrack_project.test.id
+	group = "G-Enc"
+	name = "N-Enc"
+	value = "TEST_ENCRYPTED_VALUE"
+	type = "ENCRYPTEDSTRING"
+	description = "D-Enc"
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_project_property.test", "id"),
@@ -70,6 +102,16 @@ resource "dependencytrack_project_property" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "value", "2"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "type", "INTEGER"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.test", "description", "D"),
+					//
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_project_property.testencrypted", "project",
+						"dependencytrack_project.test", "id",
+					),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "group", "G-Enc"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "name", "N-Enc"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "value", "TEST_ENCRYPTED_VALUE"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "type", "ENCRYPTEDSTRING"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "description", "D-Enc"),
 				),
 			},
 		},
