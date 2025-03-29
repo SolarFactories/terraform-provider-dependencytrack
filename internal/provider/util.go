@@ -2,9 +2,12 @@ package provider
 
 import (
 	"errors"
+
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
 )
+
+const PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
 
 func Filter[T any](items []T, filter func(T) bool) []T {
 	filtered := []T{}

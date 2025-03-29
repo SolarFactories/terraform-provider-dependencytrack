@@ -123,6 +123,9 @@ func (r *configPropertyResource) Create(ctx context.Context, req resource.Create
 		Type:        types.StringValue(propertyRes.Type),
 		Description: types.StringValue(propertyRes.Description),
 	}
+	if propertyRes.Type == PropertyTypeEncryptedString {
+		propertyState.Value = plan.Value
+	}
 
 	diags = resp.State.Set(ctx, &propertyState)
 	resp.Diagnostics.Append(diags...)
@@ -163,6 +166,9 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 		Value:       types.StringValue(configProperty.Value),
 		Type:        types.StringValue(configProperty.Type),
 		Description: types.StringValue(configProperty.Description),
+	}
+	if configProperty.Type == PropertyTypeEncryptedString {
+		propertyState.Value = state.Value
 	}
 	diags = resp.State.Set(ctx, &propertyState)
 	resp.Diagnostics.Append(diags...)
@@ -208,6 +214,9 @@ func (r *configPropertyResource) Update(ctx context.Context, req resource.Update
 		Value:       types.StringValue(propertyRes.Value),
 		Type:        types.StringValue(propertyRes.Type),
 		Description: types.StringValue(propertyRes.Description),
+	}
+	if propertyRes.Type == PropertyTypeEncryptedString {
+		state.Value = plan.Value
 	}
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -265,11 +274,13 @@ func (r *configPropertyResource) ImportState(ctx context.Context, req resource.I
 			"Within Import, unable to locate config property.",
 			"Unexpected error from: "+err.Error(),
 		)
+		return
 	}
 	propertyState := configPropertyResourceModel{
-		ID:          types.StringValue(fmt.Sprintf("%s/%s", property.GroupName, property.Name)),
-		Group:       types.StringValue(property.GroupName),
-		Name:        types.StringValue(property.Name),
+		ID:    types.StringValue(fmt.Sprintf("%s/%s", property.GroupName, property.Name)),
+		Group: types.StringValue(property.GroupName),
+		Name:  types.StringValue(property.Name),
+		// If Type == "ENCRYPTEDSTRING", then Value will be placeholder text
 		Value:       types.StringValue(property.Value),
 		Type:        types.StringValue(property.Type),
 		Description: types.StringValue(property.Description),
