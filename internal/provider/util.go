@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
+
 func Filter[T any](items []T, filter func(T) bool) []T {
 	filtered := []T{}
 	for _, item := range items {

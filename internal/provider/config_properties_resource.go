@@ -114,7 +114,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			Value:     propertyReq.Value.ValueString(),
 			Type:      propertyReq.Type.ValueString(),
 		}
-		if configProperty.Type == "ENCRYPTEDSTRING" {
+		if configProperty.Type == PropertyTypeEncryptedString {
 			encryptedStringRetention[Identity{
 				group: configProperty.GroupName,
 				name:  configProperty.Name,
@@ -146,7 +146,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			Type:        types.StringValue(propertyRes.Type),
 			Description: types.StringValue(propertyRes.Description),
 		}
-		if propertyRes.Type == "ENCRYPTEDSTRING" {
+		if propertyRes.Type == PropertyTypeEncryptedString {
 			model.Value = types.StringValue(encryptedStringRetention[Identity{
 				group: propertyRes.GroupName,
 				name:  propertyRes.Name,
@@ -210,7 +210,7 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 			Type:        types.StringValue(configProperty.Type),
 			Description: types.StringValue(configProperty.Description),
 		}
-		if configProperty.Type == "ENCRYPTEDSTRING" {
+		if configProperty.Type == PropertyTypeEncryptedString {
 			state.Properties[idx].Value = value
 		}
 	}
@@ -248,7 +248,7 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Value:     propertyReq.Value.ValueString(),
 			Type:      propertyReq.Type.ValueString(),
 		}
-		if configProperty.Type == "ENCRYPTEDSTRING" {
+		if configProperty.Type == PropertyTypeEncryptedString {
 			encryptedStringRetention[Identity{
 				group: configProperty.GroupName,
 				name:  configProperty.Name,
@@ -279,7 +279,7 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Type:        types.StringValue(propertyRes.Type),
 			Description: types.StringValue(propertyRes.Description),
 		}
-		if propertyRes.Type == "ENCRYPTEDSTRING" {
+		if propertyRes.Type == PropertyTypeEncryptedString {
 			model.Value = types.StringValue(encryptedStringRetention[Identity{
 				group: propertyRes.GroupName,
 				name:  propertyRes.Name,

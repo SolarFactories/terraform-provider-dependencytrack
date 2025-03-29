@@ -136,7 +136,7 @@ func (r *projectPropertyResource) Create(ctx context.Context, req resource.Creat
 	plan.Project = types.StringValue(project.String())
 	plan.Group = types.StringValue(propertyRes.Group)
 	plan.Name = types.StringValue(propertyRes.Name)
-	if propertyReq.Type != "ENCRYPTEDSTRING" {
+	if propertyReq.Type != PropertyTypeEncryptedString {
 		plan.Value = types.StringValue(propertyRes.Value)
 	}
 	plan.Type = types.StringValue(propertyRes.Type)
@@ -197,7 +197,7 @@ func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadReq
 		Type:        types.StringValue(property.Type),
 		Description: types.StringValue(property.Description),
 	}
-	if property.Type == "ENCRYPTEDSTRING" {
+	if property.Type == PropertyTypeEncryptedString {
 		propertyState.Value = state.Value
 	}
 	diags = resp.State.Set(ctx, &propertyState)
@@ -250,7 +250,7 @@ func (r *projectPropertyResource) Update(ctx context.Context, req resource.Updat
 		Type:        types.StringValue(propertyRes.Type),
 		Description: types.StringValue(propertyRes.Description),
 	}
-	if propertyRes.Type == "ENCRYPTEDSTRING" {
+	if propertyRes.Type == PropertyTypeEncryptedString {
 		state.Value = plan.Value
 	}
 	diags = resp.State.Set(ctx, state)

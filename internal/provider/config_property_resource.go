@@ -123,7 +123,7 @@ func (r *configPropertyResource) Create(ctx context.Context, req resource.Create
 		Type:        types.StringValue(propertyRes.Type),
 		Description: types.StringValue(propertyRes.Description),
 	}
-	if propertyRes.Type == "ENCRYPTEDSTRING" {
+	if propertyRes.Type == PropertyTypeEncryptedString {
 		propertyState.Value = plan.Value
 	}
 
@@ -167,7 +167,7 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 		Type:        types.StringValue(configProperty.Type),
 		Description: types.StringValue(configProperty.Description),
 	}
-	if configProperty.Type == "ENCRYPTEDSTRING" {
+	if configProperty.Type == PropertyTypeEncryptedString {
 		propertyState.Value = state.Value
 	}
 	diags = resp.State.Set(ctx, &propertyState)
@@ -215,7 +215,7 @@ func (r *configPropertyResource) Update(ctx context.Context, req resource.Update
 		Type:        types.StringValue(propertyRes.Type),
 		Description: types.StringValue(propertyRes.Description),
 	}
-	if propertyRes.Type == "ENCRYPTEDSTRING" {
+	if propertyRes.Type == PropertyTypeEncryptedString {
 		state.Value = plan.Value
 	}
 	diags = resp.State.Set(ctx, state)
