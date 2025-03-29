@@ -4,8 +4,7 @@
 - Document in `README.md`, supported versions of Terraform, and DependencyTrack.
 
 #### FIXES
-- Using `dependencytrack_config_properties`, `dependencytrack_config_property`, or `dependencytrack_project_property`, with a `type` of `"ENCRYPTEDSTRING"`,
-	would result in the value being replaced by the placeholder value from DependencyTrack.
+- Using `dependencytrack_config_properties`, `dependencytrack_config_property`, or `dependencytrack_project_property`, with a `type` of `"ENCRYPTEDSTRING"`, would result in the value being replaced by the placeholder value from DependencyTrack.
 	- Now the current value is persisted in the statefile, across operations.
 
 ## 1.8.0
@@ -90,6 +89,10 @@
 - `dependencytrack_config_property` DataSource, to retrieve a config property.
 - `dependencytrack_config_properties` Resource, to manage multiple config properties more efficiently.
 
+#### ISSUES
+- [Fixed in `1.8.1`] Resource `dependencytrack_config_property` does not retain `value` when `type` is `"ENCRYPTEDSTRING"`.
+- [Fixed in `1.8.1`] `properties` on `dependencytrack_config_properties` Resource does not retain `value` when `type` is `"ENCRYPTEDSTRING"`.
+
 #### MISC
 - Added automated testing against Terraform `1.10.x`.
 - Disabled CDKTF binding generation, while it is not fully featured.
@@ -148,6 +151,7 @@
 #### ISSUES
 - [Fixed in `1.5.0`] Unable to delete project property within DependencyTrack, when using `dependencytrack_project_property` resource.
 - [Fixed in `1.5.0`] Updating `type` on `dependencytrack_project_property` does not recreate the resource, which is required to change the `type`.
+- [Fixed in `1.8.1`] Resource `dependencytrack_project_property` does not retain `value` when `type` is `"ENCRYPTEDSTRING"`.
 
 ## 1.0.0
 
