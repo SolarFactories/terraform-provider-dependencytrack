@@ -2,6 +2,8 @@ version: "2"
 
 linters:
   default: all
+  disable:
+    - goheader
   settings:
     asasalint:
       exclude: []
@@ -28,7 +30,8 @@ linters:
       rules:
         provider:
           list-mode: "strict" # Default "original"
-          files: "$all" # Default "$all"
+          files: # Default "$all"
+            - "$all"
           allow:
             - "$gostd"
             - "github.com/hashicorp/terraform-plugin-framework/"
@@ -85,12 +88,12 @@ linters:
       statements: 40 # Default 40
       ignore-comments: true # Default true
     ginkgolinter:
-      supress-len-assertion: false # Default false
-      supress-nil-assertion: false # Default false
-      supress-err-assertion: false # Default false
-      supress-compare-assertion: false # Default false
-      supress-async-assertion: false # Default false
-      supress-type-compare-assertion: false # Default false
+      suppress-len-assertion: false # Default false
+      suppress-nil-assertion: false # Default false
+      suppress-err-assertion: false # Default false
+      suppress-compare-assertion: false # Default false
+      suppress-async-assertion: false # Default false
+      suppress-type-compare-assertion: false # Default false
       forbid-focus-container: true # Default false
       allow-haveken-zero: false # Default false
       force-expect-to: true # Default false
@@ -145,7 +148,7 @@ linters:
       blocked:
         modules: [] # Default []
         versions: [] # Default []
-      local-replace-directives: true # Default false
+        local-replace-directives: true # Default false
     gosec:
       includes: [] # Includes all # Default []
       excludes: [] # Default []
@@ -221,7 +224,7 @@ linters:
       ignored-numbers: [] # Default []
       ignored-files: [] # Default []
       ignored-functions: [] # Default []
-    musttag:
+    musttag: {}
 #      functions: [] # Default: See Docs
 #        - json
 #        - xml
@@ -290,7 +293,7 @@ linters:
       exclusions: [] # Default []
     revive:
       max-open-files: 32 # Default unlimited
-      severity: "low" # Default warning
+      severity: "error" # Default warning
       enable-all-rules: true # Default false
       #directives: [] # TODO
     rowserrcheck:
@@ -323,10 +326,12 @@ linters:
       order: [] # Default []
       strict: true # Default false
     tagliatelle:
-      #case: # Use default
-      use-field-name: true # Default false
-      ignored-fields: [] # Default []
-      overrides: [] # Default []
+      case: # Use default
+        #rules: {} # Use default
+        #extended-rules: {} # Use default
+        use-field-name: true # Default false
+        ignored-fields: [] # Default []
+        overrides: [] # Default []
     tenv:
       all: true # Default false
     testifylint:
@@ -523,7 +528,7 @@ run:
   relative-path-mode: gomod # Default cfg
   tests: true # Default true
   allow-parallel-runners: false # Default false
-  allow-serial-runers: true # Default false
+  allow-serial-runners: true # Default false
 
 severity:
   default: "error"
