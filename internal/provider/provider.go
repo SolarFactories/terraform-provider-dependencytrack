@@ -7,6 +7,7 @@ import (
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
@@ -101,6 +102,24 @@ func (p *dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReq
 	}
 }
 
+func loadHeaders(modelHeaders []dependencyTrackProviderHeadersModel, diagnostics *diag.Diagnostics) []Header {
+	headers := make([]Header, 0, len(modelHeaders))
+	for _, header := range modelHeaders {
+		name := header.Name.ValueString()
+		value := header.Value.ValueString()
+		if name == "" || value == "" {
+			diagnostics.AddAttributeError(
+				path.Root("headers"),
+				"Missing header attributes",
+				fmt.Sprintf("Found Header Name: %s, and Value: %s", name, value),
+			)
+			continue
+		}
+		headers = append(headers, Header{name, value})
+	}
+	return headers
+}
+
 func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	// Get provider data from config
 	var config dependencyTrackProviderModel
@@ -113,7 +132,6 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	key := config.Key.ValueString()
 	clientCertFile := ""
 	clientKeyFile := ""
-	headers := make([]Header, 0, len(config.Headers))
 	rootCAs := config.RootCA.ValueString()
 
 	if host == "" {
@@ -135,19 +153,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 		)
 	}
 	// Headers
-	for _, header := range config.Headers {
-		name := header.Name.ValueString()
-		value := header.Value.ValueString()
-		if name == "" || value == "" {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("headers"),
-				"Missing header attributes",
-				fmt.Sprintf("Found Header Name: %s, and Value: %s", name, value),
-			)
-			continue
-		}
-		headers = append(headers, Header{name, value})
-	}
+	headers := loadHeaders(config.Headers, &resp.Diagnostics)
 	// mTLS
 	if config.MTLS != nil {
 		clientCertFile = config.MTLS.CertPath.ValueString()

@@ -25,7 +25,19 @@ linters:
       disable-const-dec-num-check: false
       disable-var-dec-num-check: false
     depguard:
-      rules: [] # TODO
+      rules:
+        provider:
+          list-mode: "strict" # Default "original"
+          files: "$all" # Default "$all"
+          allow:
+            - "$gostd"
+            - "github.com/hashicorp/terraform-plugin-framework/"
+            - "github.com/hashicorp/terraform-plugin-testing/"
+            - "github.com/hashicorp/terraform-plugin-log/tflog$"
+            - "github.com/hashicorp/terraform-plugin-go/tfprotov6$"
+            - "github.com/google/uuid$"
+            - "github.com/DependencyTrack/client-go$"
+            - "terraform-provider-dependencytrack/internal/provider"
     dogsled:
       max-blank-identifiers: 2 # Default 2
     dupl:
@@ -165,9 +177,11 @@ linters:
         unused:
           exclude: [] # Default []
     importas:
-      no-unaliased: true # Default false
+      no-unaliased: false # Default false
       no-extra-aliases: true # Default false
-      alias: [] # Default []
+      alias: # Default []
+        - pkg: github.com/DependencyTrack/client-go
+          alias: dtrack
     inamedparam:
       skip-single-param: false # Default false
     interfacebloat:
@@ -176,7 +190,7 @@ linters:
       allow: # Default [anon,error,empty,stdlib]
         - error
     lll:
-      line-length: 120 # Default 120
+      line-length: 170 # Default 120
       tab-width: 4 # Default 1
     loggercheck:
       kitlog: true # Default true
@@ -192,7 +206,7 @@ linters:
     makezero:
       always: true # Default false
     misspell:
-      locale: "US" # Default "US"
+      locale: "GB" # Default "US"
       ignore-rules: [] # Default []
       extra-words: [] # Default []
       mode: "default" # Default ""
@@ -208,7 +222,7 @@ linters:
       ignored-files: [] # Default []
       ignored-functions: [] # Default []
     musttag:
-      #functions: [] # Default: See Docs
+#      functions: [] # Default: See Docs
 #        - json
 #        - xml
 #        - gopkg.in/yaml.v3
@@ -391,11 +405,15 @@ linters:
       ignore-type-assert-ok: false # Default false
       ignore-map-index-ok: false # Default false
       ignore-chan-recv-ok: false # Default false
-      ignore-names: [] # Default []
-      ignore-decls: [] # Default []
+      ignore-names: # Default []
+        - r
+        - d
+      ignore-decls: # Default []
+        - t *transport
+        - id uuid.UUID
     whitespace:
-      multi-if: true # Default false
-      multi-func: true # Default false
+      multi-if: false # Default false
+      multi-func: false # Default false
     wrapcheck:
       extra-ignore-sigs: [] # Default []
       ignore-sigs: [] # Default See Docs
@@ -427,38 +445,25 @@ linters:
       - path: internal/provider/
         linters:
           - wsl
-          - wrapcheck
-          - whitespace
-          - varnamelen
           - staticcheck
           - revive
-          - nlreturn
-          - importas
+          - nlreturn  
           - unused
-          - misspell
-          - lll
           - ireturn
           - grouper
           - govet
-          - gosec
           - godot
           - gocritic
           - goconst
-          - gocognit
           - funlen
-          - gocyclo
           - gochecknoglobals
           - exhaustruct
           - err113
           - dupl
-          - depguard
           - decorder
-          - cyclop
       - path: main.go
         linters:
           - revive
-          - importas
-          - depguard
           - exhaustruct
           - cyclop
           - godot
@@ -466,6 +471,36 @@ linters:
       - path: go.mod
         linters:
           - gomoddirectives
+      - path: internal/provider/config_property_data_source_test.go
+        linters:
+          - lll
+      - path: internal/provider/oidc_group_mapping_resource.go
+        linters:
+          - lll
+      - path: internal/provider/provider.go
+        linters:
+          - lll
+      - path: internal/provider/project_resource.go
+        linters:
+          - gocyclo
+          - cyclop
+          - gocognit
+      - path: internal/provider/team_resource_test.go
+        linters:
+          - cyclop
+      - path: internal/provider/http_client.go
+        linters:
+          - gocognit
+          - wrapcheck
+      - path: internal/provider/config_properties_resource.go
+        linters:
+          - gocognit
+      - path: internal/provider/repository_resource.go
+        linters:
+          - gosec
+      - path: internal/provider/util.go
+        linters:
+          - wrapcheck
 
 formatters:
   enable:
