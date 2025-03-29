@@ -1,29 +1,453 @@
-# Visit https://golangci-lint.run/ for usage documentation
-# and information on other useful linters
-issues:
-  max-same-issues: 0
+version: "2"
 
 linters:
-  enable-all: true
-  disable:
-    - tenv # Replaced by usetesting
-    - err113 # False positives
-    - depguard # Not using depguard
-    - funlen # Test function names
-    - gochecknoglobals # Test setup with provider
-    - gci # Not informative - as gofmt does not satsify
-    - goimports # ^
-    - gofumpt # ^
-    - lll # Long lines
-    - nlreturn # Would require blank line before return
-    - paralleltest # TF Tests don't need to call parallel
-    - testpackage # Would require moving tests to `provider_test` package
-    - varnamelen # id is intentionally used as special meaning in context of terraform
-    - wrapcheck # Exposing errors from dependencies / stdlib
-    - wsl # Non-issues of expressions at end of blocks, after a return on error
-    # Future review
-    - ireturn # New<Resource/DataSource>Resource() returns resource.Resource / datasource.DataSource
-    - gosec # int -> int32 conversion
-    - exhaustruct
-    - cyclop # Patches in http_client.go
-    - dupl
+  default: all
+  settings:
+    asasalint:
+      exclude: []
+      use-builtin-exclusions: false
+    copyloopvar:
+      check-alias: true
+    cyclop:
+      max-complexity: 10 # Default 10
+      package-average: 0.5 # Default 0.0
+    decorder:
+      dec-order:
+        - const
+        - var
+        - type
+        - func
+      ignore-underscore-vars: false
+      disable-dec-order-check: false
+      disable-init-func-first-check: false
+      disable-dec-num-check: false
+      disable-type-dec-num-check: false
+      disable-const-dec-num-check: false
+      disable-var-dec-num-check: false
+    depguard:
+      rules: [] # TODO
+    dogsled:
+      max-blank-identifiers: 2 # Default 2
+    dupl:
+      threshold: 50 # Default 150
+    dupword:
+      keywords: []
+      ignore: []
+    errcheck:
+      check-type-assertions: true # Default false
+      check-blank: true # Default false
+      disable-default-exclusions: true # Default false
+      exclude-functions: []
+    errchkjson:
+      check-error-free-encoding: true # Default false
+      report-no-exported: true # Default false
+    errorlint:
+      errorf: true
+      errorf-multi: true
+      asserts: true
+      comparison: true
+      allowed-errors: []
+      allowed-errors-wildcard: []
+    exhaustive:
+      check:
+        - switch
+        - map
+      default-signifies-exhaustive: true # Default false
+      ignore-enum-members: ""
+      ignore-enum-types: ""
+      package-scope-only: false # Default false
+      explicit-exhaustive-switch: false # Default false
+      explicit-exhaustive-map: false # Default false
+      default-case-required: false # Default false
+    exhaustruct:
+      include: []
+      exclude: []
+    fatcontext:
+      check-struct-pointers: true # Default false
+    forbidigo:
+      #forbid: [] # NOTE: Use Default
+      exclude-godoc-examples: false # Default true
+      analyze-types: true # Default false
+    funlen:
+      lines: 60 # Default 60
+      statements: 40 # Default 40
+      ignore-comments: true # Default true
+    ginkgolinter:
+      supress-len-assertion: false # Default false
+      supress-nil-assertion: false # Default false
+      supress-err-assertion: false # Default false
+      supress-compare-assertion: false # Default false
+      supress-async-assertion: false # Default false
+      supress-type-compare-assertion: false # Default false
+      forbid-focus-container: true # Default false
+      allow-haveken-zero: false # Default false
+      force-expect-to: true # Default false
+      validate-async-intervals: true # Default false
+      forbid-spec-pollution: true # Default false
+      force-succeed: true # Default false
+    gochecksumtype:
+      default-signifies-exhaustive: true # Default false
+      include-shared-interfaces: true # Default false
+    gocognit:
+      min-complexity: 10 # Default 30
+    goconst:
+      min-len: 2 # Default 3
+      min-occurrences: 2 # Default 3
+      match-constant: true # Default true
+      numbers: true # Default false
+      min: 2 # Default 3
+      max: 2 # Default 3
+      ignore-calls: false # Default true
+      ignore-strings: ""
+    gocritic: # TODO: settings:
+      enable-all: true
+    gocyclo:
+      min-complexity: 10 # Default 30
+    godot:
+      scope: "all" # Default declarations
+      exclude: []
+      period: true # Default true
+      capital: true # Default false
+    godox:
+      keywords:
+        - TODO
+        - FIXME
+    goheader:
+      values: {} # Default {}
+      template: "" # Default ""
+      template-path: "" # Default ""
+    gomoddirectives:
+      replace-local: false # Default false
+      replace-allow-list: []
+      retract-allow-no-explanation: false # Default false
+      exclude-forbidden: true # Default false
+      toolchain-forbidden: true # Default false
+      toolchain-pattern: "" # Default ""
+      tool-forbidden: true # Default false
+      go-debug-forbidden: true # Default false
+      go-version-pattern: "" # Default "" # TODO
+    gomodguard:
+      allowed:
+        modules: [] # Default []
+        domains: [] # Default []
+      blocked:
+        modules: [] # Default []
+        versions: [] # Default []
+      local-replace-directives: true # Default false
+    gosec:
+      includes: [] # Includes all # Default []
+      excludes: [] # Default []
+      severity: "low" # Default "low"
+      confidence: "low" # Default "low"
+      #concurrency: 4 # Default: Inherits max number from process
+    gosmopolitan:
+      allow-time-local: false # Default false
+      escape-hatches: [] # Default []
+      watch-for-scripts: [] # Default ["Han"]
+    govet:
+      enable-all: true
+      settings: {} # TODO
+    grouper:
+      const-require-single-const: true # Default false
+      const-require-grouping: true # Default false
+      import-require-single-import: true # Default false
+      import-require-grouping: true # Default false
+      type-require-single-type: true # Default false
+      type-require-grouping: true # Default false
+      var-require-single-var: true # Default false
+      var-require-grouping: true # Default false
+    iface:
+      enable: # Default ["identical"]
+        - identical
+        - unused
+        - opaque
+      settings:
+        unused:
+          exclude: [] # Default []
+    importas:
+      no-unaliased: true # Default false
+      no-extra-aliases: true # Default false
+      alias: [] # Default []
+    inamedparam:
+      skip-single-param: false # Default false
+    interfacebloat:
+      max: 5 # Default 10
+    ireturn:
+      allow: # Default [anon,error,empty,stdlib]
+        - error
+    lll:
+      line-length: 120 # Default 120
+      tab-width: 4 # Default 1
+    loggercheck:
+      kitlog: true # Default true
+      klog: true # Default true
+      logr: true # Default true
+      slog: true # Default true
+      zap: true # Default true
+      require-string-key: true # Default false
+      no-printf-like: true # Default false
+      rules: [] # Default []
+    maintidx:
+      under: 20 # Default 20
+    makezero:
+      always: true # Default false
+    misspell:
+      locale: "US" # Default "US"
+      ignore-rules: [] # Default []
+      extra-words: [] # Default []
+      mode: "default" # Default ""
+    mnd:
+      checks: # Default: ["argument","case","condition","operation","return","assign"]
+        - argument
+        - case
+        - condition
+        - operation
+        - return
+        - assign
+      ignored-numbers: [] # Default []
+      ignored-files: [] # Default []
+      ignored-functions: [] # Default []
+    musttag:
+      #functions: [] # Default: See Docs
+#        - json
+#        - xml
+#        - gopkg.in/yaml.v3
+#        - BurntSushi/toml
+#        - mitchellh/mapstructure
+#        - jmoiron/sqlx
+    nakedret:
+      max-func-lines: 30 # Default 30
+    nestif:
+      min-complexity: 4 # Default 5
+    nilnil:
+      only-two: false # Default true
+      detect-opposite: true # Default false
+      checked-types: # Default
+        - chan
+        - func
+        - iface
+        - map
+        - ptr
+        - uintptr
+        - unsafeptr
+    nlreturn:
+      block-size: 2 # Default 1
+    nolintlint:
+      allow-unused: false # Default false
+      allow-no-explanation: [] # Default []
+      require-explanation: true # Default false
+      require-specific: true # Default false
+    nonamedreturns:
+      report-error-in-defer: true # Default false
+    paralleltest:
+      ignore-missing: true # Default false
+      ignore-missing-subtests: true # Default false
+    perfsprint:
+      integer-format: true # Default true
+      int-conversion: true # Default true
+      error-format: true # Default true
+      err-error: true # Default false
+      errorf: true # Default true
+      string-format: true # Default true
+      sprintf1: true # Default true
+      strconcat: true # Default true
+      bool-format: true # Default true
+      hex-format: true # Default true
+    prealloc:
+      simple: false # Default true
+      range-loops: true # Default true
+      for-loops: true # Default false
+    predeclared:
+      ignore: [] # Default []
+      qualified-name: true # Default false
+    promlinter:
+      strict: true # Default false
+      disabled-linters: [] # Default []
+    protogetter:
+      skip-generated-by: [] # Default []
+      skip-files: [] # Default []
+      skip-any-generated: false # Default false
+      replace-first-arg-in-append: false # Default false
+    reassign:
+      patterns: # Default ["EOF", "Err.*"]
+        - ".*"
+    recvcheck:
+      disable-builtin: false # Default false
+      exclusions: [] # Default []
+    revive:
+      max-open-files: 32 # Default unlimited
+      severity: "low" # Default warning
+      enable-all-rules: true # Default false
+      #directives: [] # TODO
+    rowserrcheck:
+      packages: [] # Default []
+    sloglint:
+      kv-only: true # Default false
+      no-global: "all" # Default "" = disabled
+      context: "all"
+      static-msg: true # Default false
+      no-raw-keys: true # Default false
+      key-naming-case: "snake" # Default "" # Chosen snake, as TF properties are snake case
+      forbidden-keys: [] # Default []
+      args-on-sep-lines: true # Default false
+    spancheck:
+      checks: # Default ["end"]
+        - end
+        - record-error
+        - set-status
+      ignore-check-signatures: [] # Default []
+      extra-start-span-signatures: [] # Default []
+    staticcheck:
+      dot-import-whitelist: [] # Default ["github.com/mmcloughlin/avo/build", "github.com/mmcloughlin/avo/operand", "github.com/mmcloughlin/avo/reg"]
+      #initialisms: # Use Default
+      http-status-code-whitelist: [] # Default ["200","400","404","500"]
+      checks:
+        - all
+    tagalign:
+      align: true # Default true
+      sort: true # Default true
+      order: [] # Default []
+      strict: true # Default false
+    tagliatelle:
+      #case: # Use default
+      use-field-name: true # Default false
+      ignored-fields: [] # Default []
+      overrides: [] # Default []
+    tenv:
+      all: true # Default false
+    testifylint:
+      enable-all: true # Default false
+      disable: []
+      bool-compare:
+        ignore-custom-types: false # Default false
+      expected-actual:
+        pattern: ^expected$ # Default superset of this regex
+      formatter:
+        check-format-string: true # Default true
+        require-f-funcs: true # Default false
+        require-string-msg: true # Default true
+      go-require:
+        ignore-http-handlers: false # Default false
+      require-error:
+        fn-pattern: "" # Default ""
+      suite-extra-assert-call:
+        mode: "require" # Default "remove"
+    testpackage:
+      skip-regexp: "" # Default: "(export|internal)_test\\.go"
+      allow-packages: [] # Default main
+    thelper:
+      test:
+        first: true # Default true
+        name: true # Default true
+        begin: true # Default true
+      benchmark:
+        first: true # Default true
+        name: true # Default true
+        begin: true # Default true
+      tb:
+        first: true # Default true
+        name: true # Default true
+        begin: true # Default true
+      fuzz:
+        first: true # Default true
+        name: true # Default true
+        begin: true # Default true
+    usestdlibvars:
+      http-method: true # Default true
+      http-status-code: true # Default true
+      time-weekday: true # Default true
+      time-month: true # Default false
+      time-layout: true # Default false
+      crypto-hash: true # Default false
+      default-rpc-path: true # Default false
+      sql-isolation-level: true # Default false
+      tls-signature-scheme: true # Default false
+      constant-kind: true # Default false
+    usetesting:
+      os-create-temp: true # Default true
+      os-mkdir-temp: true # Default true
+      os-setenv: true # Default true
+      os-temp-dir: true # Default false
+      os-chdir: true # Default true
+      context-background: true # Default true
+    unconvert:
+      fast-math: true # Default false
+      safe: true # Default false
+    unparam:
+      check-exported: true # Default false
+    unused:
+      field-writes-are-uses: true # Default true
+      post-statements-are-reads: false # Default false
+      exported-fields-are-used: false # Default true
+      parameters-are-used: false # Default true
+      local-variables-are-used: false # Default true
+      generated-is-used: false # Default true
+    varnamelen:
+      max-distance: 5 # Default 5
+      min-name-length: 3 # Default 3
+      check-receiver: true # Default false
+      check-return: true # Default false
+      check-type-param: true # Default false
+      ignore-type-assert-ok: false # Default false
+      ignore-map-index-ok: false # Default false
+      ignore-chan-recv-ok: false # Default false
+      ignore-names: [] # Default []
+      ignore-decls: [] # Default []
+    whitespace:
+      multi-if: true # Default false
+      multi-func: true # Default false
+    wrapcheck:
+      extra-ignore-sigs: [] # Default []
+      ignore-sigs: [] # Default See Docs
+      ignore-sig-regexps: [] # Default []
+      ignore-package-globs: [] # Default []
+      ignore-interface-regexps: [] # Default []
+    wsl:
+      strict-append: true # Default true
+      allow-assign-and-call: true # Default true
+      allow-assign-and-anything: false # Default false
+      allow-multiline-assign: true # Default true
+      force-case-trailing-whitespace: 1 # Default 0
+      allow-trailing-comment: false # Default false
+      allow-separated-leading-comment: false # Default false
+      allow-cuddle-declarations: true # Default false
+      allow-cuddle-with-calls: [] # Default ["Lock", "RLock"]
+      allow-cuddle-with-rhs: [] # Default ["Unlock", "RUnlock"]
+      allow-cuddle-used-in-block: false # Default false
+      force-err-cuddling: true # Default false
+      error-variable-names: # Default ["err"]
+        - err
+      force-short-decl-cuddling: false # Default false
+    custom: {}
+  exclusions:
+    generated: "strict" # Default "lax"
+    warn-unused: true # Default false
+    presets: [] # Default []
+    rules: [] # TODO
+
+formatters:
+  enable:
+    - gofmt
+  settings:
+    gofmt:
+      simplify: true
+      rewrite-rules: [] # Default []
+  exclusions:
+    generated: "strict" # Default "lax"
+    paths: [] # Default []
+
+issues:
+  max-issues-per-linter: 0 # Default 50
+  max-same-issues: 0 # Default 3
+  fix: true # Default false
+
+run:
+  timeout: "5m" # Default 0 = disabled
+  relative-path-mode: gomod # Default cfg
+  tests: true # Default true
+  allow-parallel-runners: false # Default false
+  allow-serial-runers: true # Default false
+
+severity:
+  default: "error"
+  rules: [] # Default []
