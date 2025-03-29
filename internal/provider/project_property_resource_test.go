@@ -86,7 +86,7 @@ resource "dependencytrack_project_property" "testencrypted" {
 	project = dependencytrack_project.test.id
 	group = "G-Enc"
 	name = "N-Enc"
-	value = "TEST_ENCRYPTED_VALUE"
+	value = "TEST_ENCRYPTED_VALUE_WITH_CHANGE"
 	type = "ENCRYPTEDSTRING"
 	description = "D-Enc"
 }
@@ -109,7 +109,7 @@ resource "dependencytrack_project_property" "testencrypted" {
 					),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "group", "G-Enc"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "name", "N-Enc"),
-					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "value", "TEST_ENCRYPTED_VALUE"),
+					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "value", "TEST_ENCRYPTED_VALUE_WITH_CHANGE"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "type", "ENCRYPTEDSTRING"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "description", "D-Enc"),
 				),

@@ -90,6 +90,7 @@ func (r *projectPropertyResource) Schema(_ context.Context, _ resource.SchemaReq
 			"description": schema.StringAttribute{
 				Description: "Description of the Project Property.",
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 	}

@@ -76,7 +76,7 @@ resource "dependencytrack_config_properties" "test" {
 		{
 			group = "email"
 			name = "smtp.password"
-			value = "TEST_PASSWORD"
+			value = "TEST_PASSWORD_WITH_CHANGE"
 			type = "ENCRYPTEDSTRING"
 		}
 	]
@@ -98,7 +98,7 @@ resource "dependencytrack_config_properties" "test" {
 					//
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.group", "email"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.name", "smtp.password"),
-					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.value", "TEST_PASSWORD"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.value", "TEST_PASSWORD_WITH_CHANGE"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.type", "ENCRYPTEDSTRING"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.description", "The optional password for the username used for authentication"),
 				),
