@@ -95,7 +95,7 @@ linters:
       suppress-async-assertion: false # Default false
       suppress-type-compare-assertion: false # Default false
       forbid-focus-container: true # Default false
-      allow-haveken-zero: false # Default false
+      allow-havelen-zero: false # Default false
       force-expect-to: true # Default false
       validate-async-intervals: true # Default false
       forbid-spec-pollution: true # Default false
@@ -127,10 +127,10 @@ linters:
       keywords:
         - TODO
         - FIXME
-    goheader:
-      values: {} # Default {}
-      template: "" # Default ""
-      template-path: "" # Default ""
+#    goheader:
+#      values: {} # Default {}
+#      template: "" # Default ""
+#      template-path: "" # Default ""
     gomoddirectives:
       replace-local: false # Default false
       replace-allow-list: []
@@ -209,7 +209,7 @@ linters:
     makezero:
       always: true # Default false
     misspell:
-      locale: "GB" # Default "US"
+      locale: "UK" # Default "US"
       ignore-rules: [] # Default []
       extra-words: [] # Default []
       mode: "default" # Default ""
