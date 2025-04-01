@@ -2,10 +2,8 @@ package provider
 
 import (
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccProjectPropertyResource(t *testing.T) {
@@ -17,7 +15,9 @@ func TestAccProjectPropertyResource(t *testing.T) {
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
 	name = "Test_ProjectProperty"
-	active = true
+}
+resource "dependencytrack_project" "testencrypted" {
+	name = "Test_ProjectPropertyEncrypted"
 }
 resource "dependencytrack_project_property" "test" {
 	project = dependencytrack_project.test.id
@@ -28,7 +28,7 @@ resource "dependencytrack_project_property" "test" {
 	description = "D"
 }
 resource "dependencytrack_project_property" "testencrypted" {
-	project = dependencytrack_project.test.id
+	project = dependencytrack_project.testencrypted.id
 	group = "G-Enc"
 	name = "N-Enc"
 	value = "TEST_ENCRYPTED_VALUE"
@@ -50,7 +50,7 @@ resource "dependencytrack_project_property" "testencrypted" {
 					//
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_project_property.testencrypted", "project",
-						"dependencytrack_project.test", "id",
+						"dependencytrack_project.testencrypted", "id",
 					),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "group", "G-Enc"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "name", "N-Enc"),
@@ -77,6 +77,9 @@ resource "dependencytrack_project_property" "testencrypted" {
 resource "dependencytrack_project" "test" {
 	name = "Test_ProjectProperty"
 }
+resource "dependencytrack_project" "testencrypted" {
+	name = "Test_ProjectPropertyEncrypted"
+}
 resource "dependencytrack_project_property" "test" {
 	project = dependencytrack_project.test.id
 	group = "A"
@@ -86,7 +89,7 @@ resource "dependencytrack_project_property" "test" {
 	description = "D"
 }
 resource "dependencytrack_project_property" "testencrypted" {
-	project = dependencytrack_project.test.id
+	project = dependencytrack_project.testencrypted.id
 	group = "G-Enc"
 	name = "N-Enc"
 	value = "TEST_ENCRYPTED_VALUE_WITH_CHANGE"
@@ -108,7 +111,7 @@ resource "dependencytrack_project_property" "testencrypted" {
 					//
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_project_property.testencrypted", "project",
-						"dependencytrack_project.test", "id",
+						"dependencytrack_project.testencrypted", "id",
 					),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "group", "G-Enc"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "name", "N-Enc"),
@@ -116,28 +119,6 @@ resource "dependencytrack_project_property" "testencrypted" {
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "type", "ENCRYPTEDSTRING"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "description", "D-Enc"),
 				),
-			},
-			// Sleep, to debug tests, before destroying ProjectProperties
-			{
-				Destroy:      true,
-				ResourceName: "dependencytrack_project_property.testencrypted",
-				RefreshState: true,
-			},
-			{
-				Destroy:      true,
-				ResourceName: "dependencytrack_project_property.test",
-				RefreshState: true,
-			},
-			{
-				RefreshState: true,
-				Check: func(s *terraform.State) error {
-					duration, err := time.ParseDuration("10s")
-					if err != nil {
-						return err
-					}
-					time.Sleep(duration)
-					return nil
-				},
 			},
 		},
 	})
