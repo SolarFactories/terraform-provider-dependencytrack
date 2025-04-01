@@ -35,7 +35,7 @@ Uses [Terraform Plugin Framework]("https://github.com/hashicorp/terraform-plugin
 	1. Create a `ProjectProperty` on `Project_Data_Test` with `Group2`, `Name2`, `2`, `INTEGER`, `Description2`
 
 ## Contributing
-Contributions are welcome, either as PR, or raising an issue to request functionality.
+Contributions are welcome, either as a PR, or raising an issue to request functionality.
 
 When contributing to resources, or data sources:
 1. Implementation, with appropriate input validation.
@@ -43,5 +43,6 @@ When contributing to resources, or data sources:
 1. Examples, to show how to use the new item.
 
 ## Supported versions
+The following versions are tested and supported with any combination from options.
 - Terraform: `1.0` -> `1.11`
-- DependencyTrack: `4.0` -> `snapshot`
+- DependencyTrack: `4.0` -> `4.12`, `latest`, `snapshot`, using the latest patch version within each minor version.

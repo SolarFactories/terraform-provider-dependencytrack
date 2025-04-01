@@ -512,9 +512,6 @@ linters:
       - path: internal/provider/util.go
         linters:
           - wrapcheck
-      - path: internal/provider/project_property_resource_test.go
-        linters:
-          - wrapcheck
 
 formatters:
   enable:
