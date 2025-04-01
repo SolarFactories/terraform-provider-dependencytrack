@@ -332,8 +332,8 @@ linters:
         use-field-name: true # Default false
         ignored-fields: [] # Default []
         overrides: [] # Default []
-    tenv:
-      all: true # Default false
+    #tenv:
+    #  all: true # Default false
     testifylint:
       enable-all: true # Default false
       disable: []
