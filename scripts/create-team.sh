@@ -35,4 +35,4 @@ if [ -z "${TEAM_NAME}" ]; then
 fi
 
 DATA="{\"name\":\"${TEAM_NAME}\"}"
-curl --request PUT "${HOST}/api/v1/team" --header "Authorization: Bearer ${TOKEN}" --header "Content-Type: application/json" --data "${DATA}"
+curl --fail-with-body --request PUT "${HOST}/api/v1/team" --header "Authorization: Bearer ${TOKEN}" --header "Content-Type: application/json" --data "${DATA}"

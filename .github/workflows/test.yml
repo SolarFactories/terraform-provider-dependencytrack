@@ -60,13 +60,30 @@ jobs:
     timeout-minutes: 15
     services:
       api:
-        image: dependencytrack/apiserver
+        image: dependencytrack/apiserver:${{ matrix.api }}
         ports:
           - 8081:8080
 
     strategy:
       fail-fast: false
       matrix:
+        api:
+# TODO: Adjust logic according to versions to allow supporting older API versions.
+#          - "4.0.1"
+#          - "4.1.0"
+#          - "4.2.2"
+#          - "4.3.6"
+#          - "4.4.2"
+#          - "4.5.0"
+#          - "4.6.3"
+#          - "4.7.1"
+#          - "4.8.2"
+#          - "4.9.1"
+#          - "4.10.1"
+#          - "4.11.7"
+          - "4.12.7"
+          - "latest"
+#          - "snapshot"
         provider:
           - "default"
           - "rootCA"

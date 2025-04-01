@@ -7,6 +7,7 @@ install: build
 	go install -v ./...
 
 lint:
+	golangci-lint config verify
 	golangci-lint run
 
 generate:
