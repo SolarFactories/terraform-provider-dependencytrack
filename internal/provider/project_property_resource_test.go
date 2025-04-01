@@ -1,8 +1,11 @@
 package provider
 
 import (
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"testing"
+	"time"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccProjectPropertyResource(t *testing.T) {
@@ -113,6 +116,18 @@ resource "dependencytrack_project_property" "testencrypted" {
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "type", "ENCRYPTEDSTRING"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "description", "D-Enc"),
 				),
+			},
+			// Sleep, to debug tests, before destroying ProjectProperties
+			{
+				RefreshState: true,
+				Check: func(s *terraform.State) error {
+					duration, err := time.ParseDuration("5s")
+					if err != nil {
+						return err
+					}
+					time.Sleep(duration)
+					return nil
+				},
 			},
 		},
 	})
