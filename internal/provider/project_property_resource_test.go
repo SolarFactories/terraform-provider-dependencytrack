@@ -119,9 +119,19 @@ resource "dependencytrack_project_property" "testencrypted" {
 			},
 			// Sleep, to debug tests, before destroying ProjectProperties
 			{
+				Destroy:      true,
+				ResourceName: "dependencytrack_project_property.testencrypted",
+				RefreshState: true,
+			},
+			{
+				Destroy:      true,
+				ResourceName: "dependencytrack_project_property.test",
+				RefreshState: true,
+			},
+			{
 				RefreshState: true,
 				Check: func(s *terraform.State) error {
-					duration, err := time.ParseDuration("5s")
+					duration, err := time.ParseDuration("10s")
 					if err != nil {
 						return err
 					}
