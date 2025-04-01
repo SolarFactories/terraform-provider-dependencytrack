@@ -44,5 +44,4 @@ When contributing to resources, or data sources:
 
 ## Supported versions
 - Terraform: `1.0` -> `1.11`
-- DependencyTrack: `latest`
-
+- DependencyTrack: `4.0` -> `snapshot`
