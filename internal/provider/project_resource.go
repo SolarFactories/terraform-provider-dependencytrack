@@ -78,7 +78,7 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Computed:    true,
 			},
 			"parent": schema.StringAttribute{
-				Description: "UUID of a parent project, to allow for nesting.",
+				Description: "UUID of a parent project, to allow for nesting. Available in API 4.12+.",
 				Optional:    true,
 			},
 			"classifier": schema.StringAttribute{

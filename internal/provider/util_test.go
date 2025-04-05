@@ -24,12 +24,14 @@ func TestParseSemver(t *testing.T) {
 }
 
 func requireNoError(t *testing.T, actual error) {
+	t.Helper()
 	if actual != nil {
 		t.Errorf("Expected nil, received %v", actual)
 	}
 }
 
 func requireEqual[T cmp.Ordered](t *testing.T, actual T, expected T) {
+	t.Helper()
 	if actual != expected {
 		t.Errorf("Expected %v, received %v", expected, actual)
 	}
