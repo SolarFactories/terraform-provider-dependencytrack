@@ -25,6 +25,7 @@ func NewProjectPropertyDataSource() datasource.DataSource {
 
 type projectPropertyDataSource struct {
 	client *dtrack.Client
+	semver *Semver
 }
 
 type projectPropertyDataSourceModel struct {
@@ -135,13 +136,14 @@ func (d *projectPropertyDataSource) Configure(_ context.Context, req datasource.
 	if req.ProviderData == nil {
 		return
 	}
-	client, ok := req.ProviderData.(*dtrack.Client)
+	clientInfo, ok := req.ProviderData.(clientInfo)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Configure Type",
-			fmt.Sprintf("Expected *dtrack.Client, got %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected provider.clientInfo, got %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 		return
 	}
-	d.client = client
+	d.client = clientInfo.client
+	d.semver = clientInfo.semver
 }

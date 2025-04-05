@@ -28,6 +28,7 @@ func NewProjectPropertyResource() resource.Resource {
 
 type projectPropertyResource struct {
 	client *dtrack.Client
+	semver *Semver
 }
 
 type projectPropertyResourceModel struct {
@@ -359,14 +360,15 @@ func (r *projectPropertyResource) Configure(_ context.Context, req resource.Conf
 	if req.ProviderData == nil {
 		return
 	}
-	client, ok := req.ProviderData.(*dtrack.Client)
+	clientInfo, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Configure Type",
-			fmt.Sprintf("Expected *dtrack.Client, got %T. Please report this issue to the provider developers.", req.ProviderData),
+			fmt.Sprintf("Expected provider.clientInfo, got %T. Please report this issue to the provider developers.", req.ProviderData),
 		)
 		return
 	}
-	r.client = client
+	r.client = clientInfo.client
+	r.semver = clientInfo.semver
 }
