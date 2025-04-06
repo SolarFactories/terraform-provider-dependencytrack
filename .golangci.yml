@@ -515,6 +515,9 @@ linters:
       - path: internal/provider/util_test.go
         linters:
           - cyclop
+      - path: internal/provider/team_data_source_test.go
+        linters:
+          - godox
 
 formatters:
   enable:

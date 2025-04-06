@@ -371,17 +371,17 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 	tflog.Info(ctx, "Updated project", map[string]any{
-		"id":          project.UUID.String(),
-		"name":        project.Name,
-		"description": project.Description,
-		"active":      project.Active,
-		"version":     project.Version,
-		"parent":      project.ParentRef,
-		"classifier":  project.Classifier,
-		"group":       project.Group,
-		"purl":        project.PURL,
-		"cpe":         project.CPE,
-		"swid":        project.SWIDTagID,
+		"id":          projectRes.UUID.String(),
+		"name":        projectRes.Name,
+		"description": projectRes.Description,
+		"active":      projectRes.Active,
+		"version":     projectRes.Version,
+		"parent":      projectRes.ParentRef,
+		"classifier":  projectRes.Classifier,
+		"group":       projectRes.Group,
+		"purl":        projectRes.PURL,
+		"cpe":         projectRes.CPE,
+		"swid":        projectRes.SWIDTagID,
 	})
 }
 
