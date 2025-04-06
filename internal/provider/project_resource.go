@@ -152,7 +152,18 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		projectReq.Classifier = "APPLICATION"
 	}
 
-	tflog.Debug(ctx, "Creating a new project, with name: "+projectReq.Name)
+	tflog.Debug(ctx, "Creating a new project:", map[string]any{
+		"name":        projectReq.Name,
+		"description": projectReq.Description,
+		"active":      projectReq.Active,
+		"version":     projectReq.Version,
+		"parent":      projectReq.ParentRef,
+		"classifier":  projectReq.Classifier,
+		"group":       projectReq.Group,
+		"purl":        projectReq.PURL,
+		"cpe":         projectReq.CPE,
+		"swid":        projectReq.SWIDTagID,
+	})
 	projectRes, err := r.client.Project.Create(ctx, projectReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -182,7 +193,19 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created a new project, with id: "+projectRes.UUID.String())
+	tflog.Debug(ctx, "Created a new project:", map[string]any{
+		"id":          projectRes.UUID.String(),
+		"name":        projectRes.Name,
+		"description": projectRes.Description,
+		"active":      projectRes.Active,
+		"version":     projectRes.Version,
+		"parent":      projectRes.ParentRef,
+		"classifier":  projectRes.Classifier,
+		"group":       projectRes.Group,
+		"purl":        projectRes.PURL,
+		"cpe":         projectRes.CPE,
+		"swid":        projectRes.SWIDTagID,
+	})
 }
 
 func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -235,7 +258,19 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed project with id: "+state.ID.ValueString())
+	tflog.Debug(ctx, "Refreshed project:", map[string]any{
+		"id":          project.UUID.String(),
+		"name":        project.Name,
+		"description": project.Description,
+		"active":      project.Active,
+		"version":     project.Version,
+		"parent":      project.ParentRef,
+		"classifier":  project.Classifier,
+		"group":       project.Group,
+		"purl":        project.PURL,
+		"cpe":         project.CPE,
+		"swid":        project.SWIDTagID,
+	})
 }
 
 func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -257,6 +292,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		)
 		return
 	}
+	tflog.Debug(ctx, "Within Update, retrieving current Project data with id: "+id.String())
 	project, err := r.client.Project.Get(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -332,7 +368,19 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated project with id: "+id.String())
+	tflog.Debug(ctx, "Updated project:", map[string]any{
+		"id":          project.UUID.String(),
+		"name":        project.Name,
+		"description": project.Description,
+		"active":      project.Active,
+		"version":     project.Version,
+		"parent":      project.ParentRef,
+		"classifier":  project.Classifier,
+		"group":       project.Group,
+		"purl":        project.PURL,
+		"cpe":         project.CPE,
+		"swid":        project.SWIDTagID,
+	})
 }
 
 func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
