@@ -152,7 +152,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		projectReq.Classifier = "APPLICATION"
 	}
 
-	tflog.Info(ctx, "Creating a new project:", map[string]any{
+	tflog.Info(ctx, "Creating a new project", map[string]any{
 		"name":        projectReq.Name,
 		"description": projectReq.Description,
 		"active":      projectReq.Active,
@@ -184,6 +184,8 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	plan.SWID = types.StringValue(projectRes.SWIDTagID)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
+	} else if projectReq.ParentRef != nil && r.semver.Major == 4 && r.semver.Minor == 11 {
+		plan.Parent = types.StringValue(projectReq.ParentRef.UUID.String())
 	} else {
 		plan.Parent = types.StringNull()
 	}
@@ -193,7 +195,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Created a new project:", map[string]any{
+	tflog.Info(ctx, "Created a new project", map[string]any{
 		"id":          projectRes.UUID.String(),
 		"name":        projectRes.Name,
 		"description": projectRes.Description,
@@ -258,7 +260,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Refreshed project:", map[string]any{
+	tflog.Info(ctx, "Refreshed project", map[string]any{
 		"id":          project.UUID.String(),
 		"name":        project.Name,
 		"description": project.Description,
@@ -368,7 +370,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Updated project:", map[string]any{
+	tflog.Info(ctx, "Updated project", map[string]any{
 		"id":          project.UUID.String(),
 		"name":        project.Name,
 		"description": project.Description,
