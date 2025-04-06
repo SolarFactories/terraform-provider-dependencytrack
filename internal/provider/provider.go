@@ -167,7 +167,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Creating DependencyTrack client")
+	tflog.Info(ctx, "Creating DependencyTrack client")
 	httpClient, err := NewHTTPClient(headers, []byte(rootCAs), clientCertFile, clientKeyFile)
 	if err != nil {
 		resp.Diagnostics.AddError(
