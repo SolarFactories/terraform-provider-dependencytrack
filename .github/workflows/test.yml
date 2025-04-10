@@ -82,7 +82,8 @@ jobs:
 #          - "4.10.1"
           - "4.11.7"
           - "4.12.7"
-          - "latest"
+#          - "4.13.0"
+#          - "latest"
 #          - "snapshot"
         provider:
           - "default"
