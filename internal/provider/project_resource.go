@@ -184,7 +184,9 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	plan.SWID = types.StringValue(projectRes.SWIDTagID)
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
-	} else if projectReq.ParentRef != nil && r.semver.Major == 4 && r.semver.Minor == 11 {
+	} else if projectReq.ParentRef != nil && r.semver.Major == 4 && r.semver.Minor < 12 {
+		// Creates a project with the Parent, but does not return Parent within Create Endpoint.
+		// The parent being set is validated by the Read method, in combination with tests.
 		plan.Parent = types.StringValue(projectReq.ParentRef.UUID.String())
 	} else {
 		plan.Parent = types.StringNull()

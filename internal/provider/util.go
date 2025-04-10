@@ -112,15 +112,24 @@ func ParseSemver(s string) (*Semver, error) {
 	}
 	major, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Unable to parse semver major component, from: " + err.Error())
+	}
+	if major < 0 {
+		return nil, fmt.Errorf("Unable to validate semver major component, from: %d", major)
 	}
 	minor, err := strconv.Atoi(parts[1])
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Unable to parse semver minor component, from: " + err.Error())
+	}
+	if minor < 0 {
+		return nil, fmt.Errorf("Unable to validate semver minor component, from: %d", minor)
 	}
 	patch, err := strconv.Atoi(parts[2])
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Unable to parse semver patch component, from: " + err.Error())
+	}
+	if patch < 0 {
+		return nil, fmt.Errorf("Unable to validate semver patch component, from: %d", patch)
 	}
 	semver := Semver{
 		Major: major,

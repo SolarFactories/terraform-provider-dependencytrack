@@ -156,6 +156,6 @@ jobs:
       - env:
           TF_ACC: "1"
           DEPENDENCYTRACK_TEST_PROVIDER: ${{ matrix.provider }}
-          TF_LOG: "info"
+          #TF_LOG: "info"
         run: go test -v -cover ./internal/provider/
         timeout-minutes: 10
