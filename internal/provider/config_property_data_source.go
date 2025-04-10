@@ -101,7 +101,7 @@ func (d *configPropertyDataSource) Read(ctx context.Context, req datasource.Read
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Read DependencyTrack ConfigProperty")
+	tflog.Debug(ctx, "Read DependencyTrack ConfigProperty")
 }
 
 func (d *configPropertyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

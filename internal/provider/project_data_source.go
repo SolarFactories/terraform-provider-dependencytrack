@@ -173,7 +173,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Read DependencyTrack project", map[string]any{"uuid": project.UUID.String()})
+	tflog.Debug(ctx, "Read DependencyTrack project", map[string]any{"uuid": project.UUID.String()})
 }
 
 func (d *projectDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

@@ -167,7 +167,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Creating DependencyTrack client")
+	tflog.Debug(ctx, "Creating DependencyTrack client")
 	httpClient, err := NewHTTPClient(headers, []byte(rootCAs), clientCertFile, clientKeyFile)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -208,7 +208,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 		client: client,
 		semver: semver,
 	}
-	tflog.Info(ctx, "Configured DependencyTrack client", map[string]any{"success": true})
+	tflog.Debug(ctx, "Configured DependencyTrack client", map[string]any{"success": true})
 }
 
 func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource.Resource {

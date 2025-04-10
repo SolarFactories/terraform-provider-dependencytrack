@@ -452,7 +452,7 @@ linters:
           - wsl
           - staticcheck
           - revive
-          - nlreturn  
+          - nlreturn
           - unused
           - ireturn
           - grouper

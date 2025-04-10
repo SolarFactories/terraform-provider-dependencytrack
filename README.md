@@ -46,4 +46,4 @@ When contributing to resources, or data sources:
 The following versions are tested and supported with any combination from options.
 The list of API Versions will grow as functionality adapts to allow tests to pass, which at present is only a small subset.
 - Terraform: `1.0` -> `1.11`
-- DependencyTrack: `4.12`, `latest`. using the latest patch version within each minor version.
+- DependencyTrack: `4.11.7`, `4.12.7`, `latest`. using the latest patch version within each minor version.

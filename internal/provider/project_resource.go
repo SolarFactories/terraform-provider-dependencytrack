@@ -79,7 +79,7 @@ func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Computed:    true,
 			},
 			"parent": schema.StringAttribute{
-				Description: "UUID of a parent project, to allow for nesting. Available in API 4.12+.",
+				Description: "UUID of a parent project, to allow for nesting. Available in API 4.7+.",
 				Optional:    true,
 			},
 			"classifier": schema.StringAttribute{
@@ -152,7 +152,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		projectReq.Classifier = "APPLICATION"
 	}
 
-	tflog.Info(ctx, "Creating a new project", map[string]any{
+	tflog.Debug(ctx, "Creating a new project", map[string]any{
 		"name":        projectReq.Name,
 		"description": projectReq.Description,
 		"active":      projectReq.Active,
@@ -195,7 +195,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Created a new project", map[string]any{
+	tflog.Debug(ctx, "Created a new project", map[string]any{
 		"id":          projectRes.UUID.String(),
 		"name":        projectRes.Name,
 		"description": projectRes.Description,
@@ -220,7 +220,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	// Refresh
-	tflog.Info(ctx, "Refreshing project with id: "+state.ID.ValueString())
+	tflog.Debug(ctx, "Refreshing project with id: "+state.ID.ValueString())
 	id, err := uuid.Parse(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
@@ -260,7 +260,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Refreshed project", map[string]any{
+	tflog.Debug(ctx, "Refreshed project", map[string]any{
 		"id":          project.UUID.String(),
 		"name":        project.Name,
 		"description": project.Description,
@@ -294,7 +294,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		)
 		return
 	}
-	tflog.Info(ctx, "Within Update, retrieving current Project data with id: "+id.String())
+	tflog.Debug(ctx, "Within Update, retrieving current Project data with id: "+id.String())
 	project, err := r.client.Project.Get(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -337,7 +337,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	// Execute
-	tflog.Info(ctx, "Updating project with id: "+id.String())
+	tflog.Debug(ctx, "Updating project with id: "+id.String())
 	projectRes, err := r.client.Project.Update(ctx, project)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -370,7 +370,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Updated project", map[string]any{
+	tflog.Debug(ctx, "Updated project", map[string]any{
 		"id":          projectRes.UUID.String(),
 		"name":        projectRes.Name,
 		"description": projectRes.Description,
@@ -406,7 +406,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	// Execute
-	tflog.Info(ctx, "Deleting project with id: "+id.String())
+	tflog.Debug(ctx, "Deleting project with id: "+id.String())
 	err = r.client.Project.Delete(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -415,7 +415,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		)
 		return
 	}
-	tflog.Info(ctx, "Deleted project with id: "+id.String())
+	tflog.Debug(ctx, "Deleted project with id: "+id.String())
 }
 
 func (r *projectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

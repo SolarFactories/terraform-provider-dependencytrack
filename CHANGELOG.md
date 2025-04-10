@@ -6,7 +6,7 @@
 #### FIXES
 - Using `dependencytrack_config_properties`, `dependencytrack_config_property`, or `dependencytrack_project_property`, with a `type` of `"ENCRYPTEDSTRING"`, would result in the value being replaced by the placeholder value from DependencyTrack.
 	- Now the current value is persisted in the statefile, across operations.
-- Marked `description` in `dependencytrack_project_property` as `Compued` to account for it changing from `null` to `""`, when it is not provided.
+- Marked `description` in `dependencytrack_project_property` as `Computed` to account for it changing from `null` to `""`, when it is not provided.
 
 ## 1.8.0
 

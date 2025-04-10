@@ -129,7 +129,7 @@ func (d *projectPropertyDataSource) Read(ctx context.Context, req datasource.Rea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Read DependencyTrack ProjectProperty")
+	tflog.Debug(ctx, "Read DependencyTrack ProjectProperty")
 }
 
 func (d *projectPropertyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
