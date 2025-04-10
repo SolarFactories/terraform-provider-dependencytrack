@@ -1,3 +1,26 @@
+## 1.8.2
+
+#### MISC
+- Add support for DependencyTrack API `4.11.x`, updating README to reflect.
+- Add testing of multiple DependencyTrack API versions in a matrix, as opposed to just `latest`
+- Updated golang lint config to be strict, adding explicit exceptions.
+- Add golangci config validation to `make lint` command.
+- Add exclusion to `^TestAcc` when running `make test` as these tests are not run without `TF_ACC="1"`.
+- Updated `ProviderData` from `*dtrack.Client`, to a struct containing `*dtrack.Client` and Semver information, for resources an datasources.
+- Added request within Provider Configuration, to retrieve API version, to be used for compatibility within Provider.
+- Increased verbosity of `Debug` logs within `dependencytrack_project`, to cover non-sensitive attributes.
+- Added testing utilities, as well as validation of Semver value returned by API.
+
+#### FIXES
+- Set minimum TLS version used by TLS Client to Version 1.3, reducing security exposure from weak ciphers.
+- Created separate `dependencytrack_project` within `dependencytrack_project_property` tests, due to intermittent timing issue when deleting multiple project properties in quick succession.
+	- This is still an issue caused by DependencyTrack API, but is no longer affecting pipeline.
+
+#### DEPENDENCIES
+- `crazy-max/ghaction-import-gpg` `6.2.0` -> `6.3.0`
+- `goreleaser/goreleaser-action` `6.2.1` -> `6.3.0`
+- `golangci/golangci-lint-action` `6.5.2` -> `7.0.0`
+
 ## 1.8.1
 
 #### MISC
@@ -6,7 +29,10 @@
 #### FIXES
 - Using `dependencytrack_config_properties`, `dependencytrack_config_property`, or `dependencytrack_project_property`, with a `type` of `"ENCRYPTEDSTRING"`, would result in the value being replaced by the placeholder value from DependencyTrack.
 	- Now the current value is persisted in the statefile, across operations.
-- Marked `description` in `dependencytrack_project_property` to account for it changing from `null` to `""`, when it is not provided.
+- Marked `description` in `dependencytrack_project_property` as `Computed` to account for it changing from `null` to `""`, when it is not provided.
+
+#### ISSUES
+- Deleting multiple `dependencytrack_project_property` on the same `dependencytrack_project` in quick succession can cause intermittent errors. This is caused by a delay within deleting within the DependencyTrack API.
 
 ## 1.8.0
 

@@ -80,9 +80,10 @@ jobs:
 #          - "4.8.2"
 #          - "4.9.1"
 #          - "4.10.1"
-#          - "4.11.7"
+          - "4.11.7"
           - "4.12.7"
-          - "latest"
+#          - "4.13.0"
+#          - "latest"
 #          - "snapshot"
         provider:
           - "default"
@@ -156,5 +157,6 @@ jobs:
       - env:
           TF_ACC: "1"
           DEPENDENCYTRACK_TEST_PROVIDER: ${{ matrix.provider }}
+          #TF_LOG: "info"
         run: go test -v -cover ./internal/provider/
         timeout-minutes: 10

@@ -452,7 +452,7 @@ linters:
           - wsl
           - staticcheck
           - revive
-          - nlreturn  
+          - nlreturn
           - unused
           - ireturn
           - grouper
@@ -485,6 +485,8 @@ linters:
       - path: internal/provider/provider.go
         linters:
           - lll
+          - gocyclo
+          - cyclop
       - path: internal/provider/config_properties_resource_test.go
         linters:
           - lll
@@ -496,9 +498,6 @@ linters:
           - gocyclo
           - cyclop
           - gocognit
-      - path: internal/provider/team_resource_test.go
-        linters:
-          - cyclop
       - path: internal/provider/http_client.go
         linters:
           - gocognit
@@ -512,6 +511,13 @@ linters:
       - path: internal/provider/util.go
         linters:
           - wrapcheck
+          - mnd
+      - path: internal/provider/util_test.go
+        linters:
+          - cyclop
+      - path: internal/provider/team_data_source_test.go
+        linters:
+          - godox
 
 formatters:
   enable:

@@ -46,6 +46,11 @@ type dependencyTrackProviderMtlsModel struct {
 	CertPath types.String `tfsdk:"cert_path"`
 }
 
+type clientInfo struct {
+	client *dtrack.Client
+	semver *Semver
+}
+
 func (p *dependencyTrackProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "dependencytrack"
 	resp.Version = p.version
@@ -179,9 +184,31 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 		)
 		return
 	}
-	resp.DataSourceData = client
-	resp.ResourceData = client
-	tflog.Info(ctx, "Configured DependencyTrack client", map[string]any{"success": true})
+	version, err := client.About.Get(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to retrieve DependencyTrack API Version",
+			"Error from: "+err.Error(),
+		)
+		return
+	}
+	semver, err := ParseSemver(version.Version)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to parse DependencyTrack API Version",
+			"Error from: "+err.Error(),
+		)
+		return
+	}
+	resp.DataSourceData = clientInfo{
+		client: client,
+		semver: semver,
+	}
+	resp.ResourceData = clientInfo{
+		client: client,
+		semver: semver,
+	}
+	tflog.Debug(ctx, "Configured DependencyTrack client", map[string]any{"success": true})
 }
 
 func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource.Resource {

@@ -2,10 +2,19 @@ package provider
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
 )
+
+type Semver struct {
+	Major int
+	Minor int
+	Patch int
+}
 
 const PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
 
@@ -94,4 +103,38 @@ func FindPagedOidcMapping(
 		Group: group.Group.UUID,
 	}
 	return &info, nil
+}
+
+func ParseSemver(s string) (*Semver, error) {
+	parts := strings.Split(s, ".")
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("Found semver with %v parts, expected 3.", len(parts))
+	}
+	major, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return nil, errors.New("Unable to parse semver major component, from: " + err.Error())
+	}
+	if major < 0 {
+		return nil, fmt.Errorf("Unable to validate semver major component, from: %d", major)
+	}
+	minor, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return nil, errors.New("Unable to parse semver minor component, from: " + err.Error())
+	}
+	if minor < 0 {
+		return nil, fmt.Errorf("Unable to validate semver minor component, from: %d", minor)
+	}
+	patch, err := strconv.Atoi(parts[2])
+	if err != nil {
+		return nil, errors.New("Unable to parse semver patch component, from: " + err.Error())
+	}
+	if patch < 0 {
+		return nil, fmt.Errorf("Unable to validate semver patch component, from: %d", patch)
+	}
+	semver := Semver{
+		Major: major,
+		Minor: minor,
+		Patch: patch,
+	}
+	return &semver, nil
 }

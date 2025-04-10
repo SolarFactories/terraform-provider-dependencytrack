@@ -33,7 +33,7 @@ resource "dependencytrack_project" "example" {
 - `cpe` (String) Common Platform Enumeration of the Project. Standardised format v2.2 / v2.3 from MITRE / NIST.
 - `description` (String) Description of the Project.
 - `group` (String) Namespace / group / vendor of the Project.
-- `parent` (String) UUID of a parent project, to allow for nesting.
+- `parent` (String) UUID of a parent project, to allow for nesting. Available in API 4.7+.
 - `purl` (String) Package URL of the Project. MUST be in standardised format to be saved. See DependencyTrack for format.
 - `swid` (String) SWID Tag ID. ISO/IEC 19770-2:2015.
 - `version` (String) Version of the project.
