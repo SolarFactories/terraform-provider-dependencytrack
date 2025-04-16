@@ -1,9 +1,20 @@
 volumes:
-  dependency-track:
+  dependency-track: {}
+  postgres-data: {}
 
 services:
   dtrack-apiserver:
     image: dependencytrack/apiserver
+    depends_on:
+      dtrack-postgres:
+        condition: service_healthy
+    environment:
+      ALPINE_DATABASE_MODE: external
+      ALPINE_DATABASE_URL: "jdbc:postgresql://dtrack-postgres:5432/dtrack"
+      ALPINE_DATABASE_DRIVER: "org.postgresql.Driver"
+      ALPINE_DATABASE_USERNAME: dtrack
+      ALPINE_DATABASE_PASSWORD: dtrack
+      TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
     deploy:
       resources:
         limits:
@@ -26,4 +37,19 @@ services:
       - API_BASE_URL=http://localhost:8081
     ports:
       - "8080:8080"
+    restart: unless-stopped
+
+  dtrack-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: dtrack
+      POSTGRES_USER: dtrack
+      POSTGRES_PASSWORD: dtrack
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - "postgres-data:/var/lib/postgresql/data"
     restart: unless-stopped
