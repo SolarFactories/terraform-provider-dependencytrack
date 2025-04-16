@@ -40,7 +40,7 @@ func (r *teamPermissionsResource) Metadata(_ context.Context, req resource.Metad
 
 func (r *teamPermissionsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages the attachment of a Permission to a Team.",
+		Description: "Manages the attachment of Permissions to a Team. Conflicts with `dependencytrack_team_permission`.",
 		Attributes: map[string]schema.Attribute{
 			"team": schema.StringAttribute{
 				Description: "UUID for the Team for which to manage the permissions.",

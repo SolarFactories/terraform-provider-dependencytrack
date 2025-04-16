@@ -158,7 +158,7 @@ func ListDeltas[T cmp.Ordered](current []T, desired []T) (add []T, remove []T) {
 }
 
 func Map[T, U any](items []T, actor func(T) U) []U {
-	result := []U{}
+	result := make([]U, 0, len(items))
 	for _, t := range items {
 		u := actor(t)
 		result = append(result, u)
