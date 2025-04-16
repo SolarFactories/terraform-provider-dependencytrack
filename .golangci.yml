@@ -113,7 +113,6 @@ linters:
       min: 2 # Default 3
       max: 2 # Default 3
       ignore-calls: false # Default true
-      ignore-strings: ""
     gocritic: # TODO: settings:
       enable-all: true
     gocyclo:
@@ -512,12 +511,16 @@ linters:
         linters:
           - wrapcheck
           - mnd
+          - nonamedreturns
       - path: internal/provider/util_test.go
         linters:
           - cyclop
       - path: internal/provider/team_data_source_test.go
         linters:
           - godox
+      - path: internal/provider/team_permissions_resource.go
+        linters:
+          - gocognit
 
 formatters:
   enable:
