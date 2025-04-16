@@ -1,3 +1,11 @@
+## 1.9.0
+
+#### FEATURES
+- Add `dependencytrack_team_permissions` resource to canonically manage the permissions assigned to a Team.
+
+#### MISC
+- Remove deprecated field from within `golangci` config file for `goconst`.
+
 ## 1.8.2
 
 #### MISC

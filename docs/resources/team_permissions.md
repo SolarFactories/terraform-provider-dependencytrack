@@ -3,12 +3,12 @@
 page_title: "dependencytrack_team_permissions Resource - dependencytrack"
 subcategory: ""
 description: |-
-  Manages the attachment of a Permission to a Team.
+  Manages the attachment of Permissions to a Team. Conflicts with dependencytrack_team_permission.
 ---
 
 # dependencytrack_team_permissions (Resource)
 
-Manages the attachment of a Permission to a Team.
+Manages the attachment of Permissions to a Team. Conflicts with `dependencytrack_team_permission`.
 
 
 
