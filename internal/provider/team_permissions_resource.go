@@ -50,7 +50,7 @@ func (r *teamPermissionsResource) Schema(_ context.Context, _ resource.SchemaReq
 				},
 			},
 			"permissions": schema.ListAttribute{
-				Description: "Permissions for team. Conflicts with `dependencytrack_team_permission`. See DependencyTrack for allowed values.",
+				Description: "Alphabetically sorted Permissions for team. Conflicts with `dependencytrack_team_permission`. See DependencyTrack for allowed values.",
 				Required:    true,
 				ElementType: types.StringType,
 			},

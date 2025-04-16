@@ -17,5 +17,5 @@ Manages the attachment of a Permission to a Team.
 
 ### Required
 
-- `permissions` (List of String) Permissions for team. Conflicts with `dependencytrack_team_permission`. See DependencyTrack for allowed values.
+- `permissions` (List of String) Alphabetically sorted Permissions for team. Conflicts with `dependencytrack_team_permission`. See DependencyTrack for allowed values.
 - `team` (String) UUID for the Team for which to manage the permissions.
