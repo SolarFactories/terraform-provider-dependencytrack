@@ -1,8 +1,10 @@
 package provider
 
 import (
+	"cmp"
 	"errors"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -137,4 +139,29 @@ func ParseSemver(s string) (*Semver, error) {
 		Patch: patch,
 	}
 	return &semver, nil
+}
+
+func ListDeltas[T cmp.Ordered](current []T, desired []T) (add []T, remove []T) {
+	add = []T{}
+	remove = []T{}
+	for _, v := range current {
+		if !slices.Contains(desired, v) {
+			remove = append(remove, v)
+		}
+	}
+	for _, v := range desired {
+		if !slices.Contains(current, v) {
+			add = append(add, v)
+		}
+	}
+	return add, remove
+}
+
+func Map[T, U any](items []T, actor func(T) U) []U {
+	result := []U{}
+	for _, t := range items {
+		u := actor(t)
+		result = append(result, u)
+	}
+	return result
 }
