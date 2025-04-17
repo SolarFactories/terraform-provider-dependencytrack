@@ -225,6 +225,7 @@ func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource
 		NewOidcGroupMappingResource,
 		NewTeamPermissionsResource,
 		NewPolicyResource,
+		NewPolicyConditionResource,
 	}
 }
 
