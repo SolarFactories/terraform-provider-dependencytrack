@@ -226,6 +226,7 @@ func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource
 		NewTeamPermissionsResource,
 		NewPolicyResource,
 		NewPolicyConditionResource,
+		NewPolicyProjectResource,
 	}
 }
 
