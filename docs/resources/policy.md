@@ -3,12 +3,12 @@
 page_title: "dependencytrack_policy Resource - dependencytrack"
 subcategory: ""
 description: |-
-  Manages a Team.
+  Manages a Policy.
 ---
 
 # dependencytrack_policy (Resource)
 
-Manages a Team.
+Manages a Policy.
 
 
 
