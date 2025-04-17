@@ -117,7 +117,7 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 		}
 	}
 
-	plan.ID = types.StringValue(fmt.Sprintf("%s/%s", team.String(), key))
+	plan.ID = types.StringValue(fmt.Sprintf("%s/%s", team.String(), key.Key))
 	plan.TeamID = types.StringValue(team.String())
 	plan.Key = types.StringValue(key.Key)
 	plan.Comment = types.StringValue(comment)
