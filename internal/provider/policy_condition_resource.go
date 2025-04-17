@@ -148,26 +148,8 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 		)
 		return
 	}
-	policyId, err := uuid.Parse(state.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Read, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
-		return
-	}
-
-	policy, err := r.client.Policy.Get(ctx, policyId)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Within Read, unable to read policy",
-			"Error from: "+err.Error(),
-		)
-		return
-	}
-	condition, err := Find(policy.PolicyConditions, func(condition dtrack.PolicyCondition) bool {
-		return condition.UUID == id
+	condition, err := FindPagedPolicyCondition(id, func(po dtrack.PageOptions) (dtrack.Page[dtrack.Policy], error) {
+		return r.client.Policy.GetAll(ctx, po)
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -179,7 +161,7 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 
 	state = policyConditionResourceModel{
 		ID:       types.StringValue(condition.UUID.String()),
-		PolicyID: types.StringValue(policyId.String()),
+		PolicyID: types.StringValue(condition.Policy.UUID.String()),
 		Subject:  types.StringValue(string(condition.Subject)),
 		Operator: types.StringValue(string(condition.Operator)),
 		Value:    types.StringValue(condition.Value),

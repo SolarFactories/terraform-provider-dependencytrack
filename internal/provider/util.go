@@ -107,6 +107,32 @@ func FindPagedOidcMapping(
 	return &info, nil
 }
 
+func FindPagedPolicyCondition(
+	conditionUUID uuid.UUID,
+	policyFetchFunc func(dtrack.PageOptions) (dtrack.Page[dtrack.Policy], error),
+) (*dtrack.PolicyCondition, error) {
+	filter := func(policy dtrack.Policy) bool {
+		for _, condition := range policy.PolicyConditions {
+			if condition.UUID == conditionUUID {
+				return true
+			}
+		}
+		return false
+	}
+	policy, err := FindPaged(policyFetchFunc, filter)
+	if err != nil {
+		return nil, err
+	}
+	condition, err := Find(policy.PolicyConditions, func(condition dtrack.PolicyCondition) bool {
+		return condition.UUID == conditionUUID
+	})
+	if err != nil {
+		return nil, err
+	}
+	condition.Policy = policy
+	return condition, nil
+}
+
 func ParseSemver(s string) (*Semver, error) {
 	parts := strings.Split(s, ".")
 	if len(parts) != 3 {
