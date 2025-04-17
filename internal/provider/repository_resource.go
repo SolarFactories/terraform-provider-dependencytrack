@@ -112,18 +112,18 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	repositoryReq := dtrack.Repository{
-		Type:            dtrack.RepositoryType(plan.Type.ValueString()),
-		Identifier:      plan.Identifier.ValueString(),
-		Url:             plan.URL.ValueString(),
-		ResolutionOrder: int(plan.Precedence.ValueInt32()),
-		Enabled:         plan.Enabled.ValueBool(),
-		Internal:        plan.Internal.ValueBool(),
-		Username:        plan.Username.ValueString(),
-		Password:        plan.Password.ValueString(),
+		Type:                   dtrack.RepositoryType(plan.Type.ValueString()),
+		Identifier:             plan.Identifier.ValueString(),
+		Url:                    plan.URL.ValueString(),
+		ResolutionOrder:        int(plan.Precedence.ValueInt32()),
+		Enabled:                plan.Enabled.ValueBool(),
+		Internal:               plan.Internal.ValueBool(),
+		Username:               plan.Username.ValueString(),
+		Password:               plan.Password.ValueString(),
+		AuthenticationRequired: plan.Password.ValueString() != "" || plan.Username.ValueString() != "",
 	}
 
 	tflog.Debug(ctx, "Creating a new repository, with type: "+string(repositoryReq.Type)+", and identifier: "+repositoryReq.Identifier)
-	// NOTE: Has a patch applied in `http_client.go`
 	repositoryRes, err := r.client.Repository.Create(ctx, repositoryReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -237,15 +237,16 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 	repositoryReq := dtrack.Repository{
-		UUID:            id,
-		Type:            dtrack.RepositoryType(plan.Type.ValueString()),
-		Identifier:      plan.Identifier.ValueString(),
-		Url:             plan.URL.ValueString(),
-		ResolutionOrder: int(plan.Precedence.ValueInt32()),
-		Enabled:         plan.Enabled.ValueBool(),
-		Internal:        plan.Internal.ValueBool(),
-		Username:        plan.Username.ValueString(),
-		Password:        plan.Password.ValueString(),
+		UUID:                   id,
+		Type:                   dtrack.RepositoryType(plan.Type.ValueString()),
+		Identifier:             plan.Identifier.ValueString(),
+		Url:                    plan.URL.ValueString(),
+		ResolutionOrder:        int(plan.Precedence.ValueInt32()),
+		Enabled:                plan.Enabled.ValueBool(),
+		Internal:               plan.Internal.ValueBool(),
+		Username:               plan.Username.ValueString(),
+		Password:               plan.Password.ValueString(),
+		AuthenticationRequired: plan.Password.ValueString() != "" || plan.Username.ValueString() != "",
 	}
 
 	// Execute
