@@ -107,7 +107,7 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	if comment != "" {
 		tflog.Debug(ctx, "Setting Comment for API Key for team "+team.String())
-		_, err = r.client.Team.UpdateAPIKeyComment(ctx, key, comment)
+		_, err = r.client.Team.UpdateAPIKeyComment(ctx, key.Key, comment)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error setting API Key comment",
@@ -119,7 +119,7 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 
 	plan.ID = types.StringValue(fmt.Sprintf("%s/%s", team.String(), key))
 	plan.TeamID = types.StringValue(team.String())
-	plan.Key = types.StringValue(key)
+	plan.Key = types.StringValue(key.Key)
 	plan.Comment = types.StringValue(comment)
 
 	diags = resp.State.Set(ctx, plan)
