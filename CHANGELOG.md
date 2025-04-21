@@ -1,3 +1,25 @@
+## 1.10.0
+
+#### FEATURES
+- Add `dependencytrack_policy` resource to manage a policy to apply to projects.
+- Add `dependencytrack_policy_condition` resource to manage the contents of policies.
+- Add `dependencytrack_policy_project` resource to select which projects should have a policy applied to them.
+- Add `dependencytrack_policy_tag` resource to select which tags should have a policy applied to them.
+
+#### MISC
+- Add missing example for `dependencytrack_team_permissions` resource.
+- Removed HTTP Patch for `authenticationRequired` within `Repository` requests, as SDK has been updated to include the missing field.
+
+#### FIXES
+- Fix references within examples to resources without identifiers.
+- Fix example for `dependencytrack_oidc_group_mapping` incorrectly using `dependencytrack_config_property`.
+
+#### DEPENDENCIES
+- `actions/setup-node` `4.3.0` -> `4.4.0`
+- `github.com/DependencyTrack/client-go` `0.15.0` -> `0.16.0`
+- `golang.org/x/net` `0.37.0` -> `0.38.0`
+- `golang.org/x/net` `0.36.0` -> `0.38.0` in `/tools`
+
 ## 1.9.0
 
 #### FEATURES

@@ -18,7 +18,7 @@ resource "dependencytrack_team" "example" {
 }
 
 resource "dependencytrack_team_permission" "example" {
-  team       = dependencytrack_team.id
+  team       = dependencytrack_team.example.id
   permission = "BOM_UPLOAD"
 }
 ```

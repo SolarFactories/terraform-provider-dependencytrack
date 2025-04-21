@@ -17,7 +17,8 @@ data "dependencytrack_team" "test" {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.dependencytrack_team.test", "id"),
 					resource.TestCheckResourceAttr("data.dependencytrack_team.test", "name", "Administrators"),
-					// TODO: Introduce new data source for dependencytrack_permissions, and then check the cardinality,
+					// TODO: Introduce new data source for dependencytrack_about, which will expose API version,
+					// and static information, such as defined permissions within API,
 					// avoiding issues of different versions of API introducing new permissions,
 					// and so throwing off value here. 14 in 4.12.7, 12 in 4.11.7
 					//resource.TestCheckResourceAttr("data.dependencytrack_team.test", "permissions.#", "14"),
