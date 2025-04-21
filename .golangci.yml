@@ -521,6 +521,9 @@ linters:
       - path: internal/provider/team_permissions_resource.go
         linters:
           - gocognit
+      - path: internal/provider/policy_tag_resource.go
+        linters:
+          - godox
 
 formatters:
   enable:
