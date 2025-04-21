@@ -22,8 +22,8 @@ resource "dependencytrack_oidc_group" "example" {
 }
 
 resource "dependencytrack_config_property" "example" {
-  group = dependencytrack_oidc_group.id
-  team  = dependencytrack_oidc_group.team
+  group = dependencytrack_oidc_group.example.id
+  team  = dependencytrack_oidc_group.example.team
 }
 ```
 
