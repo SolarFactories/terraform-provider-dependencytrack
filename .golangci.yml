@@ -524,6 +524,9 @@ linters:
       - path: internal/provider/policy_tag_resource.go
         linters:
           - godox
+      - path: internal/provider/team_apikey_resource_test.go
+        linters:
+          - godox
 
 formatters:
   enable:

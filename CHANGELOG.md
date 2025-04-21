@@ -1,3 +1,12 @@
+## 1.10.1
+
+#### MISC
+- Add support for DependencyTrack `4.13.x`, updating README to reflect.
+- Add `public_id`, `masked`, `legacy` fields to `dependencytrack_team_apikey`, with `masked` being available in earlier versions of API.
+- Remove issue comment triage workflow, as it is unused, and so causes unnecessary action runs.
+- Update `docker_compose.yml` file to use an external `postgres` database, as recommended.
+	- GitHub actions are lagging, due to inability to manage dependencies between job services.
+
 ## 1.10.0
 
 #### FEATURES

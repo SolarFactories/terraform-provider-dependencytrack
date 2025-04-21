@@ -27,6 +27,9 @@ resource "dependencytrack_team_apikey" "test" {
 					),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", ""),
+					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "masked"),
+					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "public_id"),
+					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "legacy"),
 				),
 			},
 			// ImportState testing
@@ -34,6 +37,8 @@ resource "dependencytrack_team_apikey" "test" {
 				ResourceName:      "dependencytrack_team_apikey.test",
 				ImportState:       true,
 				ImportStateVerify: true,
+				// TODO: Ignore in only 4.13+ API versions
+				ImportStateVerifyIgnore: []string{"key"},
 			},
 			// Update and Read testing
 			{
@@ -55,6 +60,9 @@ resource "dependencytrack_team_apikey" "test" {
 					),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample comment"),
+					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "masked"),
+					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "public_id"),
+					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "legacy"),
 				),
 			},
 		},
