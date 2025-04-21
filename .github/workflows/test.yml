@@ -61,7 +61,7 @@ jobs:
     services:
       api:
         image: dependencytrack/apiserver:${{ matrix.api }}
-        environment:
+        env:
           ALPINE_DATABASE_MODE: external
           ALPINE_DATABASE_URL: "jdbc:postgresql://db:5432/dtrack"
           ALPINE_DATABASE_DRIVER: "org.postgresql.Driver"
@@ -72,7 +72,7 @@ jobs:
           - 8081:8080
       db:
         image: postgres:17-alpine
-        environment:
+        env:
           POSTGRES_DB: dtrack
           POSTGRES_USER: dtrack
           POSTGRES_PASSWORD: dtrack
