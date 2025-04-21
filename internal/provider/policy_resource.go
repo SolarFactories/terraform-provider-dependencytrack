@@ -216,8 +216,8 @@ func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("id"),
-			"Within Delete, unable to parse UUID",
-			"Error parsing UUID from: "+state.ID.ValueString()+", error: "+err.Error(),
+			"Within Delete, unable to parse id into UUID",
+			"Error parsing UUID from: "+state.ID.ValueString()+", from error: "+err.Error(),
 		)
 		return
 	}
@@ -228,7 +228,7 @@ func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete policy",
-			"Unexpected error when trying to delete policy: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete policy: "+id.String()+", from error: "+err.Error(),
 		)
 		return
 	}

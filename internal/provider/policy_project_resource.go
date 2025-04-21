@@ -74,7 +74,6 @@ func (r *policyProjectResource) Create(ctx context.Context, req resource.CreateR
 			"Within Create, unable to parse policy into UUID",
 			"Error from: "+err.Error(),
 		)
-		return
 	}
 	projectId, err := uuid.Parse(plan.ProjectID.ValueString())
 	if err != nil {
@@ -83,10 +82,12 @@ func (r *policyProjectResource) Create(ctx context.Context, req resource.CreateR
 			"Within Create, unable to parse project into UUID",
 			"Error from: "+err.Error(),
 		)
+	}
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tflog.Debug(ctx, "Adding policy with id: "+policyId.String()+" to project: "+projectId.String())
+	tflog.Debug(ctx, "Adding policy-project for policy with id: "+policyId.String()+" to project: "+projectId.String())
 	policy, err := r.client.Policy.AddProject(ctx, policyId, projectId)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -173,6 +174,7 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 }
 
 func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Resource has nothing to update, as it bridges by it's existence. Existence check is done within `Read`.
 	// Get State
 	var plan policyProjectResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -184,7 +186,7 @@ func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateR
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("policy"),
-			"Within Read, unable to parse policy into UUID",
+			"Within Update, unable to parse policy into UUID",
 			"Error from: "+err.Error(),
 		)
 	}
@@ -192,7 +194,7 @@ func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateR
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("project"),
-			"Within Read, unable to parse project into UUID",
+			"Within Update, unable to parse project into UUID",
 			"Error from: "+err.Error(),
 		)
 	}
@@ -226,7 +228,7 @@ func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteR
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("policy"),
-			"Within Read, unable to parse policy into UUID",
+			"Within Delete, unable to parse policy into UUID",
 			"Error from: "+err.Error(),
 		)
 	}
@@ -234,7 +236,7 @@ func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteR
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("project"),
-			"Within Read, unable to parse project into UUID",
+			"Within Delete, unable to parse project into UUID",
 			"Error from: "+err.Error(),
 		)
 	}

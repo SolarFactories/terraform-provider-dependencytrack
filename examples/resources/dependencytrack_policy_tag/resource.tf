@@ -6,5 +6,5 @@ resource "dependencytrack_policy" "example" {
 
 resource "dependencytrack_policy_tag" "example" {
   policy = dependencytrack_policy.example.id
-  tag    = "Demo Tag"
+  tag    = "DemoTag"
 }

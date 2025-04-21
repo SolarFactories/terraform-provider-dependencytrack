@@ -104,7 +104,7 @@ func (r *policyConditionResource) Create(ctx context.Context, req resource.Creat
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating policy",
+			"Error creating policy condition",
 			"Error from: "+err.Error(),
 		)
 		return
@@ -120,11 +120,9 @@ func (r *policyConditionResource) Create(ctx context.Context, req resource.Creat
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 	tflog.Debug(ctx, "Created a new policy condition, with id: "+conditionRes.UUID.String())
 }
 
@@ -138,7 +136,7 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Refresh
-	tflog.Debug(ctx, "Refreshing condition with id: "+state.ID.ValueString())
+	tflog.Debug(ctx, "Refreshing policy condition with id: "+state.ID.ValueString())
 	id, err := uuid.Parse(state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
@@ -153,7 +151,7 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Withhin Read, unable to identify policy condition",
+			"Within Read, unable to identify policy condition",
 			"Error from: "+err.Error(),
 		)
 		return
@@ -193,7 +191,6 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 			"Within Update, unable to parse id into UUID",
 			"Error from: "+err.Error(),
 		)
-		return
 	}
 	policyId, err := uuid.Parse(plan.PolicyID.ValueString())
 	if err != nil {
@@ -202,6 +199,8 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 			"Within Update, unable to parse policy into UUID",
 			"Error from: "+err.Error(),
 		)
+	}
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -225,7 +224,6 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Map SDK to TF
-
 	plan = policyConditionResourceModel{
 		ID:       types.StringValue(conditionRes.UUID.String()),
 		PolicyID: types.StringValue(policyId.String()),
@@ -237,11 +235,9 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 	// Update State
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
-
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 	tflog.Debug(ctx, "Updated policy condition with id: "+id.String())
 }
 
@@ -256,12 +252,11 @@ func (r *policyConditionResource) Delete(ctx context.Context, req resource.Delet
 
 	// Map TF to SDK
 	id, err := uuid.Parse(state.ID.ValueString())
-
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("id"),
-			"Within Delete, unable to parse UUID",
-			"Error parsing UUID from: "+state.ID.ValueString()+", error: "+err.Error(),
+			"Within Delete, unable to parse id into UUID",
+			"Error parsing UUID of: "+state.ID.ValueString()+", from error: "+err.Error(),
 		)
 		return
 	}

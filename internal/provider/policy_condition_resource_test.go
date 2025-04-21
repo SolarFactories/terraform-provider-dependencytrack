@@ -17,7 +17,7 @@ resource "dependencytrack_policy" "test" {
 	operator = "ANY"
 	violation = "FAIL"
 }
-resource "dependencytrack_policy_condition" "test_1" {
+resource "dependencytrack_policy_condition" "test" {
 	policy = dependencytrack_policy.test.id
 	subject = "AGE"
 	operator = "NUMERIC_GREATER_THAN"
@@ -25,19 +25,19 @@ resource "dependencytrack_policy_condition" "test_1" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("dependencytrack_policy_condition.test_1", "id"),
+					resource.TestCheckResourceAttrSet("dependencytrack_policy_condition.test", "id"),
 					resource.TestCheckResourceAttrPair(
-						"dependencytrack_policy_condition.test_1", "policy",
+						"dependencytrack_policy_condition.test", "policy",
 						"dependencytrack_policy.test", "id",
 					),
-					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test_1", "subject", "AGE"),
-					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test_1", "operator", "NUMERIC_GREATER_THAN"),
-					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test_1", "value", "P1Y"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "subject", "AGE"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "operator", "NUMERIC_GREATER_THAN"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "value", "P1Y"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "dependencytrack_policy_condition.test_1",
+				ResourceName:      "dependencytrack_policy_condition.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -49,7 +49,7 @@ resource "dependencytrack_policy" "test" {
 	operator = "ANY"
 	violation = "FAIL"
 }
-resource "dependencytrack_policy_condition" "test_1" {
+resource "dependencytrack_policy_condition" "test" {
 	policy = dependencytrack_policy.test.id
 	subject = "AGE"
 	operator = "NUMERIC_GREATER_THAN"
@@ -57,14 +57,14 @@ resource "dependencytrack_policy_condition" "test_1" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("dependencytrack_policy_condition.test_1", "id"),
+					resource.TestCheckResourceAttrSet("dependencytrack_policy_condition.test", "id"),
 					resource.TestCheckResourceAttrPair(
-						"dependencytrack_policy_condition.test_1", "policy",
+						"dependencytrack_policy_condition.test", "policy",
 						"dependencytrack_policy.test", "id",
 					),
-					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test_1", "subject", "AGE"),
-					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test_1", "operator", "NUMERIC_GREATER_THAN"),
-					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test_1", "value", "P2Y"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "subject", "AGE"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "operator", "NUMERIC_GREATER_THAN"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "value", "P2Y"),
 				),
 			},
 		},

@@ -51,7 +51,7 @@ func (r *policyTagResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"tag": schema.StringAttribute{
-				Description: "Name the Tag for which to apply Policy.",
+				Description: "Name of the Tag to which to apply Policy.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -84,7 +84,7 @@ func (r *policyTagResource) Create(ctx context.Context, req resource.CreateReque
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating tag policy mapping",
-			"Unexpected error: "+err.Error(),
+			"Error from: "+err.Error(),
 		)
 		return
 	}
@@ -157,6 +157,7 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Resource has nothing to update, as it bridges by it's existence. Existence check is done within `Read`.
 	// Get State
 	var plan policyTagResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -168,7 +169,7 @@ func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateReque
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("policy"),
-			"Within Read, unable to parse policy into UUID",
+			"Within Update, unable to parse policy into UUID",
 			"Error from: "+err.Error(),
 		)
 		return
@@ -201,7 +202,7 @@ func (r *policyTagResource) Delete(ctx context.Context, req resource.DeleteReque
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("policy"),
-			"Within Read, unable to parse policy into UUID",
+			"Within Delete, unable to parse policy into UUID",
 			"Error from: "+err.Error(),
 		)
 		return

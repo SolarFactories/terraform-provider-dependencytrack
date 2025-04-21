@@ -21,7 +21,7 @@ resource "dependencytrack_policy" "example" {
 
 resource "dependencytrack_policy_tag" "example" {
   policy = dependencytrack_policy.example.id
-  tag    = "Demo Tag"
+  tag    = "DemoTag"
 }
 ```
 
@@ -31,4 +31,4 @@ resource "dependencytrack_policy_tag" "example" {
 ### Required
 
 - `policy` (String) UUID for the Policy to apply to the Tag.
-- `tag` (String) Name the Tag for which to apply Policy.
+- `tag` (String) Name of the Tag to which to apply Policy.

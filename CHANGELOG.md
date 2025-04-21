@@ -12,6 +12,7 @@
 
 #### FIXES
 - Fix references within examples to resources without identifiers.
+- Fix example for `dependencytrack_oidc_group_mapping` incorrectly using `dependencytrack_config_property`.
 
 #### DEPENDENCIES
 - `actions/setup-node` `4.3.0` -> `4.4.0`
