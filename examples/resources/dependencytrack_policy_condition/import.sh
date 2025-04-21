@@ -1,0 +1,1 @@
+terraform import dependencytrack_policy_condition.example 81b6f3d1-d9ae-49d2-b687-fd1c7b783736
