@@ -62,27 +62,27 @@ jobs:
       api:
         image: dependencytrack/apiserver:${{ matrix.api }}
         env:
-          ALPINE_DATABASE_MODE: external
-          ALPINE_DATABASE_URL: "jdbc:postgresql://db:5432/dtrack"
-          ALPINE_DATABASE_DRIVER: "org.postgresql.Driver"
-          ALPINE_DATABASE_USERNAME: dtrack
-          ALPINE_DATABASE_PASSWORD: dtrack
+          #ALPINE_DATABASE_MODE: external
+          #ALPINE_DATABASE_URL: "jdbc:postgresql://db:5432/dtrack"
+          #ALPINE_DATABASE_DRIVER: "org.postgresql.Driver"
+          #ALPINE_DATABASE_USERNAME: dtrack
+          #ALPINE_DATABASE_PASSWORD: dtrack
           TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
         ports:
           - 8081:8080
-      db:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_DB: dtrack
-          POSTGRES_USER: dtrack
-          POSTGRES_PASSWORD: dtrack
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+#      db:
+#        image: postgres:17-alpine
+#        env:
+#          POSTGRES_DB: dtrack
+#          POSTGRES_USER: dtrack
+#          POSTGRES_PASSWORD: dtrack
+#        options: >-
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
+#        ports:
+#          - 5432:5432
 
     strategy:
       fail-fast: false
@@ -100,8 +100,8 @@ jobs:
 #          - "4.8.2"
 #          - "4.9.1"
 #          - "4.10.1"
-#          - "4.11.7"
-#          - "4.12.7"
+          - "4.11.7"
+          - "4.12.7"
           - "4.13.0"
 #          - "latest"
 #          - "snapshot"
