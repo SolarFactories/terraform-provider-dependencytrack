@@ -152,8 +152,7 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Read",
-			// FIXME: Should not use `mappingInfo` here, as it is null, due to being in `err` branch.
-			"Error with reading mapping with id: "+id.String()+", for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String()+", in original error: "+err.Error(),
+			"Error with reading mapping with id: "+id.String()+", for team: "+state.Team.ValueString()+", and group: "+state.Group.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
