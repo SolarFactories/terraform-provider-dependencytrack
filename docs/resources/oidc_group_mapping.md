@@ -23,7 +23,7 @@ resource "dependencytrack_oidc_group" "example" {
 
 resource "dependencytrack_oidc_group_mapping" "example" {
   group = dependencytrack_oidc_group.example.id
-  team  = dependencytrack_oidc_group.example.team
+  team  = dependencytrack_team.example.id
 }
 ```
 
