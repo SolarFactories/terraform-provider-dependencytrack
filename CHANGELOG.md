@@ -1,3 +1,13 @@
+## 1.10.2
+
+#### FIXES
+- `comment` on `dependencytrack_team_apikey` resource was improperly set upon creation to an empty string.
+	- Thanks to `@acidghost` for contributing a fix.
+	- Added regression test within `team_apikey_resource_test.go`.
+
+#### DEPENDENCIES
+- `actions/download-artifact` `4.2.1` -> `4.3.0`
+
 ## 1.10.1
 
 #### MISC
@@ -6,6 +16,9 @@
 - Remove issue comment triage workflow, as it is unused, and so causes unnecessary action runs.
 - Update `docker_compose.yml` file to use an external `postgres` database, as recommended.
 	- GitHub actions are lagging, due to inability to manage dependencies between job services.
+
+#### ISSUES
+- [Fixed in `1.10.2`] Comments on API keys are set to an empty string in state upon creation. Thanks to `@acidghost` for reporting.
 
 ## 1.10.0
 
