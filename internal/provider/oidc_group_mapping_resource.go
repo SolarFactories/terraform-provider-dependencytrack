@@ -183,7 +183,7 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("id"),
-			"Within Read, unable to parse id into UUID",
+			"Within Update, unable to parse id into UUID",
 			"Error from: "+err.Error(),
 		)
 		return
