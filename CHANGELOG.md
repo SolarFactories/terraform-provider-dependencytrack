@@ -1,3 +1,11 @@
+## 1.11.0
+
+#### FEATURES
+- Add `dependencytrack_acl_mapping` resource to manage Portfolio Access Control for Projects.
+
+#### DEPENDENCIES
+- `github.com/DependencyTrack/client-go` `0.16.0` -> `main`
+
 ## 1.10.2
 
 #### FIXES

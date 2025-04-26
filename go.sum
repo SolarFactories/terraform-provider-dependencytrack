@@ -4,6 +4,8 @@ github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 h1:UQHMgLO+TxOEl
 github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1/go.mod h1:xomTg63KZ2rFqZQzSB4Vz2SUXa1BpHTVz9L5PTmPC4E=
 github.com/DependencyTrack/client-go v0.16.0 h1:FionBYuZrWGKn84IitaFoFsbGyqj03KhHBabd6yuXpw=
 github.com/DependencyTrack/client-go v0.16.0/go.mod h1:T5iPG+foFcv6Bn5bTNbjywbmm+gwku4I1MuQWA77sR8=
+github.com/DependencyTrack/client-go v0.16.1-0.20250426155215-965ae83c0884 h1:WxV06U+l/ffDlmvh9upKDqPoZrwtgEYW4V1PIAKVqlI=
+github.com/DependencyTrack/client-go v0.16.1-0.20250426155215-965ae83c0884/go.mod h1:T5iPG+foFcv6Bn5bTNbjywbmm+gwku4I1MuQWA77sR8=
 github.com/Microsoft/go-winio v0.6.1 h1:9/kr64B9VUZrLm5YYwbGtUJnMgqWVOdUAXu6Migciow=
 github.com/Microsoft/go-winio v0.6.1/go.mod h1:LRdKpFKfdobln8UmuiYcKPot9D2v6svN5+sAH+4kjUM=
 github.com/ProtonMail/go-crypto v1.1.3 h1:nRBOetoydLeUb4nHajyO2bKqMLfWQ/ZPwkXqXxPxCFk=

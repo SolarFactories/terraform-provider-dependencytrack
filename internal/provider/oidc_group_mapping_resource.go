@@ -83,7 +83,6 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 			"Within Create, unable to parse team into UUID",
 			"Error from: "+err.Error(),
 		)
-		return
 	}
 	group, err := uuid.Parse(plan.Group.ValueString())
 	if err != nil {
@@ -92,6 +91,8 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 			"Within Create, unable to parse group into UUID",
 			"Error from: "+err.Error(),
 		)
+	}
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -183,7 +184,7 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("id"),
-			"Within Read, unable to parse id into UUID",
+			"Within Update, unable to parse id into UUID",
 			"Error from: "+err.Error(),
 		)
 		return

@@ -228,6 +228,7 @@ func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource
 		NewPolicyConditionResource,
 		NewPolicyProjectResource,
 		NewPolicyTagResource,
+		NewAclMappingResource,
 	}
 }
 
