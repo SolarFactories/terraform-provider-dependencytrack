@@ -68,3 +68,51 @@ resource "dependencytrack_team_apikey" "test" {
 		},
 	})
 }
+
+func TestAccAPIKeyResourceCommentRegression72(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/72
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_Team"
+}
+resource "dependencytrack_team_apikey" "test" {
+	team = dependencytrack_team.test.id
+	comment = "Sample Creation Comment"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample Creation Comment"),
+				),
+			},
+			// ImportState testing
+			{
+				ResourceName:      "dependencytrack_team_apikey.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// TODO: Ignore in only 4.13+ API versions
+				ImportStateVerifyIgnore: []string{"key"},
+			},
+			// Update and Read testing
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_Team"
+}
+resource "dependencytrack_team_apikey" "test" {
+	team = dependencytrack_team.test.id
+	comment = "Sample Update Comment"
+}
+
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample Update Comment"),
+				),
+			},
+		},
+	})
+}
