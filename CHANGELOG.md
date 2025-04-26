@@ -1,3 +1,11 @@
+## 1.12.0
+
+#### FEATURES
+- Add `dependencytrack_ldap_team_mapping` resource to manage dynamic membership of Teams, from LDAP Servers.
+
+#### FIXES
+- Fix example for `dependencytrack_oidc_group_mapping` incorrectly using `dependencytrack_oidc_group` value for `team`.
+
 ## 1.11.0
 
 #### FEATURES

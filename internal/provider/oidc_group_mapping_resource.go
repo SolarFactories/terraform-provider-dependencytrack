@@ -152,7 +152,7 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Read",
-			"Error with reading mapping with id: "+id.String()+", for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String()+", in original error: "+err.Error(),
+			"Error with reading mapping with id: "+id.String()+", for team: "+state.Team.ValueString()+", and group: "+state.Group.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
@@ -230,7 +230,7 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("id"),
-			"Within Delete, unable to parse UUID",
+			"Within Delete, unable to parse id into UUID",
 			"Error parsing UUID from: "+state.ID.ValueString()+", error: "+err.Error(),
 		)
 		return
