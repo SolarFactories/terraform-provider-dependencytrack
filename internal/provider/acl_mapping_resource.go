@@ -60,7 +60,7 @@ func (r *aclMappingResource) Schema(_ context.Context, _ resource.SchemaRequest,
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"group": schema.StringAttribute{
+			"project": schema.StringAttribute{
 				Description: "UUID for the Project to which to grant access.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
@@ -102,7 +102,7 @@ func (r *aclMappingResource) Create(ctx context.Context, req resource.CreateRequ
 		Project: project,
 	}
 	tflog.Debug(ctx, "Granting ACL for project "+mappingReq.Project.String()+" to team "+mappingReq.Team.String())
-	err = r.client.ACLService.AddProjectMapping(ctx, mappingReq)
+	err = r.client.ACL.AddProjectMapping(ctx, mappingReq)
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -308,7 +308,6 @@ func (r *aclMappingResource) ImportState(ctx context.Context, req resource.Impor
 		return
 	}
 	tflog.Debug(ctx, "Imported an ACL Mapping from team: "+aclMappingState.Team.ValueString()+", and project: "+aclMappingState.Project.ValueString())
-
 }
 
 func (r *aclMappingResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

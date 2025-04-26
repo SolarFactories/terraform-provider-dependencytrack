@@ -65,7 +65,7 @@ resource "dependencytrack_acl_mapping" "test" {
 						"dependencytrack_acl_mapping.test", "project",
 					),
 					resource.TestCheckResourceAttrPair(
-						"dependencytrack_team.test", "id",
+						"dependencytrack_team.test2", "id",
 						"dependencytrack_acl_mapping.test", "team",
 					),
 				),
