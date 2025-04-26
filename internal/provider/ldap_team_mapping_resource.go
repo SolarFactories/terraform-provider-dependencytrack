@@ -91,8 +91,8 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 		DistinguishedName: distinguishedName,
 	}
 	tflog.Debug(ctx, "Mapping ldap distinguished name "+mappingReq.DistinguishedName+" to team "+mappingReq.Team.String())
-	mappingRes, err := r.client.LDAP.AddMapping(ctx, mappingReq)
 
+	mappingRes, err := r.client.LDAP.AddMapping(ctx, mappingReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating ldap mapping",
@@ -100,6 +100,7 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 		)
 		return
 	}
+
 	plan = ldapTeamMappingResourceModel{
 		ID:                types.StringValue(mappingRes.UUID.String()),
 		DistinguishedName: types.StringValue(mappingRes.DistinguishedName),
@@ -112,7 +113,7 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created ldap mapping with id: "+mappingRes.UUID.String()+", for distinguished name: "+mappingRes.DistinguishedName+", to team, with id: "+team.String())
+	tflog.Debug(ctx, "Created ldap mapping with id: "+plan.ID.ValueString()+", for distinguished name: "+plan.DistinguishedName.ValueString()+", to team, with id: "+plan.Team.ValueString())
 }
 
 func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -146,6 +147,7 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	mappedGroups, err := r.client.LDAP.GetTeamMappings(ctx, team)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -160,8 +162,8 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get ldap team mapping within Read",
-			"Error with reading mapping with id: "+id.String()+", for team: "+team.String()+", and distinguished name: "+distinguishedName+", in original error: "+err.Error(),
+			"Within Read, unable to locate ldap mapping",
+			"Error with finding mapping with id: "+id.String()+", for team: "+team.String()+", and distinguished name: "+distinguishedName+", in original error: "+err.Error(),
 		)
 		return
 	}
@@ -181,6 +183,7 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Nothing to Update. This resource only has Create, Delete actions
 	// Get State
 	var plan ldapTeamMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -210,14 +213,14 @@ func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	plan = ldapTeamMappingResourceModel{
+	state := ldapTeamMappingResourceModel{
 		ID:                types.StringValue(id.String()),
 		Team:              types.StringValue(team.String()),
 		DistinguishedName: types.StringValue(distingushedName),
 	}
 
 	// Update State
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
