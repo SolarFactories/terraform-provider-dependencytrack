@@ -85,7 +85,6 @@ func (r *aclMappingResource) Create(ctx context.Context, req resource.CreateRequ
 			"Within Create, unable to parse team into UUID",
 			"Error from: "+err.Error(),
 		)
-		return
 	}
 	project, err := uuid.Parse(plan.Project.ValueString())
 	if err != nil {
@@ -94,6 +93,8 @@ func (r *aclMappingResource) Create(ctx context.Context, req resource.CreateRequ
 			"Within Create, unable to parse project into UUID",
 			"Error from: "+err.Error(),
 		)
+	}
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -259,7 +260,7 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting acl mapping with for project with id: "+state.Project.ValueString()+", and team with id: "+state.Team.ValueString())
+	tflog.Debug(ctx, "Deleting acl mapping for project with id: "+state.Project.ValueString()+", and team with id: "+state.Team.ValueString())
 	err = r.client.ACL.RemoveProjectMapping(ctx, team, project)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -268,7 +269,7 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted acl group mapping with id: "+state.ID.ValueString())
+	tflog.Debug(ctx, "Deleted acl group mapping for project:  "+state.Project.ValueString()+", and team: "+state.Team.ValueString())
 }
 
 func (r *aclMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
