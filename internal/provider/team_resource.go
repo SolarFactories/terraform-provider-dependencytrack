@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -100,13 +99,9 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 
 	// Refresh
 	tflog.Debug(ctx, "Refreshing team with id: "+state.ID.ValueString())
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Read, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	team, err := r.client.Team.Get(ctx, id)
@@ -139,13 +134,9 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(plan.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Update, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	teamReq := dtrack.Team{
@@ -187,13 +178,9 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Delete, unable to parse UUID",
-			"Error parsing UUID from: "+state.ID.ValueString()+", error: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	team := dtrack.Team{
@@ -202,7 +189,7 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	// Execute
 	tflog.Debug(ctx, "Deleting team with id: "+id.String())
-	err = r.client.Team.Delete(ctx, team)
+	err := r.client.Team.Delete(ctx, team)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete team",

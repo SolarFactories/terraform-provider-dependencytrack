@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
@@ -105,13 +104,9 @@ func (r *projectPropertyResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	project, err := uuid.Parse(plan.Project.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Create, Unable to parse Project UUID from value.",
-			"From Error: "+err.Error(),
-		)
+	project, diag := TryParseUUID(plan.Project, LifecycleCreate, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	propertyReq := dtrack.ProjectProperty{
@@ -161,13 +156,9 @@ func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	tflog.Debug(ctx, "Refreshing project property")
-	project, err := uuid.Parse(state.Project.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Read, unable to parse project into UUID.",
-			"Error from: "+err.Error(),
-		)
+	project, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	property, err := FindPaged(
@@ -217,13 +208,9 @@ func (r *projectPropertyResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	project, err := uuid.Parse(plan.Project.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Update, unable to parse project into UUID.",
-			"Error from: "+err.Error(),
-		)
+	project, diag := TryParseUUID(plan.Project, LifecycleUpdate, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	propertyReq := dtrack.ProjectProperty{
@@ -270,13 +257,9 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	project, err := uuid.Parse(state.Project.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Delete, unable to parse project into UUID.",
-			"Error from: "+err.Error(),
-		)
+	project, diag := TryParseUUID(state.Project, LifecycleDelete, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	groupName := state.Group.ValueString()
@@ -288,7 +271,7 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		"name":    propertyName,
 	})
 	// NOTE: Has a patch applied in `http_client.go`
-	err = r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
+	err := r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete project property.",
@@ -308,12 +291,9 @@ func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.
 		)
 		return
 	}
-	uuid, err := uuid.Parse(idParts[0])
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unexpected import id",
-			"Unable to parse UUID: "+err.Error(),
-		)
+	uuid, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	groupName := idParts[1]

@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	dtrack "github.com/DependencyTrack/client-go"
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -132,13 +131,9 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		SWIDTagID:   plan.SWID.ValueString(),
 	}
 	if !plan.Parent.IsNull() {
-		parentID, err := uuid.Parse(plan.Parent.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("parent"),
-				"Could not parse parent id into UUID.",
-				"Error from: "+err.Error(),
-			)
+		parentID, diag := TryParseUUID(plan.Parent, LifecycleCreate, path.Root("parent"))
+		if diag != nil {
+			resp.Diagnostics.Append(diag)
 			return
 		}
 		projectReq.ParentRef = &dtrack.ParentRef{
@@ -223,13 +218,9 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 	// Refresh
 	tflog.Debug(ctx, "Refreshing project with id: "+state.ID.ValueString())
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Read, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	project, err := r.client.Project.Get(ctx, id)
@@ -287,13 +278,9 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(plan.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Update, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	tflog.Debug(ctx, "Within Update, retrieving current Project data with id: "+id.String())
@@ -322,13 +309,9 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		project.Classifier = "APPLICATION"
 	}
 	if !plan.Parent.IsNull() {
-		parentID, err := uuid.Parse(plan.Parent.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("parent"),
-				"Unable to parse parent ID into UUID",
-				"Error from: "+err.Error(),
-			)
+		parentID, diag := TryParseUUID(plan.Parent, LifecycleUpdate, path.Root("parent"))
+		if diag != nil {
+			resp.Diagnostics.Append(diag)
 			return
 		}
 		project.ParentRef = &dtrack.ParentRef{
@@ -397,19 +380,15 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Delete, unable to parse UUID",
-			"Error parsing UUID from: "+state.ID.ValueString()+", error: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
 	// Execute
 	tflog.Debug(ctx, "Deleting project with id: "+id.String())
-	err = r.client.Project.Delete(ctx, id)
+	err := r.client.Project.Delete(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete project",

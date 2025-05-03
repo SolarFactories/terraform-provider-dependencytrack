@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/google/uuid"
-
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -78,21 +76,13 @@ func (r *aclMappingResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	team, err := uuid.Parse(plan.Team.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Create, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(plan.Team, LifecycleCreate, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	project, err := uuid.Parse(plan.Project.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Create, unable to parse project into UUID",
-			"Error from: "+err.Error(),
-		)
+	project, diag := TryParseUUID(plan.Project, LifecycleCreate, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -103,7 +93,7 @@ func (r *aclMappingResource) Create(ctx context.Context, req resource.CreateRequ
 		Project: project,
 	}
 	tflog.Debug(ctx, "Granting ACL for project "+mappingReq.Project.String()+" to team "+mappingReq.Team.String())
-	err = r.client.ACL.AddProjectMapping(ctx, mappingReq)
+	err := r.client.ACL.AddProjectMapping(ctx, mappingReq)
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -137,21 +127,13 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 	tflog.Debug(ctx, "Refreshing acl mapping for team: "+state.Team.ValueString()+", and project: "+state.Project.ValueString())
 
 	// Refresh
-	team, err := uuid.Parse(state.Team.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Read, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(state.Team, LifecycleRead, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	projectId, err := uuid.Parse(state.Project.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Read, unable to parse project into UUID",
-			"Error from: "+err.Error(),
-		)
+	projectId, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -194,21 +176,13 @@ func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	team, err := uuid.Parse(plan.Team.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Update, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(plan.Team, LifecycleUpdate, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	project, err := uuid.Parse(plan.Project.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Update, unable to parse project into UUID",
-			"Error from: "+err.Error(),
-		)
+	project, diag := TryParseUUID(plan.Project, LifecycleUpdate, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -239,21 +213,13 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Map TF to SDK
-	team, err := uuid.Parse(state.Team.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Delete, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(state.Team, LifecycleDelete, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	project, err := uuid.Parse(state.Project.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Delete, unable to parse project into UUID",
-			"Error from: "+err.Error(),
-		)
+	project, diag := TryParseUUID(state.Project, LifecycleDelete, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -261,7 +227,7 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	// Execute
 	tflog.Debug(ctx, "Deleting acl mapping for project with id: "+state.Project.ValueString()+", and team with id: "+state.Team.ValueString())
-	err = r.client.ACL.RemoveProjectMapping(ctx, team, project)
+	err := r.client.ACL.RemoveProjectMapping(ctx, team, project)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete acl mapping",
@@ -284,19 +250,16 @@ func (r *aclMappingResource) ImportState(ctx context.Context, req resource.Impor
 	teamIdString := idParts[0]
 	projectIdString := idParts[1]
 
-	teamId, err := uuid.Parse(teamIdString)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Within Import, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	teamId, diag := TryParseUUID(types.StringValue(teamIdString), LifecycleImport, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	projectId, err := uuid.Parse(projectIdString)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Within Import, unable to parse project into UUID",
-			"Error from: "+err.Error(),
-		)
+	projectId, diag := TryParseUUID(types.StringValue(projectIdString), LifecycleImport, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
+	}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 	aclMappingState := aclMappingResourceModel{
 		ID:      types.StringValue(fmt.Sprintf("%s/%s", teamId.String(), projectId.String())),

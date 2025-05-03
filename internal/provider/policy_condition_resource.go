@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -83,13 +82,10 @@ func (r *policyConditionResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyID, err := uuid.Parse(plan.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Create, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+
+	policyID, diag := TryParseUUID(plan.PolicyID, LifecycleCreate, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
@@ -137,13 +133,9 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 
 	// Refresh
 	tflog.Debug(ctx, "Refreshing policy condition with id: "+state.ID.ValueString())
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Read, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	condition, err := FindPagedPolicyCondition(id, func(po dtrack.PageOptions) (dtrack.Page[dtrack.Policy], error) {
@@ -184,21 +176,13 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(plan.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Update, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	policyId, err := uuid.Parse(plan.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Update, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleUpdate, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -251,19 +235,15 @@ func (r *policyConditionResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Delete, unable to parse id into UUID",
-			"Error parsing UUID of: "+state.ID.ValueString()+", from error: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
 	// Execute
 	tflog.Debug(ctx, "Deleting policy condition with id: "+id.String())
-	err = r.client.PolicyCondition.Delete(ctx, id)
+	err := r.client.PolicyCondition.Delete(ctx, id)
 
 	if err != nil {
 		resp.Diagnostics.AddError(

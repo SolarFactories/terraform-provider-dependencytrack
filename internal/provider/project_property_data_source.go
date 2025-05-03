@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	dtrack "github.com/DependencyTrack/client-go"
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -85,13 +84,9 @@ func (d *projectPropertyDataSource) Read(ctx context.Context, req datasource.Rea
 		"group":   state.Group.ValueString(),
 		"name":    state.Name.ValueString(),
 	})
-	uuid, err := uuid.Parse(state.Project.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Read, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	uuid, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	property, err := FindPaged(

@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -67,21 +66,13 @@ func (r *policyProjectResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, err := uuid.Parse(plan.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Create, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleCreate, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	projectId, err := uuid.Parse(plan.ProjectID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Create, unable to parse project into UUID",
-			"Error from: "+err.Error(),
-		)
+	projectId, diag := TryParseUUID(plan.ProjectID, LifecycleCreate, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -121,21 +112,13 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 	tflog.Debug(ctx, "Refreshing policy-project mapping for policy: "+state.PolicyID.ValueString()+", and project: "+state.ProjectID.ValueString())
 
 	// Refresh
-	policyId, err := uuid.Parse(state.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Read, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+	policyId, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	projectId, err := uuid.Parse(state.ProjectID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Read, unable to parse project into UUID",
-			"Error from: "+err.Error(),
-		)
+	projectId, diag := TryParseUUID(state.ProjectID, LifecycleRead, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -182,21 +165,14 @@ func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, err := uuid.Parse(plan.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Update, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+
+	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleUpdate, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	projectId, err := uuid.Parse(plan.ProjectID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Update, unable to parse project into UUID",
-			"Error from: "+err.Error(),
-		)
+	projectId, diag := TryParseUUID(plan.ProjectID, LifecycleUpdate, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -224,28 +200,21 @@ func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, err := uuid.Parse(state.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Delete, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+
+	policyId, diag := TryParseUUID(state.PolicyID, LifecycleDelete, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	projectId, err := uuid.Parse(state.ProjectID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("project"),
-			"Within Delete, unable to parse project into UUID",
-			"Error from: "+err.Error(),
-		)
+	projectId, diag := TryParseUUID(state.ProjectID, LifecycleDelete, path.Root("project"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	tflog.Debug(ctx, "Deleting project-policy mapping for policy: "+policyId.String()+", with project: "+projectId.String())
-	_, err = r.client.Policy.DeleteProject(ctx, policyId, projectId)
+	_, err := r.client.Policy.DeleteProject(ctx, policyId, projectId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete project-policy mapping",
