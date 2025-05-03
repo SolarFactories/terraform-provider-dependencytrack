@@ -84,14 +84,14 @@ func (d *projectPropertyDataSource) Read(ctx context.Context, req datasource.Rea
 		"group":   state.Group.ValueString(),
 		"name":    state.Name.ValueString(),
 	})
-	uuid, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("id"))
+	project, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 	property, err := FindPaged(
 		func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
-			return d.client.ProjectProperty.GetAll(ctx, uuid, po)
+			return d.client.ProjectProperty.GetAll(ctx, project, po)
 		},
 		func(property dtrack.ProjectProperty) bool {
 			if property.Group != state.Group.ValueString() {
@@ -106,13 +106,13 @@ func (d *projectPropertyDataSource) Read(ctx context.Context, req datasource.Rea
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Read, unable to locate project property.",
-			"Unexpected error within: "+err.Error(),
+			"Error from: "+err.Error(),
 		)
 		return
 	}
 
 	propertyState := projectPropertyDataSourceModel{
-		Project:     types.StringValue(uuid.String()),
+		Project:     types.StringValue(project.String()),
 		Group:       types.StringValue(property.Group),
 		Name:        types.StringValue(property.Name),
 		Value:       types.StringValue(property.Value),
@@ -124,7 +124,14 @@ func (d *projectPropertyDataSource) Read(ctx context.Context, req datasource.Rea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Read DependencyTrack ProjectProperty")
+	tflog.Debug(ctx, "Read DependencyTrack ProjectProperty", map[string]any{
+		"project":     propertyState.Project.ValueString(),
+		"group":       propertyState.Group.ValueString(),
+		"name":        propertyState.Name.ValueString(),
+		"value":       propertyState.Value.ValueString(),
+		"type":        propertyState.Type.ValueString(),
+		"description": propertyState.Description.ValueString(),
+	})
 }
 
 func (d *projectPropertyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

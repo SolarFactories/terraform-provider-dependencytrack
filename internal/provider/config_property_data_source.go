@@ -77,7 +77,7 @@ func (d *configPropertyDataSource) Read(ctx context.Context, req datasource.Read
 	groupName := state.Group.ValueString()
 	propertyName := state.Name.ValueString()
 
-	tflog.Debug(ctx, "Reading DependencyTrack Config Property", map[string]any{
+	tflog.Debug(ctx, "Reading Config Property", map[string]any{
 		"group": groupName,
 		"name":  propertyName,
 	})
@@ -101,7 +101,12 @@ func (d *configPropertyDataSource) Read(ctx context.Context, req datasource.Read
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Read DependencyTrack ConfigProperty")
+	tflog.Debug(ctx, "Read Config Property", map[string]any{
+		"group":       propertyState.Group.ValueString(),
+		"name":        propertyState.Name.ValueString(),
+		"type":        propertyState.Type.ValueString(),
+		"description": propertyState.Description.ValueString(),
+	})
 }
 
 func (d *configPropertyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

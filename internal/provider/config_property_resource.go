@@ -133,7 +133,14 @@ func (r *configPropertyResource) Create(ctx context.Context, req resource.Create
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created a managed config property")
+	tflog.Debug(ctx, "Created a config property", map[string]any{
+		"id":          propertyState.ID.ValueString(),
+		"group":       propertyState.Group.ValueString(),
+		"name":        propertyState.Name.ValueString(),
+		"value":       propertyState.Value.ValueString(),
+		"type":        propertyState.Type.ValueString(),
+		"description": propertyState.Description.ValueString(),
+	})
 }
 
 func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -147,7 +154,7 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 	groupName := state.Group.ValueString()
 	propertyName := state.Name.ValueString()
 
-	tflog.Debug(ctx, "Refreshing config property", map[string]any{
+	tflog.Debug(ctx, "Reading config property", map[string]any{
 		"group": groupName,
 		"name":  propertyName,
 	})
@@ -176,7 +183,13 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed config property.")
+	tflog.Debug(ctx, "Read config property", map[string]any{
+		"id":          propertyState.ID.ValueString(),
+		"group":       propertyState.Group.ValueString(),
+		"name":        propertyState.Name.ValueString(),
+		"type":        propertyState.Type.ValueString(),
+		"description": propertyState.Description.ValueString(),
+	})
 }
 
 func (r *configPropertyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -224,7 +237,14 @@ func (r *configPropertyResource) Update(ctx context.Context, req resource.Update
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated config property")
+	tflog.Debug(ctx, "Updated config property", map[string]any{
+		"id":          state.ID.ValueString(),
+		"group":       state.Group.ValueString(),
+		"name":        state.Name.ValueString(),
+		"value":       state.Value.ValueString(),
+		"type":        state.Type.ValueString(),
+		"description": state.Description.ValueString(),
+	})
 }
 
 func (r *configPropertyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -246,7 +266,7 @@ func (r *configPropertyResource) Delete(ctx context.Context, req resource.Delete
 		"name":  propertyReq.Name,
 		"type":  propertyReq.Type,
 	})
-	_, err := r.client.Config.Update(ctx, propertyReq)
+	propertyRes, err := r.client.Config.Update(ctx, propertyReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete config property.",
@@ -254,7 +274,13 @@ func (r *configPropertyResource) Delete(ctx context.Context, req resource.Delete
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted config property.")
+	tflog.Debug(ctx, "Deleted config property", map[string]any{
+		"id":    state.ID.ValueString(),
+		"group": propertyRes.GroupName,
+		"name":  propertyRes.Name,
+		"value": propertyRes.Value,
+		"type":  propertyRes.Type,
+	})
 }
 
 func (r *configPropertyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -268,6 +294,10 @@ func (r *configPropertyResource) ImportState(ctx context.Context, req resource.I
 	}
 	groupName := idParts[0]
 	propertyName := idParts[1]
+	tflog.Debug(ctx, "Importing Config Property", map[string]any{
+		"group": groupName,
+		"name":  propertyName,
+	})
 
 	property, err := r.client.Config.Get(ctx, groupName, propertyName)
 	if err != nil {
@@ -291,7 +321,14 @@ func (r *configPropertyResource) ImportState(ctx context.Context, req resource.I
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Imported a config property.")
+	tflog.Debug(ctx, "Imported config property", map[string]any{
+		"id":          propertyState.ID.ValueString(),
+		"group":       propertyState.Group.ValueString(),
+		"name":        propertyState.Name.ValueString(),
+		"value":       propertyState.Value.ValueString(),
+		"type":        propertyState.Type.ValueString(),
+		"description": propertyState.Description.ValueString(),
+	})
 }
 
 func (r *configPropertyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

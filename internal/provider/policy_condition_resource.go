@@ -95,7 +95,13 @@ func (r *policyConditionResource) Create(ctx context.Context, req resource.Creat
 		Value:    plan.Value.ValueString(),
 	}
 
-	tflog.Debug(ctx, "Creating a new policy condition within policy: "+policyID.String())
+	//tflog.Debug(ctx, "Creating a new policy condition within policy: "+policyID.String())
+	tflog.Debug(ctx, "Creating Policy Condition", map[string]any{
+		"policy":   policyID.String(),
+		"operator": string(conditionReq.Operator),
+		"subject":  string(conditionReq.Subject),
+		"value":    conditionReq.Value,
+	})
 	conditionRes, err := r.client.PolicyCondition.Create(ctx, policyID, conditionReq)
 
 	if err != nil {
@@ -119,7 +125,13 @@ func (r *policyConditionResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created a new policy condition, with id: "+conditionRes.UUID.String())
+	tflog.Debug(ctx, "Created Policy Condition", map[string]any{
+		"id":       plan.ID.ValueString(),
+		"policy":   plan.PolicyID.ValueString(),
+		"subject":  plan.Subject.ValueString(),
+		"operator": plan.Operator.ValueString(),
+		"value":    plan.Value.ValueString(),
+	})
 }
 
 func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -132,7 +144,13 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Refresh
-	tflog.Debug(ctx, "Refreshing policy condition with id: "+state.ID.ValueString())
+	tflog.Debug(ctx, "Reading Policy Condition", map[string]any{
+		"id":       state.ID.ValueString(),
+		"policy":   state.PolicyID.ValueString(),
+		"subject":  state.Subject.ValueString(),
+		"operator": state.Operator.ValueString(),
+		"value":    state.Value.ValueString(),
+	})
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -163,7 +181,13 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed policy condition with id: "+state.ID.ValueString())
+	tflog.Debug(ctx, "Read Policy Condition", map[string]any{
+		"id":       state.ID.ValueString(),
+		"policy":   state.PolicyID.ValueString(),
+		"subject":  state.Subject.ValueString(),
+		"operator": state.Operator.ValueString(),
+		"value":    state.Value.ValueString(),
+	})
 }
 
 func (r *policyConditionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -196,7 +220,13 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Updating policy condition with id: "+id.String())
+	tflog.Debug(ctx, "Updating Policy Condition", map[string]any{
+		"id":       conditionReq.UUID.String(),
+		"policy":   plan.PolicyID.ValueString(),
+		"subject":  string(conditionReq.Subject),
+		"operator": string(conditionReq.Operator),
+		"value":    conditionReq.Value,
+	})
 	conditionRes, err := r.client.PolicyCondition.Update(ctx, conditionReq)
 
 	if err != nil {
@@ -222,7 +252,13 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated policy condition with id: "+id.String())
+	tflog.Debug(ctx, "Updated Policy Condition", map[string]any{
+		"id":       plan.ID.ValueString(),
+		"policy":   plan.PolicyID.ValueString(),
+		"subject":  plan.Subject.ValueString(),
+		"operator": plan.Operator.ValueString(),
+		"value":    plan.Value.ValueString(),
+	})
 }
 
 func (r *policyConditionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -242,7 +278,13 @@ func (r *policyConditionResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting policy condition with id: "+id.String())
+	tflog.Debug(ctx, "Deleting Policy Condition", map[string]any{
+		"id":       id.String(),
+		"policy":   state.PolicyID.ValueString(),
+		"subject":  state.Subject.ValueString(),
+		"operator": state.Operator.ValueString(),
+		"value":    state.Value.ValueString(),
+	})
 	err := r.client.PolicyCondition.Delete(ctx, id)
 
 	if err != nil {
@@ -253,11 +295,26 @@ func (r *policyConditionResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	tflog.Debug(ctx, "Deleted policy condition with id: "+id.String())
+	tflog.Debug(ctx, "Deleted Policy Condition", map[string]any{
+		"id":       state.ID.ValueString(),
+		"policy":   state.PolicyID.ValueString(),
+		"subject":  state.Subject.ValueString(),
+		"operator": state.Operator.ValueString(),
+		"value":    state.Value.ValueString(),
+	})
 }
 
 func (r *policyConditionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Debug(ctx, "Importing Policy Condition", map[string]any{
+		"id": req.ID,
+	})
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Imported Policy Condition", map[string]any{
+		"id": req.ID,
+	})
 }
 
 func (r *policyConditionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

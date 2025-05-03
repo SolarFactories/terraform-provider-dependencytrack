@@ -123,9 +123,16 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		}
 
 		configPropertiesReq = append(configPropertiesReq, configProperty)
+		tflog.Debug(ctx, "Creating bulk config property", map[string]any{
+			"group": configProperty.GroupName,
+			"name":  configProperty.Name,
+			"type":  configProperty.Type,
+		})
 	}
 
-	tflog.Debug(ctx, "Creating config properties.")
+	tflog.Debug(ctx, "Creating bulk config properties", map[string]any{
+		"count": len(configPropertiesReq),
+	})
 	configPropertiesRes, err := r.client.Config.UpdateAll(ctx, configPropertiesReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -154,6 +161,11 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			}])
 		}
 		configPropertiesState.Properties = append(configPropertiesState.Properties, model)
+		tflog.Debug(ctx, "Created bulk config property", map[string]any{
+			"group": propertyRes.GroupName,
+			"name":  propertyRes.Name,
+			"type":  propertyRes.Type,
+		})
 	}
 
 	diags = resp.State.Set(ctx, &configPropertiesState)
@@ -161,7 +173,9 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created managed config properties.")
+	tflog.Debug(ctx, "Created bulk config properties", map[string]any{
+		"count": len(configPropertiesRes),
+	})
 }
 
 func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -172,7 +186,7 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	tflog.Debug(ctx, "Reading all config properties.")
+	tflog.Debug(ctx, "Reading bulk config properties")
 	configPropertiesAll, err := r.client.Config.GetAll(ctx)
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
@@ -182,10 +196,11 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 		)
 		return
 	}
-	tflog.Debug(ctx, "Updating models with read values")
+
 	for idx, configPropertyModel := range state.Properties {
 		groupName := configPropertyModel.Group.ValueString()
 		propertyName := configPropertyModel.Name.ValueString()
+		propertyType := configPropertyModel.Type.ValueString()
 		value := configPropertyModel.Value
 		configProperty, err := Find(configPropertiesAll, func(configProperty dtrack.ConfigProperty) bool {
 			if configProperty.GroupName != groupName {
@@ -204,6 +219,14 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 			)
 			continue
 		}
+		if configProperty.Type != propertyType {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("properties"),
+				"Within Read, unable to match config property type",
+				"Group: "+groupName+", Name: "+propertyName+", Type: "+configProperty.Type,
+			)
+			continue
+		}
 		state.Properties[idx] = configPropertiesElementResourceModel{
 			Group:       types.StringValue(configProperty.GroupName),
 			Name:        types.StringValue(configProperty.Name),
@@ -214,6 +237,12 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 		if configProperty.Type == PropertyTypeEncryptedString {
 			state.Properties[idx].Value = value
 		}
+		tflog.Debug(ctx, "Read bulk config property", map[string]any{
+			"group":       state.Properties[idx].Group.ValueString(),
+			"name":        state.Properties[idx].Name.ValueString(),
+			"type":        state.Properties[idx].Type.ValueString(),
+			"description": state.Properties[idx].Description.ValueString(),
+		})
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -223,7 +252,9 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed config properties.")
+	tflog.Debug(ctx, "Read bulk config properties", map[string]any{
+		"count": len(state.Properties),
+	})
 }
 
 func (r *configPropertiesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -256,9 +287,16 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			}] = configProperty.Value
 		}
 		configPropertiesReq = append(configPropertiesReq, configProperty)
+		tflog.Debug(ctx, "Updating bulk config properties", map[string]any{
+			"group": configProperty.GroupName,
+			"name":  configProperty.Name,
+			"type":  configProperty.Type,
+		})
 	}
 
-	tflog.Debug(ctx, "Updating config properties.")
+	tflog.Debug(ctx, "Updating bulk config properties", map[string]any{
+		"count": len(configPropertiesReq),
+	})
 	configPropertiesRes, err := r.client.Config.UpdateAll(ctx, configPropertiesReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -287,13 +325,21 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			}])
 		}
 		configPropertiesState.Properties = append(configPropertiesState.Properties, model)
+		tflog.Debug(ctx, "Updated bulk config property", map[string]any{
+			"group":       model.Group.ValueString(),
+			"name":        model.Name.ValueString(),
+			"type":        model.Type.ValueString(),
+			"description": model.Description.ValueString(),
+		})
 	}
 	diags = resp.State.Set(ctx, configPropertiesState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated config properties.")
+	tflog.Debug(ctx, "Updated bulk config properties", map[string]any{
+		"count": len(configPropertiesState.Properties),
+	})
 }
 
 func (r *configPropertiesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -314,18 +360,27 @@ func (r *configPropertiesResource) Delete(ctx context.Context, req resource.Dele
 			Type:      propertyReq.Type.ValueString(),
 		}
 		configPropertiesReq = append(configPropertiesReq, configProperty)
+		tflog.Debug(ctx, "Deleting bulk config property", map[string]any{
+			"group": configProperty.GroupName,
+			"name":  configProperty.Name,
+			"type":  configProperty.Type,
+		})
 	}
 
-	tflog.Debug(ctx, "Deleting config properties.")
-	_, err := r.client.Config.UpdateAll(ctx, configPropertiesReq)
+	tflog.Debug(ctx, "Deleting bulk config properties", map[string]any{
+		"count": len(configPropertiesReq),
+	})
+	configPropertiesRes, err := r.client.Config.UpdateAll(ctx, configPropertiesReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error deleting config properties.",
+			"Error deleting bulk config properties.",
 			"Unexpected error: "+err.Error(),
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted config properties.")
+	tflog.Debug(ctx, "Deleted bulk config properties", map[string]any{
+		"count": len(configPropertiesRes),
+	})
 }
 
 func (r *configPropertiesResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

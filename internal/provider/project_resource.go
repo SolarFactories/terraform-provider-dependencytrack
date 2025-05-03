@@ -147,7 +147,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		projectReq.Classifier = "APPLICATION"
 	}
 
-	tflog.Debug(ctx, "Creating a new project", map[string]any{
+	tflog.Debug(ctx, "Creating a Project", map[string]any{
 		"name":        projectReq.Name,
 		"description": projectReq.Description,
 		"active":      projectReq.Active,
@@ -162,8 +162,8 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	projectRes, err := r.client.Project.Create(ctx, projectReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating project",
-			"Could not create project, unexpected error within Client: "+err.Error(),
+			"Error creating Project",
+			"Error from: "+err.Error(),
 		)
 		return
 	}
@@ -192,7 +192,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created a new project", map[string]any{
+	tflog.Debug(ctx, "Created a Project", map[string]any{
 		"id":          projectRes.UUID.String(),
 		"name":        projectRes.Name,
 		"description": projectRes.Description,
@@ -217,12 +217,24 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	// Refresh
-	tflog.Debug(ctx, "Refreshing project with id: "+state.ID.ValueString())
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
+	tflog.Debug(ctx, "Reading Project", map[string]any{
+		"id":          id.String(),
+		"name":        state.Name.ValueString(),
+		"description": state.Description.ValueString(),
+		"active":      state.Active.ValueBool(),
+		"version":     state.Version.ValueString(),
+		"parent":      state.Parent.ValueString(),
+		"classifier":  state.Classifier.ValueString(),
+		"group":       state.Group.ValueString(),
+		"purl":        state.PURL.ValueString(),
+		"cpe":         state.CPE.ValueString(),
+		"swid":        state.SWID.ValueString(),
+	})
 	project, err := r.client.Project.Get(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -253,7 +265,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed project", map[string]any{
+	tflog.Debug(ctx, "Read Project", map[string]any{
 		"id":          project.UUID.String(),
 		"name":        project.Name,
 		"description": project.Description,
@@ -283,7 +295,9 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	tflog.Debug(ctx, "Within Update, retrieving current Project data with id: "+id.String())
+	tflog.Debug(ctx, "Within Update, Fetching current Project information", map[string]any{
+		"id": id.String(),
+	})
 	project, err := r.client.Project.Get(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -322,7 +336,19 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Updating project with id: "+id.String())
+	tflog.Debug(ctx, "Updating Project", map[string]any{
+		"id":          project.UUID.String(),
+		"name":        project.Name,
+		"description": project.Description,
+		"active":      project.Active,
+		"version":     project.Version,
+		"parent":      project.ParentRef,
+		"classifier":  project.Classifier,
+		"group":       project.Group,
+		"purl":        project.PURL,
+		"cpe":         project.CPE,
+		"swid":        project.SWIDTagID,
+	})
 	projectRes, err := r.client.Project.Update(ctx, project)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -355,7 +381,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated project", map[string]any{
+	tflog.Debug(ctx, "Updated Project", map[string]any{
 		"id":          projectRes.UUID.String(),
 		"name":        projectRes.Name,
 		"description": projectRes.Description,
@@ -387,7 +413,19 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting project with id: "+id.String())
+	tflog.Debug(ctx, "Deleting Project", map[string]any{
+		"id":          id.String(),
+		"name":        state.Name.ValueString(),
+		"description": state.Description.ValueString(),
+		"active":      state.Active.ValueBool(),
+		"version":     state.Version.ValueString(),
+		"parent":      state.Parent.ValueString(),
+		"classifier":  state.Classifier.ValueString(),
+		"group":       state.Group.ValueString(),
+		"purl":        state.PURL.ValueString(),
+		"cpe":         state.CPE.ValueString(),
+		"swid":        state.SWID.ValueString(),
+	})
 	err := r.client.Project.Delete(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -396,11 +434,32 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted project with id: "+id.String())
+	tflog.Debug(ctx, "Deleted Project", map[string]any{
+		"id":          state.ID.ValueString(),
+		"name":        state.Name.ValueString(),
+		"description": state.Description.ValueString(),
+		"active":      state.Active.ValueBool(),
+		"version":     state.Version.ValueString(),
+		"parent":      state.Parent.ValueString(),
+		"classifier":  state.Classifier.ValueString(),
+		"group":       state.Group.ValueString(),
+		"purl":        state.PURL.ValueString(),
+		"cpe":         state.CPE.ValueString(),
+		"swid":        state.SWID.ValueString(),
+	})
 }
 
 func (r *projectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Debug(ctx, "Importing Project", map[string]any{
+		"id": req.ID,
+	})
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Imported Project", map[string]any{
+		"id": req.ID,
+	})
 }
 
 func (r *projectResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

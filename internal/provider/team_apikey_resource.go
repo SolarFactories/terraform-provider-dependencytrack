@@ -116,9 +116,10 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	comment := plan.Comment.ValueString()
 
-	tflog.Debug(ctx, "Creating API Key for team "+team.String())
+	tflog.Debug(ctx, "Creating API Key", map[string]any{
+		"team": team.String(),
+	})
 	key, err := r.client.Team.GenerateAPIKey(ctx, team)
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating team API Key",
@@ -127,7 +128,11 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 	if comment != "" {
-		tflog.Debug(ctx, "Setting Comment for API Key for team "+team.String())
+		tflog.Debug(ctx, "Setting Comment for API Key", map[string]any{
+			"team":    team.String(),
+			"masked":  key.MaskedKey,
+			"comment": comment,
+		})
 		comment, err = r.client.Team.UpdateAPIKeyComment(ctx, key.Key, comment)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -157,7 +162,11 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created API Key for team, with id: "+team.String())
+	tflog.Debug(ctx, "Created API Key", map[string]any{
+		"team":    plan.TeamID.ValueString(),
+		"comment": plan.Comment.ValueString(),
+		"masked":  plan.Masked.ValueString(),
+	})
 }
 
 func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -176,6 +185,11 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 		resp.Diagnostics.Append(diag)
 		return
 	}
+	tflog.Debug(ctx, "Reading API Key", map[string]any{
+		"team":    team.String(),
+		"masked":  state.Masked.ValueString(),
+		"comment": state.Comment.ValueString(),
+	})
 
 	keys, err := r.client.Team.GetAPIKeys(ctx, team)
 	if err != nil {
@@ -219,7 +233,11 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed API Key for team with id: "+state.TeamID.ValueString())
+	tflog.Debug(ctx, "Read API Key", map[string]any{
+		"team":    state.TeamID.ValueString(),
+		"masked":  state.Masked.ValueString(),
+		"comment": state.Comment.ValueString(),
+	})
 }
 
 func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -233,6 +251,11 @@ func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	publicIdOrKey := r.getPublicIdOrKey(plan)
 	comment := plan.Comment.ValueString()
+	tflog.Debug(ctx, "Updating API Key Comment", map[string]any{
+		"team":    plan.TeamID.ValueString(),
+		"masked":  plan.Masked.ValueString(),
+		"comment": comment,
+	})
 
 	commentOut, err := r.client.Team.UpdateAPIKeyComment(ctx, publicIdOrKey, comment)
 	if err != nil {
@@ -251,7 +274,11 @@ func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated API Key for team with id: "+plan.TeamID.ValueString())
+	tflog.Debug(ctx, "Updated API Key", map[string]any{
+		"team":    plan.TeamID.ValueString(),
+		"masked":  plan.Masked.ValueString(),
+		"comment": plan.Comment.ValueString(),
+	})
 }
 
 func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -271,7 +298,11 @@ func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 	// Execute
-	tflog.Debug(ctx, "Deleting API Key from team with id: "+team.String())
+	tflog.Debug(ctx, "Deleting API Key", map[string]any{
+		"team":    team.String(),
+		"masked":  state.Masked.ValueString(),
+		"comment": state.Comment.ValueString(),
+	})
 	err := r.client.Team.DeleteAPIKey(ctx, publicIdOrKey)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -280,7 +311,11 @@ func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted API Key from team with id: "+team.String())
+	tflog.Debug(ctx, "Deleted API Key", map[string]any{
+		"team":    state.TeamID.ValueString(),
+		"masked":  state.Masked.ValueString(),
+		"comment": state.Comment.ValueString(),
+	})
 }
 
 func (r *teamAPIKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -292,13 +327,16 @@ func (r *teamAPIKeyResource) ImportState(ctx context.Context, req resource.Impor
 		)
 		return
 	}
-	uuid, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("id"))
+	teamId, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 	publicIdOrKey := idParts[1]
-	keys, err := r.client.Team.GetAPIKeys(ctx, uuid)
+	tflog.Debug(ctx, "Importing API Key", map[string]any{
+		"team": teamId.String(),
+	})
+	keys, err := r.client.Team.GetAPIKeys(ctx, teamId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Import, unable to retrieve Team API Keys.",
@@ -322,8 +360,8 @@ func (r *teamAPIKeyResource) ImportState(ctx context.Context, req resource.Impor
 	}
 
 	keyState := teamAPIKeyResourceModel{
-		ID:       types.StringValue(fmt.Sprintf("%s/%s", uuid.String(), publicIdOrKey)),
-		TeamID:   types.StringValue(uuid.String()),
+		ID:       types.StringValue(fmt.Sprintf("%s/%s", teamId.String(), publicIdOrKey)),
+		TeamID:   types.StringValue(teamId.String()),
 		Key:      types.StringValue(apiKey.Key),
 		Comment:  types.StringValue(apiKey.Comment),
 		Masked:   types.StringValue(apiKey.MaskedKey),
@@ -336,7 +374,11 @@ func (r *teamAPIKeyResource) ImportState(ctx context.Context, req resource.Impor
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Imported a project property.")
+	tflog.Debug(ctx, "Imported API Key", map[string]any{
+		"team":    keyState.TeamID.ValueString(),
+		"masked":  keyState.Masked.ValueString(),
+		"comment": keyState.Comment.ValueString(),
+	})
 }
 
 func (r *teamAPIKeyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

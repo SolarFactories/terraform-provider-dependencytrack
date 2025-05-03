@@ -80,7 +80,11 @@ func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest,
 		Operator:       dtrack.PolicyOperator(plan.Operator.ValueString()),
 		ViolationState: dtrack.PolicyViolationState(plan.Violation.ValueString()),
 	}
-	tflog.Debug(ctx, "Creating a new policy, with name: "+policyReq.Name)
+	tflog.Debug(ctx, "Creating Policy", map[string]any{
+		"name":      policyReq.Name,
+		"operator":  string(policyReq.Operator),
+		"violation": string(policyReq.ViolationState),
+	})
 	policyRes, err := r.client.Policy.Create(ctx, policyReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -101,7 +105,12 @@ func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created a new policy, with id: "+policyRes.UUID.String())
+	tflog.Debug(ctx, "Created Policy", map[string]any{
+		"id":        plan.ID.ValueString(),
+		"name":      plan.Name.ValueString(),
+		"operator":  plan.Operator.ValueString(),
+		"violation": plan.Violation.ValueString(),
+	})
 }
 
 func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -114,12 +123,17 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	// Refresh
-	tflog.Debug(ctx, "Refreshing policy with id: "+state.ID.ValueString())
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
+	tflog.Debug(ctx, "Reading Policy", map[string]any{
+		"id":        id.String(),
+		"name":      state.Name.ValueString(),
+		"operator":  state.Operator.ValueString(),
+		"violation": state.Violation.ValueString(),
+	})
 
 	policy, err := r.client.Policy.Get(ctx, id)
 	if err != nil {
@@ -142,7 +156,12 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed policy with id: "+state.ID.ValueString())
+	tflog.Debug(ctx, "Read Policy", map[string]any{
+		"id":        state.ID.ValueString(),
+		"name":      state.Name.ValueString(),
+		"operator":  state.Operator.ValueString(),
+		"violation": state.Violation.ValueString(),
+	})
 }
 
 func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -167,7 +186,12 @@ func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		ViolationState: dtrack.PolicyViolationState(plan.Violation.ValueString()),
 	}
 	// Execute
-	tflog.Debug(ctx, "Updating policy with id: "+id.String())
+	tflog.Debug(ctx, "Updating Policy", map[string]any{
+		"id":        policyReq.UUID.String(),
+		"name":      policyReq.Name,
+		"operator":  policyReq.Operator,
+		"violation": policyReq.ViolationState,
+	})
 	policyRes, err := r.client.Policy.Update(ctx, policyReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -191,7 +215,12 @@ func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated policy with id: "+id.String())
+	tflog.Debug(ctx, "Updated Policy", map[string]any{
+		"id":        plan.ID.ValueString(),
+		"name":      plan.Name.ValueString(),
+		"operator":  plan.Operator.ValueString(),
+		"violation": plan.Violation.ValueString(),
+	})
 }
 
 func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -211,7 +240,12 @@ func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting policy with id: "+id.String())
+	tflog.Debug(ctx, "Deleting Policy", map[string]any{
+		"id":        id.String(),
+		"name":      state.Name.ValueString(),
+		"operator":  state.Operator.ValueString(),
+		"violation": state.Violation.ValueString(),
+	})
 	err := r.client.Policy.Delete(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -220,11 +254,25 @@ func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted policy with id: "+id.String())
+	tflog.Debug(ctx, "Deleted Policy", map[string]any{
+		"id":        state.ID.ValueString(),
+		"name":      state.Name.ValueString(),
+		"operator":  state.Operator.ValueString(),
+		"violation": state.Violation.ValueString(),
+	})
 }
 
 func (r *policyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Debug(ctx, "Importing Policy", map[string]any{
+		"id": req.ID,
+	})
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Imported Policy", map[string]any{
+		"id": req.ID,
+	})
 }
 
 func (r *policyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

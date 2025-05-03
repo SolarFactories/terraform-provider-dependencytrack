@@ -208,7 +208,9 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 		client: client,
 		semver: semver,
 	}
-	tflog.Debug(ctx, "Configured DependencyTrack client", map[string]any{"success": true})
+	tflog.Debug(ctx, "Configured DependencyTrack client", map[string]any{
+		"success": true,
+	})
 }
 
 func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource.Resource {

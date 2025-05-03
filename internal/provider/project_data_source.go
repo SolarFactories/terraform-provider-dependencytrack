@@ -131,16 +131,18 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Reading DependencyTrack project", map[string]any{"name": state.Name.ValueString(), "version": state.Version.ValueString()})
+	tflog.Debug(ctx, "Reading Project", map[string]any{
+		"name":    state.Name.ValueString(),
+		"version": state.Version.ValueString(),
+	})
 	project, err := d.client.Project.Lookup(ctx, state.Name.ValueString(), state.Version.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to read project from DependencyTrack",
-			"Eror located within SDK Client: "+err.Error(),
+			"Unable to read Project",
+			"Error from: "+err.Error(),
 		)
 		return
 	}
-	tflog.Debug(ctx, "Found project with UUID: "+project.UUID.String())
 	// Transform data into model
 	projectState := projectDataSourceModel{
 		Name:       types.StringValue(project.Name),
@@ -158,13 +160,20 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		projectState.Parent = types.StringValue(project.ParentRef.UUID.String())
 	}
 	for _, property := range project.Properties {
-		tflog.Debug(ctx, "Found property with group"+property.Group)
-		projectState.Properties = append(projectState.Properties, projectPropertiesModel{
+		model := projectPropertiesModel{
 			Group:       types.StringValue(property.Group),
 			Name:        types.StringValue(property.Name),
 			Value:       types.StringValue(property.Value),
 			Type:        types.StringValue(property.Type),
 			Description: types.StringValue(property.Description),
+		}
+		projectState.Properties = append(projectState.Properties, model)
+		tflog.Debug(ctx, "Read Project's Property", map[string]any{
+			"group":       property.Group,
+			"name":        property.Name,
+			"value":       property.Value,
+			"type":        property.Type,
+			"description": property.Description,
 		})
 	}
 	// Update state
@@ -173,7 +182,18 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Read DependencyTrack project", map[string]any{"uuid": project.UUID.String()})
+	tflog.Debug(ctx, "Read Project", map[string]any{
+		"id":           projectState.ID.ValueString(),
+		"name":         projectState.Name.ValueString(),
+		"version":      projectState.Version.ValueString(),
+		"properties.#": len(projectState.Properties),
+		"classifier":   projectState.Classifier.ValueString(),
+		"cpe":          projectState.CPE.ValueString(),
+		"group":        projectState.Group.ValueString(),
+		"purl":         projectState.PURL.ValueString(),
+		"swid":         projectState.SWID.ValueString(),
+		"parent":       projectState.Parent.ValueString(),
+	})
 }
 
 func (d *projectDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

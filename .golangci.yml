@@ -504,6 +504,8 @@ linters:
       - path: internal/provider/config_properties_resource.go
         linters:
           - gocognit
+          - gocyclo
+          - cyclop
       - path: internal/provider/repository_resource.go
         linters:
           - gosec

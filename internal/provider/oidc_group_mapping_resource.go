@@ -91,7 +91,10 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 		Group: group,
 		Team:  team,
 	}
-	tflog.Debug(ctx, "Mapping group "+mappingReq.Group.String()+" to team "+mappingReq.Team.String())
+	tflog.Debug(ctx, "Creating OIDC Group Mapping", map[string]any{
+		"group": group.String(),
+		"team":  team.String(),
+	})
 	mappingRes, err := r.client.OIDC.AddTeamMapping(ctx, mappingReq)
 
 	if err != nil {
@@ -113,7 +116,11 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created mapping with id: "+mappingRes.UUID.String()+", for group with id: "+mappingRes.Group.UUID.String()+" to team, with id: "+team.String())
+	tflog.Debug(ctx, "Created OIDC Group Mapping", map[string]any{
+		"id":    plan.ID.ValueString(),
+		"group": plan.Group.ValueString(),
+		"team":  plan.Team.ValueString(),
+	})
 }
 
 func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -124,7 +131,11 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshing oidc group mapping with id: "+state.ID.ValueString()+", for team: "+state.Team.ValueString()+", and group: "+state.Group.ValueString())
+	tflog.Debug(ctx, "Reading OIDC Group Mapping", map[string]any{
+		"id":    state.ID.ValueString(),
+		"team":  state.Team.ValueString(),
+		"group": state.Group.ValueString(),
+	})
 
 	// Refresh
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
@@ -155,7 +166,11 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed group mapping for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String())
+	tflog.Debug(ctx, "Read OIDC Group Mapping", map[string]any{
+		"id":    state.ID.ValueString(),
+		"team":  state.Team.ValueString(),
+		"group": state.Group.ValueString(),
+	})
 }
 
 func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -166,6 +181,12 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Debug(ctx, "Updating OIDC Group Mapping", map[string]any{
+		"id":    plan.ID.ValueString(),
+		"team":  plan.Team.ValueString(),
+		"group": plan.Group.ValueString(),
+	})
 
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
@@ -196,7 +217,11 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated group mapping with id: "+id.String()+", for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String())
+	tflog.Debug(ctx, "Updated OIDC Group Mapping", map[string]any{
+		"id":    plan.ID.ValueString(),
+		"team":  plan.Team.ValueString(),
+		"group": plan.Group.ValueString(),
+	})
 }
 
 func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -216,7 +241,11 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting group mapping with id: "+id.String()+", for group with id: "+state.Group.ValueString()+", and team with id: "+state.Team.ValueString())
+	tflog.Debug(ctx, "Deleting OIDC Group Mapping", map[string]any{
+		"id":    id.String(),
+		"team":  state.Team.ValueString(),
+		"group": state.Group.ValueString(),
+	})
 	err := r.client.OIDC.RemoveTeamMapping(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -225,11 +254,24 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted oidc group mapping with id: "+id.String())
+	tflog.Debug(ctx, "Deleted OIDC Group Mapping", map[string]any{
+		"id":    state.ID.ValueString(),
+		"team":  state.Team.ValueString(),
+		"group": state.Group.ValueString(),
+	})
 }
 
 func (r *oidcGroupMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Debug(ctx, "Importing OIDC Group Mapping", map[string]any{
+		"id": req.ID,
+	})
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Imported OIDC Group Mapping", map[string]any{
+		"id": req.ID,
+	})
 }
 
 func (r *oidcGroupMappingResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

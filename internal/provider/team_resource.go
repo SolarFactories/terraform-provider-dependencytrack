@@ -68,7 +68,9 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 	teamReq := dtrack.Team{
 		Name: plan.Name.ValueString(),
 	}
-	tflog.Debug(ctx, "Creating a new team, with name: "+teamReq.Name)
+	tflog.Debug(ctx, "Creating Team", map[string]any{
+		"name": teamReq.Name,
+	})
 	teamRes, err := r.client.Team.Create(ctx, teamReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -85,7 +87,10 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created a new team, with id: "+teamRes.UUID.String())
+	tflog.Debug(ctx, "Created Team", map[string]any{
+		"id":   plan.ID,
+		"name": plan.Name,
+	})
 }
 
 func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -98,17 +103,20 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	// Refresh
-	tflog.Debug(ctx, "Refreshing team with id: "+state.ID.ValueString())
-	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	teamId, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	team, err := r.client.Team.Get(ctx, id)
+	tflog.Debug(ctx, "Reading Team", map[string]any{
+		"id":   teamId.String(),
+		"name": state.Name.ValueString(),
+	})
+	team, err := r.client.Team.Get(ctx, teamId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated team",
-			"Error with reading team: "+id.String()+", in original error: "+err.Error(),
+			"Error with reading team: "+teamId.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
@@ -121,7 +129,10 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed team with id: "+state.ID.ValueString())
+	tflog.Debug(ctx, "Read Team", map[string]any{
+		"id":   state.ID.ValueString(),
+		"name": state.Name.ValueString(),
+	})
 }
 
 func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -145,7 +156,10 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Updating team with id: "+id.String())
+	tflog.Debug(ctx, "Updating Team", map[string]any{
+		"id":   teamReq.UUID.String(),
+		"name": teamReq.Name,
+	})
 	teamRes, err := r.client.Team.Update(ctx, teamReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -165,7 +179,10 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated team with id: "+id.String())
+	tflog.Debug(ctx, "Updated Team", map[string]any{
+		"id":   plan.ID.ValueString(),
+		"name": plan.Name.ValueString(),
+	})
 }
 
 func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -188,7 +205,9 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting team with id: "+id.String())
+	tflog.Debug(ctx, "Deleting Team", map[string]any{
+		"id": team.UUID.String(),
+	})
 	err := r.client.Team.Delete(ctx, team)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -197,11 +216,23 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted team with id: "+id.String())
+	tflog.Debug(ctx, "Deleted Team", map[string]any{
+		"id":   state.ID.ValueString(),
+		"name": state.Name.ValueString(),
+	})
 }
 
 func (r *teamResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Debug(ctx, "Importing Team", map[string]any{
+		"id": req.ID,
+	})
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Imported Team", map[string]any{
+		"id": req.ID,
+	})
 }
 
 func (r *teamResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
