@@ -2,7 +2,8 @@
 
 #### FIXES
 - Within Update `comment` on `dependencytrack_team_apikey` was not being written back to state using return value from DependencyTrack.
-- Witin Create, Update, the permission list was assigned from a `dtrack.Team`, which may have been `nil`.
+- Within Create, Update, the permission list was assigned from a `dtrack.Team`, which may have been `nil`.
+- Within Import, `dependencytrack_acl_mapping` would still write to state if unable regardless of whether UUIDs parsed successfully.
 
 #### MISC
 - Standardised log error reporting when failing to parse a `UUID`.
@@ -19,6 +20,9 @@
 
 #### FEATURES
 - Add `dependencytrack_acl_mapping` resource to manage Portfolio Access Control for Projects.
+
+#### ISSUES
+- [Fixed in `1.12.1`] Import of `dependencytrack_acl_mapping` would import regardless of whether UUIDs parsed successfully.
 
 #### DEPENDENCIES
 - `github.com/DependencyTrack/client-go` `0.16.0` -> `main`
@@ -73,7 +77,7 @@
 - Add `dependencytrack_team_permissions` resource to canonically manage the permissions assigned to a Team.
 
 #### ISSUES
-- [Fixed in `1.12.1`]: Permission list is assigned from a potentially `nil` `dtrack.Team`.
+- [Fixed in `1.12.1`] Permission list is assigned from a potentially `nil` `dtrack.Team`.
 
 #### MISC
 - Remove deprecated field from within `golangci` config file for `goconst`.

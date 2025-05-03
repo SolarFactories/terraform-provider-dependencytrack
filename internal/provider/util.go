@@ -198,11 +198,11 @@ func Map[T, U any](items []T, actor func(T) U) []U {
 type LifecycleAction string
 
 const (
-	LifecycleCreate LifecycleAction = "Create" //LifecycleAction{"Create"}
-	LifecycleRead   LifecycleAction = "Read"   //LifecycleAction{"Read"}
-	LifecycleUpdate LifecycleAction = "Update" //LifecycleAction{"Update"}
-	LifecycleDelete LifecycleAction = "Delete" //LifecycleAction{"Delete"}
-	LifecycleImport LifecycleAction = "Import" //LifecycleAction{"Import"}
+	LifecycleCreate LifecycleAction = "Create"
+	LifecycleRead   LifecycleAction = "Read"
+	LifecycleUpdate LifecycleAction = "Update"
+	LifecycleDelete LifecycleAction = "Delete"
+	LifecycleImport LifecycleAction = "Import"
 )
 
 func TryParseUUID(value types.String, action LifecycleAction, path path.Path) (uuid.UUID, diag.Diagnostic) {
@@ -211,6 +211,14 @@ func TryParseUUID(value types.String, action LifecycleAction, path path.Path) (u
 			path,
 			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
 			fmt.Sprintf("Value for %s is unknown.", path.String()),
+		)
+		return uuid.Nil, diag
+	}
+	if value.IsNull() {
+		diag := diag.NewAttributeErrorDiagnostic(
+			path,
+			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
+			fmt.Sprintf("Value for %s is null.", path.String()),
 		)
 		return uuid.Nil, diag
 	}
