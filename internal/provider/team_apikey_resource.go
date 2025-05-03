@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
@@ -110,13 +109,9 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	team, err := uuid.Parse(plan.TeamID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Create, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	comment := plan.Comment.ValueString()
@@ -133,7 +128,7 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	if comment != "" {
 		tflog.Debug(ctx, "Setting Comment for API Key for team "+team.String())
-		_, err = r.client.Team.UpdateAPIKeyComment(ctx, key.Key, comment)
+		comment, err = r.client.Team.UpdateAPIKeyComment(ctx, key.Key, comment)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Error setting API Key comment",
@@ -176,13 +171,9 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	key := state.Key.ValueString()
 	publicId := state.PublicId.ValueString() // V4.13+
-	team, err := uuid.Parse(state.TeamID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Read, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
@@ -243,7 +234,7 @@ func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 	publicIdOrKey := r.getPublicIdOrKey(plan)
 	comment := plan.Comment.ValueString()
 
-	_, err := r.client.Team.UpdateAPIKeyComment(ctx, publicIdOrKey, comment)
+	commentOut, err := r.client.Team.UpdateAPIKeyComment(ctx, publicIdOrKey, comment)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update the API Key comment.",
@@ -251,6 +242,8 @@ func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 		)
 		return
 	}
+
+	plan.Comment = types.StringValue(commentOut)
 
 	// Update State
 	diags = resp.State.Set(ctx, plan)
@@ -272,18 +265,14 @@ func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	// Map TF to SDK
 	publicIdOrKey := r.getPublicIdOrKey(state)
-	team, err := uuid.Parse(state.TeamID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Delete, unable to parse team into UUID",
-			"Error parsing UUID from: "+state.TeamID.ValueString()+", from error: "+err.Error(),
-		)
+	team, diag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	// Execute
 	tflog.Debug(ctx, "Deleting API Key from team with id: "+team.String())
-	err = r.client.Team.DeleteAPIKey(ctx, publicIdOrKey)
+	err := r.client.Team.DeleteAPIKey(ctx, publicIdOrKey)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Team API Key",
@@ -303,12 +292,9 @@ func (r *teamAPIKeyResource) ImportState(ctx context.Context, req resource.Impor
 		)
 		return
 	}
-	uuid, err := uuid.Parse(idParts[0])
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unexpected import id",
-			"Unable to parse UUID for team: "+err.Error(),
-		)
+	uuid, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	publicIdOrKey := idParts[1]

@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -68,13 +67,9 @@ func (r *policyTagResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, err := uuid.Parse(plan.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Create, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleCreate, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	tagName := plan.Tag.ValueString()
@@ -113,13 +108,9 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 	tflog.Debug(ctx, "Refreshing policy-tag mapping for policy: "+state.PolicyID.ValueString()+", and tag: "+state.Tag.ValueString())
 
 	// Refresh
-	policyId, err := uuid.Parse(state.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Read, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+	policyId, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	tagName := state.Tag.ValueString()
@@ -165,13 +156,9 @@ func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, err := uuid.Parse(plan.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Update, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleUpdate, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	tagName := plan.Tag.ValueString()
@@ -198,19 +185,15 @@ func (r *policyTagResource) Delete(ctx context.Context, req resource.DeleteReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, err := uuid.Parse(state.PolicyID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("policy"),
-			"Within Delete, unable to parse policy into UUID",
-			"Error from: "+err.Error(),
-		)
+	policyId, diag := TryParseUUID(state.PolicyID, LifecycleDelete, path.Root("policy"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	tagName := state.Tag.ValueString()
 
 	tflog.Debug(ctx, "Deleting tag-policy mapping for policy: "+policyId.String()+", with tag: "+tagName)
-	_, err = r.client.Policy.DeleteTag(ctx, policyId, tagName)
+	_, err := r.client.Policy.DeleteTag(ctx, policyId, tagName)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete tag-policy mapping",

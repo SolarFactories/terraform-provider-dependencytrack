@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -99,13 +98,9 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 	// Refresh
 	tflog.Debug(ctx, "Refreshing oidc group with id: "+state.ID.ValueString())
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Read, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	oidcGroup, err := FindPaged(
@@ -147,13 +142,9 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(plan.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Update, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	oidcGroupReq := dtrack.OIDCGroup{
@@ -197,19 +188,15 @@ func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Delete, unable to parse UUID",
-			"Error parsing UUID from: "+state.ID.ValueString()+", error: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
 	// Execute
 	tflog.Debug(ctx, "Deleting oidc group with id: "+id.String())
-	err = r.client.OIDC.DeleteGroup(ctx, id)
+	err := r.client.OIDC.DeleteGroup(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete oidc group",

@@ -10,6 +10,9 @@ import (
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 type Semver struct {
@@ -190,4 +193,35 @@ func Map[T, U any](items []T, actor func(T) U) []U {
 		result = append(result, u)
 	}
 	return result
+}
+
+type LifecycleAction string
+
+const (
+	LifecycleCreate LifecycleAction = "Create" //LifecycleAction{"Create"}
+	LifecycleRead   LifecycleAction = "Read"   //LifecycleAction{"Read"}
+	LifecycleUpdate LifecycleAction = "Update" //LifecycleAction{"Update"}
+	LifecycleDelete LifecycleAction = "Delete" //LifecycleAction{"Delete"}
+	LifecycleImport LifecycleAction = "Import" //LifecycleAction{"Import"}
+)
+
+func TryParseUUID(value types.String, action LifecycleAction, path path.Path) (uuid.UUID, diag.Diagnostic) {
+	if value.IsUnknown() {
+		diag := diag.NewAttributeErrorDiagnostic(
+			path,
+			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
+			fmt.Sprintf("Value for %s is unknown.", path.String()),
+		)
+		return uuid.Nil, diag
+	}
+	ret, err := uuid.Parse(value.ValueString())
+	if err != nil {
+		diag := diag.NewAttributeErrorDiagnostic(
+			path,
+			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
+			"Error from: "+err.Error(),
+		)
+		return uuid.Nil, diag
+	}
+	return ret, nil
 }

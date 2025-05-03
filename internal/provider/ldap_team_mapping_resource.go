@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -75,13 +74,9 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	team, err := uuid.Parse(plan.Team.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Create, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(plan.Team, LifecycleCreate, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	distinguishedName := plan.DistinguishedName.ValueString()
@@ -127,21 +122,13 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	tflog.Debug(ctx, "Refreshing ldap mapping with id: "+state.ID.ValueString()+", for team: "+state.Team.ValueString()+", and distinguished name: "+state.DistinguishedName.ValueString())
 
 	// Refresh
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Read, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	team, err := uuid.Parse(state.Team.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Read, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(state.Team, LifecycleRead, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	distinguishedName := state.DistinguishedName.ValueString()
 	if resp.Diagnostics.HasError() {
@@ -192,21 +179,13 @@ func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	id, err := uuid.Parse(plan.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Update, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	team, err := uuid.Parse(plan.Team.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Update, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(plan.Team, LifecycleUpdate, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	distingushedName := plan.DistinguishedName.ValueString()
 	if resp.Diagnostics.HasError() {
@@ -238,19 +217,15 @@ func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Delete, unable to parse id into UUID",
-			"Error parsing UUID from: "+state.ID.ValueString()+", error: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
 	// Execute
 	tflog.Debug(ctx, "Deleting ldap mapping with id: "+id.String()+", for team with id: "+state.Team.ValueString()+", and distinguished name: "+state.DistinguishedName.ValueString())
-	err = r.client.LDAP.RemoveMapping(ctx, id)
+	err := r.client.LDAP.RemoveMapping(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete ldap mapping",

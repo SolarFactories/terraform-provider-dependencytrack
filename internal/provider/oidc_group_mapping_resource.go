@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -76,21 +75,13 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	team, err := uuid.Parse(plan.Team.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Create, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(plan.Team, LifecycleCreate, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
-	group, err := uuid.Parse(plan.Group.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("group"),
-			"Within Create, unable to parse group into UUID",
-			"Error from: "+err.Error(),
-		)
+	group, diag := TryParseUUID(plan.Group, LifecycleCreate, path.Root("group"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 	}
 	if resp.Diagnostics.HasError() {
 		return
@@ -136,13 +127,9 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 	tflog.Debug(ctx, "Refreshing oidc group mapping with id: "+state.ID.ValueString()+", for team: "+state.Team.ValueString()+", and group: "+state.Group.ValueString())
 
 	// Refresh
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Read, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	mappingInfo, err := FindPagedOidcMapping(id, func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
@@ -180,13 +167,9 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	id, err := uuid.Parse(plan.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Update, unable to parse id into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
@@ -226,19 +209,15 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 	}
 
 	// Map TF to SDK
-	id, err := uuid.Parse(state.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("id"),
-			"Within Delete, unable to parse id into UUID",
-			"Error parsing UUID from: "+state.ID.ValueString()+", error: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
 	// Execute
 	tflog.Debug(ctx, "Deleting group mapping with id: "+id.String()+", for group with id: "+state.Group.ValueString()+", and team with id: "+state.Team.ValueString())
-	err = r.client.OIDC.RemoveTeamMapping(ctx, id)
+	err := r.client.OIDC.RemoveTeamMapping(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete group mapping",

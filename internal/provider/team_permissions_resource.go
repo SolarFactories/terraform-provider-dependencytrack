@@ -3,7 +3,6 @@ package provider
 import (
 	"context"
 	"fmt"
-	"github.com/google/uuid"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -65,13 +64,9 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	team, err := uuid.Parse(plan.TeamID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Create, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
@@ -99,6 +94,7 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 				"Error adding team permission: "+permission.Name+" for team: "+team.String(),
 				"Error from: "+err.Error(),
 			)
+			continue
 		}
 		finalPermissions = updatedTeam.Permissions
 	}
@@ -112,6 +108,7 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 				"Error removing team permission: "+permission.Name+"for team: "+team.String(),
 				"Error from: "+err.Error(),
 			)
+			continue
 		}
 		finalPermissions = updatedTeam.Permissions
 	}
@@ -145,13 +142,9 @@ func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadReq
 	tflog.Debug(ctx, "Refreshing team permissions for team: "+state.TeamID.ValueString())
 
 	// Refresh
-	id, err := uuid.Parse(state.TeamID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Read, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	id, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	team, err := r.client.Team.Get(ctx, id)
@@ -188,13 +181,9 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	team, err := uuid.Parse(plan.TeamID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Update, unable to parse team into UUID",
-			"Error from: "+err.Error(),
-		)
+	team, diag := TryParseUUID(plan.TeamID, LifecycleUpdate, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 
@@ -222,6 +211,7 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 				"Error adding team permission: "+permission.Name+" for team: "+team.String(),
 				"Error from: "+err.Error(),
 			)
+			continue
 		}
 		finalPermissions = updatedTeam.Permissions
 	}
@@ -235,6 +225,7 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 				"Error removing team permission: "+permission.Name+"for team: "+team.String(),
 				"Error from: "+err.Error(),
 			)
+			continue
 		}
 		finalPermissions = updatedTeam.Permissions
 	}
@@ -268,13 +259,9 @@ func (r *teamPermissionsResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Map TF to SDK
-	team, err := uuid.Parse(state.TeamID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("team"),
-			"Within Delete, unable to parse UUID",
-			"Error parsing UUID from: "+state.TeamID.ValueString()+", error: "+err.Error(),
-		)
+	team, diag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
+	if diag != nil {
+		resp.Diagnostics.Append(diag)
 		return
 	}
 	teamInfo, err := r.client.Team.Get(ctx, team)
@@ -293,6 +280,7 @@ func (r *teamPermissionsResource) Delete(ctx context.Context, req resource.Delet
 				"Error removing team permission: "+permission.Name+"for team: "+team.String(),
 				"Error from: "+err.Error(),
 			)
+			continue
 		}
 	}
 	if resp.Diagnostics.HasError() {
