@@ -78,7 +78,10 @@ func (r *policyProjectResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	tflog.Debug(ctx, "Adding policy-project for policy with id: "+policyId.String()+" to project: "+projectId.String())
+	tflog.Debug(ctx, "Creating Policy Project Mapping", map[string]any{
+		"policy":  policyId.String(),
+		"project": projectId.String(),
+	})
 	policy, err := r.client.Policy.AddProject(ctx, policyId, projectId)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -97,7 +100,10 @@ func (r *policyProjectResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created policy-project mapping for policy with id: "+plan.PolicyID.ValueString()+" to project with id: "+plan.ProjectID.ValueString())
+	tflog.Debug(ctx, "Created Policy Project Mapping", map[string]any{
+		"policy":  plan.PolicyID.ValueString(),
+		"project": plan.ProjectID.ValueString(),
+	})
 }
 
 func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -109,7 +115,10 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	tflog.Debug(ctx, "Refreshing policy-project mapping for policy: "+state.PolicyID.ValueString()+", and project: "+state.ProjectID.ValueString())
+	tflog.Debug(ctx, "Reading Policy Project Mapping", map[string]any{
+		"policy":  state.PolicyID.ValueString(),
+		"project": state.ProjectID.ValueString(),
+	})
 
 	// Refresh
 	policyId, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
@@ -153,7 +162,10 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed project-policy mapping for policy: "+state.PolicyID.ValueString()+", with project: "+state.ProjectID.ValueString())
+	tflog.Debug(ctx, "Read Policy Project Mapping", map[string]any{
+		"policy":  state.PolicyID.ValueString(),
+		"project": state.ProjectID.ValueString(),
+	})
 }
 
 func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -178,6 +190,11 @@ func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
+	tflog.Debug(ctx, "Updating Policy Project Mapping", map[string]any{
+		"policy":  policyId.String(),
+		"project": projectId.String(),
+	})
+
 	plan = policyProjectResourceModel{
 		PolicyID:  types.StringValue(policyId.String()),
 		ProjectID: types.StringValue(projectId.String()),
@@ -189,7 +206,10 @@ func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated project-policy mapping for policy: "+plan.PolicyID.ValueString()+", and project: "+plan.ProjectID.ValueString())
+	tflog.Debug(ctx, "Updated Policy Project Mapping", map[string]any{
+		"policy":  plan.PolicyID.ValueString(),
+		"project": plan.ProjectID.ValueString(),
+	})
 }
 
 func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -213,7 +233,10 @@ func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	tflog.Debug(ctx, "Deleting project-policy mapping for policy: "+policyId.String()+", with project: "+projectId.String())
+	tflog.Debug(ctx, "Deleting Policy Project Mapping", map[string]any{
+		"policy":  policyId.String(),
+		"project": projectId.String(),
+	})
 	_, err := r.client.Policy.DeleteProject(ctx, policyId, projectId)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -221,7 +244,10 @@ func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteR
 			"Error from: "+err.Error(),
 		)
 	}
-	tflog.Debug(ctx, "Deleted project-policy mapping for policy: "+policyId.String()+", with project: "+projectId.String())
+	tflog.Debug(ctx, "Deleted Policy Project Mapping", map[string]any{
+		"policy":  state.PolicyID.ValueString(),
+		"project": state.ProjectID.ValueString(),
+	})
 }
 
 func (r *policyProjectResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

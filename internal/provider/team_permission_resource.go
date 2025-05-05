@@ -75,7 +75,10 @@ func (r *teamPermissionResource) Create(ctx context.Context, req resource.Create
 	permission := dtrack.Permission{
 		Name: plan.Permission.ValueString(),
 	}
-	tflog.Debug(ctx, "Assigning "+permission.Name+" to team "+team.String())
+	tflog.Debug(ctx, "Creating Team Permission", map[string]any{
+		"team":       team.String(),
+		"permission": permission.Name,
+	})
 	_, err := r.client.Permission.AddPermissionToTeam(ctx, permission, team)
 
 	if err != nil {
@@ -93,7 +96,10 @@ func (r *teamPermissionResource) Create(ctx context.Context, req resource.Create
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Assigned permission "+permission.Name+" to team, with id: "+team.String())
+	tflog.Debug(ctx, "Created Team Permission", map[string]any{
+		"team":       plan.TeamID.ValueString(),
+		"permission": plan.Permission.ValueString(),
+	})
 }
 
 func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -104,19 +110,22 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshing team permission for team: "+state.TeamID.ValueString())
 
 	// Refresh
-	id, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
+	teamId, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	team, err := r.client.Team.Get(ctx, id)
+	tflog.Debug(ctx, "Read Team Permission", map[string]any{
+		"team":       teamId.String(),
+		"permission": state.Permission.ValueString(),
+	})
+	team, err := r.client.Team.Get(ctx, teamId)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated team",
-			"Error with reading team: "+id.String()+", in original error: "+err.Error(),
+			"Error with reading team: "+teamId.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
@@ -139,7 +148,10 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed permission "+permission.Name+" for team with id: "+state.TeamID.ValueString())
+	tflog.Debug(ctx, "Read Team Permission", map[string]any{
+		"team":       state.TeamID.ValueString(),
+		"permission": state.Permission.ValueString(),
+	})
 }
 
 func (r *teamPermissionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -158,7 +170,10 @@ func (r *teamPermissionResource) Update(ctx context.Context, req resource.Update
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated permission "+plan.Permission.ValueString()+" for team with id: "+plan.TeamID.ValueString())
+	tflog.Debug(ctx, "Updated Team Permission", map[string]any{
+		"team":       plan.TeamID.ValueString(),
+		"permission": plan.Permission.ValueString(),
+	})
 }
 
 func (r *teamPermissionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -181,7 +196,10 @@ func (r *teamPermissionResource) Delete(ctx context.Context, req resource.Delete
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting permission "+permission.Name+" from team with id: "+team.String())
+	tflog.Debug(ctx, "Deleting Team Permission", map[string]any{
+		"team":       team.String(),
+		"permission": permission.Name,
+	})
 	_, err := r.client.Permission.RemovePermissionFromTeam(ctx, permission, team)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -190,7 +208,10 @@ func (r *teamPermissionResource) Delete(ctx context.Context, req resource.Delete
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted permission "+permission.Name+" from team with id: "+team.String())
+	tflog.Debug(ctx, "Deleted Team Permission", map[string]any{
+		"team":       state.TeamID.ValueString(),
+		"permission": state.Permission.ValueString(),
+	})
 }
 
 func (r *teamPermissionResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

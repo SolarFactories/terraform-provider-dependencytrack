@@ -85,7 +85,10 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 		Team:              team,
 		DistinguishedName: distinguishedName,
 	}
-	tflog.Debug(ctx, "Mapping ldap distinguished name "+mappingReq.DistinguishedName+" to team "+mappingReq.Team.String())
+	tflog.Debug(ctx, "Creating LDAP Team Mapping", map[string]any{
+		"team":               mappingReq.Team.String(),
+		"distinguished_name": mappingReq.DistinguishedName,
+	})
 
 	mappingRes, err := r.client.LDAP.AddMapping(ctx, mappingReq)
 	if err != nil {
@@ -108,7 +111,11 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created ldap mapping with id: "+plan.ID.ValueString()+", for distinguished name: "+plan.DistinguishedName.ValueString()+", to team, with id: "+plan.Team.ValueString())
+	tflog.Debug(ctx, "Created LDAP Team Mapping", map[string]any{
+		"id":                 plan.ID.ValueString(),
+		"team":               plan.Team.ValueString(),
+		"distinguished_name": plan.DistinguishedName.ValueString(),
+	})
 }
 
 func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -119,7 +126,11 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshing ldap mapping with id: "+state.ID.ValueString()+", for team: "+state.Team.ValueString()+", and distinguished name: "+state.DistinguishedName.ValueString())
+	tflog.Debug(ctx, "Reading LDAP Team Mapping", map[string]any{
+		"id":                 state.ID.ValueString(),
+		"team":               state.Team.ValueString(),
+		"distinguished_name": state.DistinguishedName.ValueString(),
+	})
 
 	// Refresh
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
@@ -166,7 +177,11 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed ldap mapping for team: "+state.Team.ValueString()+", and distinguished name: "+state.DistinguishedName.ValueString())
+	tflog.Debug(ctx, "Read LDAP Team Mapping", map[string]any{
+		"id":                 state.ID.ValueString(),
+		"team":               state.Team.ValueString(),
+		"distinguished_name": state.DistinguishedName.ValueString(),
+	})
 }
 
 func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -178,6 +193,12 @@ func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Debug(ctx, "Updating LDAP Team Mapping", map[string]any{
+		"id":                 plan.ID.ValueString(),
+		"team":               plan.Team.ValueString(),
+		"distinguished_name": plan.DistinguishedName.ValueString(),
+	})
 
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
@@ -204,7 +225,11 @@ func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated ldap mapping with id: "+plan.ID.ValueString()+", for team: "+plan.Team.ValueString()+", and distinguished name: "+plan.DistinguishedName.ValueString())
+	tflog.Debug(ctx, "Updated LDAP Team Mapping", map[string]any{
+		"id":                 state.ID.ValueString(),
+		"team":               state.Team.ValueString(),
+		"distinguished_name": state.DistinguishedName.ValueString(),
+	})
 }
 
 func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -224,7 +249,11 @@ func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting ldap mapping with id: "+id.String()+", for team with id: "+state.Team.ValueString()+", and distinguished name: "+state.DistinguishedName.ValueString())
+	tflog.Debug(ctx, "Deleting LDAP Team Mapping", map[string]any{
+		"id":                 id.String(),
+		"team":               state.Team.ValueString(),
+		"distinguished_name": state.DistinguishedName.ValueString(),
+	})
 	err := r.client.LDAP.RemoveMapping(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -233,7 +262,11 @@ func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.Delet
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted ldap mapping with id: "+id.String())
+	tflog.Debug(ctx, "Deleted LDAP Team Mapping", map[string]any{
+		"id":                 state.ID.ValueString(),
+		"team":               state.Team.ValueString(),
+		"distinguished_name": state.DistinguishedName.ValueString(),
+	})
 }
 
 func (r *ldapTeamMappingResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

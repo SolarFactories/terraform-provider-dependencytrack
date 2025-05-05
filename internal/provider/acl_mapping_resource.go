@@ -92,7 +92,10 @@ func (r *aclMappingResource) Create(ctx context.Context, req resource.CreateRequ
 		Team:    team,
 		Project: project,
 	}
-	tflog.Debug(ctx, "Granting ACL for project "+mappingReq.Project.String()+" to team "+mappingReq.Team.String())
+	tflog.Debug(ctx, "Creating Project ACL Mapping", map[string]any{
+		"project": mappingReq.Project.String(),
+		"team":    mappingReq.Project.String(),
+	})
 	err := r.client.ACL.AddProjectMapping(ctx, mappingReq)
 
 	if err != nil {
@@ -113,7 +116,11 @@ func (r *aclMappingResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created acl for project with id: "+plan.Project.ValueString()+" to team, with id: "+plan.Team.ValueString())
+	tflog.Debug(ctx, "Created Project ACL Mapping", map[string]any{
+		"id":      plan.ID.ValueString(),
+		"project": plan.Project.ValueString(),
+		"team":    plan.Project.ValueString(),
+	})
 }
 
 func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -124,8 +131,6 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshing acl mapping for team: "+state.Team.ValueString()+", and project: "+state.Project.ValueString())
-
 	// Refresh
 	team, diag := TryParseUUID(state.Team, LifecycleRead, path.Root("team"))
 	if diag != nil {
@@ -138,6 +143,12 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Debug(ctx, "Reading Project ACL Mapping", map[string]any{
+		"id":      state.ID.ValueString(),
+		"team":    team.String(),
+		"project": projectId.String(),
+	})
 	project, err := FindPaged(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Project], error) {
 		return r.client.ACL.GetAllProjects(ctx, team, po)
 	}, func(project dtrack.Project) bool {
@@ -163,7 +174,11 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed acl mapping for team: "+state.Team.ValueString()+", and project: "+state.Project.ValueString())
+	tflog.Debug(ctx, "Read Project ACL Mapping", map[string]any{
+		"id":      state.ID.ValueString(),
+		"project": state.Project.ValueString(),
+		"team":    state.Team.ValueString(),
+	})
 }
 
 func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -200,7 +215,11 @@ func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated acl mapping for team: "+plan.Team.ValueString()+", and project: "+plan.Project.ValueString())
+	tflog.Debug(ctx, "Updated Project ACL Mapping", map[string]any{
+		"id":      plan.ID.ValueString(),
+		"project": plan.Project.ValueString(),
+		"team":    plan.Team.ValueString(),
+	})
 }
 
 func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -226,7 +245,11 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting acl mapping for project with id: "+state.Project.ValueString()+", and team with id: "+state.Team.ValueString())
+	tflog.Debug(ctx, "Deleting Project ACL Mapping", map[string]any{
+		"id":      state.ID.ValueString(),
+		"team":    team.String(),
+		"project": project.String(),
+	})
 	err := r.client.ACL.RemoveProjectMapping(ctx, team, project)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -235,7 +258,11 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted acl group mapping for project:  "+state.Project.ValueString()+", and team: "+state.Team.ValueString())
+	tflog.Debug(ctx, "Deleted Project ACL Mapping", map[string]any{
+		"id":      state.ID.ValueString(),
+		"project": state.Project.ValueString(),
+		"team":    state.Team.ValueString(),
+	})
 }
 
 func (r *aclMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -249,6 +276,10 @@ func (r *aclMappingResource) ImportState(ctx context.Context, req resource.Impor
 	}
 	teamIdString := idParts[0]
 	projectIdString := idParts[1]
+	tflog.Debug(ctx, "Importing Project ACL Mapping", map[string]any{
+		"team":    teamIdString,
+		"project": projectIdString,
+	})
 
 	teamId, diag := TryParseUUID(types.StringValue(teamIdString), LifecycleImport, path.Root("team"))
 	if diag != nil {
@@ -271,7 +302,11 @@ func (r *aclMappingResource) ImportState(ctx context.Context, req resource.Impor
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Imported an ACL Mapping from team: "+aclMappingState.Team.ValueString()+", and project: "+aclMappingState.Project.ValueString())
+	tflog.Debug(ctx, "Imported Project ACL Mapping", map[string]any{
+		"id":      aclMappingState.ID.ValueString(),
+		"project": aclMappingState.Project.ValueString(),
+		"team":    aclMappingState.Team.ValueString(),
+	})
 }
 
 func (r *aclMappingResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

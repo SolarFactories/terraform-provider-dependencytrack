@@ -117,15 +117,18 @@ func (r *projectPropertyResource) Create(ctx context.Context, req resource.Creat
 		Description: plan.Description.ValueString(),
 	}
 
-	tflog.Debug(ctx, "Creating a new project property", map[string]any{
-		"group": propertyReq.Group,
-		"name":  propertyReq.Name,
+	tflog.Debug(ctx, "Creating a Project Property", map[string]any{
+		"project": project.String(),
+		"group":   propertyReq.Group,
+		"name":    propertyReq.Name,
+		"value":   propertyReq.Value,
+		"type":    propertyReq.Type,
 	})
 	propertyRes, err := r.client.ProjectProperty.Create(ctx, project, propertyReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating project property.",
-			"Unexpected error: "+err.Error(),
+			"Error creating Project Property.",
+			"Error from: "+err.Error(),
 		)
 		return
 	}
@@ -144,7 +147,15 @@ func (r *projectPropertyResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created a new project property")
+	tflog.Debug(ctx, "Created a Project Property", map[string]any{
+		"id":          plan.ID.ValueString(),
+		"project":     plan.Project.ValueString(),
+		"group":       plan.Group.ValueString(),
+		"name":        plan.Name.ValueString(),
+		"value":       plan.Value.ValueString(),
+		"type":        plan.Type.ValueString(),
+		"description": plan.Description.ValueString(),
+	})
 }
 
 func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -155,12 +166,20 @@ func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	tflog.Debug(ctx, "Refreshing project property")
 	project, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("project"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
+	tflog.Debug(ctx, "Reading Project Property", map[string]any{
+		"id":          state.ID.ValueString(),
+		"project":     project.String(),
+		"group":       state.Group.ValueString(),
+		"name":        state.Group.ValueString(),
+		"value":       state.Value.ValueString(),
+		"type":        state.Type.ValueString(),
+		"description": state.Description.ValueString(),
+	})
 	property, err := FindPaged(
 		func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
 			return r.client.ProjectProperty.GetAll(ctx, project, po)
@@ -177,8 +196,8 @@ func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadReq
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to locate project property.",
-			"Unexpected error from: "+err.Error(),
+			"Within Read, unable to locate Project Property.",
+			"Error from: "+err.Error(),
 		)
 	}
 	propertyState := projectPropertyResourceModel{
@@ -198,7 +217,15 @@ func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed project property.")
+	tflog.Debug(ctx, "Read Project Property", map[string]any{
+		"id":          propertyState.ID.ValueString(),
+		"project":     propertyState.Project.ValueString(),
+		"group":       propertyState.Group.ValueString(),
+		"name":        propertyState.Name.ValueString(),
+		"value":       propertyState.Value.ValueString(),
+		"type":        propertyState.Type.ValueString(),
+		"description": propertyState.Description.ValueString(),
+	})
 }
 
 func (r *projectPropertyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -221,11 +248,19 @@ func (r *projectPropertyResource) Update(ctx context.Context, req resource.Updat
 		Description: plan.Description.ValueString(),
 	}
 
-	tflog.Debug(ctx, "Updating project property")
+	tflog.Debug(ctx, "Updating Project Property", map[string]any{
+		"id":          plan.ID.ValueString(),
+		"project":     project.String(),
+		"group":       propertyReq.Group,
+		"name":        propertyReq.Name,
+		"value":       propertyReq.Value,
+		"type":        propertyReq.Type,
+		"description": propertyReq.Description,
+	})
 	propertyRes, err := r.client.ProjectProperty.Update(ctx, project, propertyReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to update project property.",
+			"Unable to update Project Property.",
 			"Error from: "+err.Error(),
 		)
 		return
@@ -247,7 +282,15 @@ func (r *projectPropertyResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated project property")
+	tflog.Debug(ctx, "Updated Project Property", map[string]any{
+		"id":          state.ID.ValueString(),
+		"project":     state.Project.ValueString(),
+		"group":       state.Group.ValueString(),
+		"name":        state.Name.ValueString(),
+		"value":       state.Value.ValueString(),
+		"type":        state.Type.ValueString(),
+		"description": state.Description.ValueString(),
+	})
 }
 
 func (r *projectPropertyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -265,10 +308,14 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 	groupName := state.Group.ValueString()
 	propertyName := state.Name.ValueString()
 
-	tflog.Debug(ctx, "Deleting project property", map[string]any{
-		"project": project.String(),
-		"group":   groupName,
-		"name":    propertyName,
+	tflog.Debug(ctx, "Deleting Project Property", map[string]any{
+		"id":          state.ID.ValueString(),
+		"project":     project.String(),
+		"group":       groupName,
+		"name":        propertyName,
+		"value":       state.Value.ValueString(),
+		"type":        state.Type.ValueString(),
+		"description": state.Description.ValueString(),
 	})
 	// NOTE: Has a patch applied in `http_client.go`
 	err := r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
@@ -279,7 +326,15 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted project property.")
+	tflog.Debug(ctx, "Deleted Project Property", map[string]any{
+		"id":          state.ID.ValueString(),
+		"project":     state.Project.ValueString(),
+		"group":       state.Group.ValueString(),
+		"name":        state.Name.ValueString(),
+		"value":       state.Value.ValueString(),
+		"type":        state.Type.ValueString(),
+		"description": state.Description.ValueString(),
+	})
 }
 
 func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
@@ -287,21 +342,27 @@ func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.
 	if len(idParts) != 3 || idParts[0] == "" || idParts[1] == "" || idParts[2] == "" {
 		resp.Diagnostics.AddError(
 			"Unexpected import id",
-			"Expected id in format <UUID>/<Group>/<Name>. Received "+req.ID,
+			"Expected id in format <Project UUID>/<Group>/<Name>. Received "+req.ID,
 		)
 		return
 	}
-	uuid, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("id"))
+	project, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 	groupName := idParts[1]
 	propertyName := idParts[2]
+	tflog.Debug(ctx, "Importing Project Property", map[string]any{
+		"id":      req.ID,
+		"project": project.String(),
+		"group":   groupName,
+		"name":    propertyName,
+	})
 
 	property, err := FindPaged(
 		func(po dtrack.PageOptions) (dtrack.Page[dtrack.ProjectProperty], error) {
-			return r.client.ProjectProperty.GetAll(ctx, uuid, po)
+			return r.client.ProjectProperty.GetAll(ctx, project, po)
 		},
 		func(property dtrack.ProjectProperty) bool {
 			if property.Group != groupName {
@@ -320,8 +381,8 @@ func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.
 		)
 	}
 	propertyState := projectPropertyResourceModel{
-		ID:          types.StringValue(fmt.Sprintf("%s/%s/%s", uuid.String(), property.Group, property.Name)),
-		Project:     types.StringValue(uuid.String()),
+		ID:          types.StringValue(fmt.Sprintf("%s/%s/%s", project.String(), property.Group, property.Name)),
+		Project:     types.StringValue(project.String()),
 		Group:       types.StringValue(property.Group),
 		Name:        types.StringValue(property.Name),
 		Value:       types.StringValue(property.Value),
@@ -333,7 +394,15 @@ func (r *projectPropertyResource) ImportState(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Imported a project property.")
+	tflog.Debug(ctx, "Imported Project Property", map[string]any{
+		"id":          propertyState.ID.ValueString(),
+		"project":     propertyState.Project.ValueString(),
+		"group":       propertyState.Group.ValueString(),
+		"name":        propertyState.Name.ValueString(),
+		"value":       propertyState.Value.ValueString(),
+		"type":        propertyState.Type.ValueString(),
+		"description": propertyState.Description.ValueString(),
+	})
 }
 
 func (r *projectPropertyResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

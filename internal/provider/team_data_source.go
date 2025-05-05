@@ -80,7 +80,9 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Reading DependencyTrack team", map[string]any{"name": state.Name.ValueString()})
+	tflog.Debug(ctx, "Reading Team", map[string]any{
+		"name": state.Name.ValueString(),
+	})
 
 	team, err := FindPaged(
 		func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
@@ -98,7 +100,6 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		)
 		return
 	}
-	tflog.Debug(ctx, "Found team with UUID: "+team.UUID.String())
 	// Transform data into model
 	teamState := teamDataSourceModel{
 		Name:        types.StringValue(team.Name),
@@ -106,10 +107,14 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		Permissions: make([]teamPermissionModel, 0),
 	}
 	for _, permission := range team.Permissions {
-		tflog.Debug(ctx, "Found permission with name "+permission.Name)
 		teamState.Permissions = append(teamState.Permissions, teamPermissionModel{
 			Name:        types.StringValue(permission.Name),
 			Description: types.StringValue(permission.Description),
+		})
+		tflog.Debug(ctx, "Found Team Permission", map[string]any{
+			"team":        team.UUID.String(),
+			"name":        permission.Name,
+			"description": permission.Description,
 		})
 	}
 	// Update state
@@ -118,7 +123,11 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Read DependencyTrack team", map[string]any{"uuid": team.UUID.String()})
+	tflog.Debug(ctx, "Read Team", map[string]any{
+		"id":            teamState.ID.ValueString(),
+		"name":          teamState.Name.ValueString(),
+		"permissions.#": len(teamState.Permissions),
+	})
 }
 
 func (d *teamDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

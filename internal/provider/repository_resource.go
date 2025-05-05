@@ -122,7 +122,15 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		AuthenticationRequired: plan.Password.ValueString() != "" || plan.Username.ValueString() != "",
 	}
 
-	tflog.Debug(ctx, "Creating a new repository, with type: "+string(repositoryReq.Type)+", and identifier: "+repositoryReq.Identifier)
+	tflog.Debug(ctx, "Creating a Repository", map[string]any{
+		"type":       repositoryReq.Type,
+		"identifier": repositoryReq.Identifier,
+		"url":        repositoryReq.Url,
+		"precedence": repositoryReq.ResolutionOrder,
+		"enabled":    repositoryReq.Enabled,
+		"internal":   repositoryReq.Internal,
+		"username":   repositoryReq.Username,
+	})
 	repositoryRes, err := r.client.Repository.Create(ctx, repositoryReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -150,7 +158,16 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created a new repository, with id: "+repositoryRes.UUID.String())
+	tflog.Debug(ctx, "Created Repository", map[string]any{
+		"id":         plan.ID.ValueString(),
+		"type":       plan.Type.ValueString(),
+		"identifier": plan.Identifier.ValueString(),
+		"url":        plan.URL.ValueString(),
+		"precedence": plan.Precedence.ValueInt32(),
+		"enabled":    plan.Enabled.ValueBool(),
+		"internal":   plan.Internal.ValueBool(),
+		"username":   plan.Username.ValueString(),
+	})
 }
 
 func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -164,14 +181,16 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	// Refresh
 	repoType := state.Type.ValueString()
-	uuidString := state.ID.ValueString()
 
-	tflog.Debug(ctx, "Refreshing repository with type: "+repoType+", id: "+uuidString)
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
+	tflog.Debug(ctx, "Reading Repository", map[string]any{
+		"id":   id.String(),
+		"type": repoType,
+	})
 
 	repository, err := FindPaged(
 		func(po dtrack.PageOptions) (dtrack.Page[dtrack.Repository], error) {
@@ -209,7 +228,16 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed repository with id: "+state.ID.ValueString())
+	tflog.Debug(ctx, "Read Repository", map[string]any{
+		"id":         state.ID.ValueString(),
+		"type":       state.Type.ValueString(),
+		"identifier": state.Identifier.ValueString(),
+		"url":        state.URL.ValueString(),
+		"precedence": state.Precedence.ValueInt32(),
+		"enabled":    state.Enabled.ValueBool(),
+		"internal":   state.Internal.ValueBool(),
+		"username":   state.Username.ValueString(),
+	})
 }
 
 func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -241,7 +269,16 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Updating repository with id: "+id.String())
+	tflog.Debug(ctx, "Updating Repository", map[string]any{
+		"id":         repositoryReq.UUID.String(),
+		"type":       string(repositoryReq.Type),
+		"identifier": repositoryReq.Identifier,
+		"url":        repositoryReq.Url,
+		"precedence": repositoryReq.ResolutionOrder,
+		"enabled":    repositoryReq.Enabled,
+		"internal":   repositoryReq.Internal,
+		"username":   repositoryReq.Username,
+	})
 	repositoryRes, err := r.client.Repository.Update(ctx, repositoryReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -271,7 +308,16 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated repository with id: "+id.String())
+	tflog.Debug(ctx, "Updated Repository", map[string]any{
+		"id":         plan.ID.ValueString(),
+		"type":       plan.Type.ValueString(),
+		"identifier": plan.Identifier.ValueString(),
+		"url":        plan.URL.ValueString(),
+		"precedence": plan.Precedence.ValueInt32(),
+		"enabled":    plan.Enabled.ValueBool(),
+		"internal":   plan.Internal.ValueBool(),
+		"username":   plan.Username.ValueString(),
+	})
 }
 
 func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -291,7 +337,9 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Execute
-	tflog.Debug(ctx, "Deleting repository with id: "+id.String())
+	tflog.Debug(ctx, "Deleting Repository", map[string]any{
+		"id": id.String(),
+	})
 	err := r.client.Repository.Delete(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -300,11 +348,29 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted repository with id: "+id.String())
+	tflog.Debug(ctx, "Deleted Repository", map[string]any{
+		"id":         state.ID.ValueString(),
+		"type":       state.Type.ValueString(),
+		"identifier": state.Identifier.ValueString(),
+		"url":        state.URL.ValueString(),
+		"precedence": state.Precedence.ValueInt32(),
+		"enabled":    state.Enabled.ValueBool(),
+		"internal":   state.Internal.ValueBool(),
+		"username":   state.Username.ValueString(),
+	})
 }
 
 func (r *repositoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Debug(ctx, "Importing Repository", map[string]any{
+		"id": req.ID,
+	})
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Imported Repository", map[string]any{
+		"id": req.ID,
+	})
 }
 
 func (r *repositoryResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

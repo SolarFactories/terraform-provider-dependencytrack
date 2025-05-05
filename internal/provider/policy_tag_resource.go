@@ -74,11 +74,14 @@ func (r *policyTagResource) Create(ctx context.Context, req resource.CreateReque
 	}
 	tagName := plan.Tag.ValueString()
 
-	tflog.Debug(ctx, "Adding policy with id: "+policyId.String()+" to tag: "+tagName)
+	tflog.Debug(ctx, "Creating Policy Tag Mapping", map[string]any{
+		"policy": policyId.String(),
+		"tag":    tagName,
+	})
 	policy, err := r.client.Policy.AddTag(ctx, policyId, tagName)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating tag policy mapping",
+			"Error creating Policy Tag Mapping",
 			"Error from: "+err.Error(),
 		)
 		return
@@ -93,7 +96,10 @@ func (r *policyTagResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created policy-tag mapping for policy with id: "+plan.PolicyID.ValueString()+" to tag with name: "+plan.Tag.ValueString())
+	tflog.Debug(ctx, "Created Policy Tag Mapping", map[string]any{
+		"policy": plan.PolicyID.ValueString(),
+		"tag":    plan.Tag.ValueString(),
+	})
 }
 
 func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -105,8 +111,6 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	tflog.Debug(ctx, "Refreshing policy-tag mapping for policy: "+state.PolicyID.ValueString()+", and tag: "+state.Tag.ValueString())
-
 	// Refresh
 	policyId, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
 	if diag != nil {
@@ -115,6 +119,10 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 	tagName := state.Tag.ValueString()
 
+	tflog.Debug(ctx, "Reading Policy Tag Mapping", map[string]any{
+		"policy": policyId.String(),
+		"tag":    tagName,
+	})
 	policy, err := r.client.Policy.Get(ctx, policyId)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -128,7 +136,7 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to locate tag-policy mapping",
+			"Within Read, unable to locate Policy Tag Mapping",
 			"Error from: "+err.Error(),
 		)
 		return
@@ -144,7 +152,10 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Refreshed tag-policy mapping for policy: "+state.PolicyID.ValueString()+", with tag: "+state.Tag.ValueString())
+	tflog.Debug(ctx, "Read Policy Tag Mapping", map[string]any{
+		"policy": state.PolicyID.ValueString(),
+		"tag":    state.Tag.ValueString(),
+	})
 }
 
 func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -162,6 +173,10 @@ func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 	tagName := plan.Tag.ValueString()
+	tflog.Debug(ctx, "Updating Policy Tag Mapping", map[string]any{
+		"policy": policyId.String(),
+		"tag":    tagName,
+	})
 
 	plan = policyTagResourceModel{
 		PolicyID: types.StringValue(policyId.String()),
@@ -174,7 +189,10 @@ func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated tag-policy mapping for policy: "+plan.PolicyID.ValueString()+", and tag: "+plan.Tag.ValueString())
+	tflog.Debug(ctx, "Updated Policy Tag Mapping", map[string]any{
+		"policy": plan.PolicyID.ValueString(),
+		"tag":    plan.Tag.ValueString(),
+	})
 }
 
 func (r *policyTagResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -192,15 +210,21 @@ func (r *policyTagResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 	tagName := state.Tag.ValueString()
 
-	tflog.Debug(ctx, "Deleting tag-policy mapping for policy: "+policyId.String()+", with tag: "+tagName)
+	tflog.Debug(ctx, "Deleting Policy Tag Mapping", map[string]any{
+		"policy": policyId.String(),
+		"tag":    tagName,
+	})
 	_, err := r.client.Policy.DeleteTag(ctx, policyId, tagName)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to delete tag-policy mapping",
+			"Unable to delete Policy Tag Mapping",
 			"Error from: "+err.Error(),
 		)
 	}
-	tflog.Debug(ctx, "Deleted tag-policy mapping for policy: "+policyId.String()+", with tag: "+tagName)
+	tflog.Debug(ctx, "Deleted Policy Tag Mapping", map[string]any{
+		"policy": state.PolicyID.ValueString(),
+		"tag":    state.Tag.ValueString(),
+	})
 }
 
 func (r *policyTagResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
