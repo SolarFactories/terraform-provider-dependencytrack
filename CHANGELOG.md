@@ -1,3 +1,15 @@
+## 1.12.2
+
+#### FEATURES
+- Add explicit support for DependencyTrack `4.13.1`, with testing.
+
+#### MISC
+- Increase level of standardised logging across all resources and data sources, to use standardised log structure.
+- Address disabled linting rules, by actioning, correcting and enabling.
+
+#### DEPENDENCIES
+- `golangci/golangci-lint-action` `7.0.0` -> `8.0.0`
+
 ## 1.12.1
 
 #### FIXES
