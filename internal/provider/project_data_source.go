@@ -21,31 +21,33 @@ func NewProjectDataSource() datasource.DataSource {
 	return &projectDataSource{}
 }
 
-type projectDataSource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	projectDataSource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type projectDataSourceModel struct {
-	Name       types.String             `tfsdk:"name"`
-	Version    types.String             `tfsdk:"version"`
-	ID         types.String             `tfsdk:"id"`
-	Classifier types.String             `tfsdk:"classifier"`
-	CPE        types.String             `tfsdk:"cpe"`
-	Group      types.String             `tfsdk:"group"`
-	Parent     types.String             `tfsdk:"parent"`
-	PURL       types.String             `tfsdk:"purl"`
-	SWID       types.String             `tfsdk:"swid"`
-	Properties []projectPropertiesModel `tfsdk:"properties"`
-}
+	projectDataSourceModel struct {
+		Name       types.String             `tfsdk:"name"`
+		Version    types.String             `tfsdk:"version"`
+		ID         types.String             `tfsdk:"id"`
+		Classifier types.String             `tfsdk:"classifier"`
+		CPE        types.String             `tfsdk:"cpe"`
+		Group      types.String             `tfsdk:"group"`
+		Parent     types.String             `tfsdk:"parent"`
+		PURL       types.String             `tfsdk:"purl"`
+		SWID       types.String             `tfsdk:"swid"`
+		Properties []projectPropertiesModel `tfsdk:"properties"`
+	}
 
-type projectPropertiesModel struct {
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
+	projectPropertiesModel struct {
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
 
 func (d *projectDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project"

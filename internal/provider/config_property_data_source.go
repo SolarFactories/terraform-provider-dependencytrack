@@ -21,18 +21,20 @@ func NewConfigPropertyDataSource() datasource.DataSource {
 	return &configPropertyDataSource{}
 }
 
-type configPropertyDataSource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	configPropertyDataSource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type configPropertyDataSourceModel struct {
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
+	configPropertyDataSourceModel struct {
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
 
 func (d *configPropertyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_config_property"

@@ -26,20 +26,22 @@ func NewTeamAPIKeyResource() resource.Resource {
 	return &teamAPIKeyResource{}
 }
 
-type teamAPIKeyResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	teamAPIKeyResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type teamAPIKeyResourceModel struct {
-	ID       types.String `tfsdk:"id"`
-	TeamID   types.String `tfsdk:"team"`
-	Key      types.String `tfsdk:"key"`
-	Comment  types.String `tfsdk:"comment"`
-	Masked   types.String `tfsdk:"masked"`
-	PublicId types.String `tfsdk:"public_id"`
-	Legacy   types.Bool   `tfsdk:"legacy"`
-}
+	teamAPIKeyResourceModel struct {
+		ID       types.String `tfsdk:"id"`
+		TeamID   types.String `tfsdk:"team"`
+		Key      types.String `tfsdk:"key"`
+		Comment  types.String `tfsdk:"comment"`
+		Masked   types.String `tfsdk:"masked"`
+		PublicId types.String `tfsdk:"public_id"`
+		Legacy   types.Bool   `tfsdk:"legacy"`
+	}
+)
 
 func (r *teamAPIKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_apikey"

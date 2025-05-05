@@ -23,16 +23,18 @@ func NewLDAPTeamMappingResource() resource.Resource {
 	return &ldapTeamMappingResource{}
 }
 
-type ldapTeamMappingResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	ldapTeamMappingResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type ldapTeamMappingResourceModel struct {
-	ID                types.String `tfsdk:"id"`
-	Team              types.String `tfsdk:"team"`
-	DistinguishedName types.String `tfsdk:"distinguished_name"`
-}
+	ldapTeamMappingResourceModel struct {
+		ID                types.String `tfsdk:"id"`
+		Team              types.String `tfsdk:"team"`
+		DistinguishedName types.String `tfsdk:"distinguished_name"`
+	}
+)
 
 func (r *ldapTeamMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_ldap_team_mapping"

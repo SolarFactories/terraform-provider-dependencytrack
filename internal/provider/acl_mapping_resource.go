@@ -25,16 +25,18 @@ func NewAclMappingResource() resource.Resource {
 	return &aclMappingResource{}
 }
 
-type aclMappingResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	aclMappingResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type aclMappingResourceModel struct {
-	ID      types.String `tfsdk:"id"`
-	Team    types.String `tfsdk:"team"`
-	Project types.String `tfsdk:"project"`
-}
+	aclMappingResourceModel struct {
+		ID      types.String `tfsdk:"id"`
+		Team    types.String `tfsdk:"team"`
+		Project types.String `tfsdk:"project"`
+	}
+)
 
 func (r *aclMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_acl_mapping"

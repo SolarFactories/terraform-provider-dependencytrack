@@ -24,22 +24,24 @@ func NewRepositoryResource() resource.Resource {
 	return &repositoryResource{}
 }
 
-type repositoryResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	repositoryResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type repositoryResourceModel struct {
-	ID         types.String `tfsdk:"id"`
-	Type       types.String `tfsdk:"type"`
-	Identifier types.String `tfsdk:"identifier"`
-	URL        types.String `tfsdk:"url"`
-	Username   types.String `tfsdk:"username"`
-	Password   types.String `tfsdk:"password"`
-	Precedence types.Int32  `tfsdk:"precedence"`
-	Enabled    types.Bool   `tfsdk:"enabled"`
-	Internal   types.Bool   `tfsdk:"internal"`
-}
+	repositoryResourceModel struct {
+		ID         types.String `tfsdk:"id"`
+		Type       types.String `tfsdk:"type"`
+		Identifier types.String `tfsdk:"identifier"`
+		URL        types.String `tfsdk:"url"`
+		Username   types.String `tfsdk:"username"`
+		Password   types.String `tfsdk:"password"`
+		Precedence types.Int32  `tfsdk:"precedence"`
+		Enabled    types.Bool   `tfsdk:"enabled"`
+		Internal   types.Bool   `tfsdk:"internal"`
+	}
+)
 
 func (r *repositoryResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_repository"

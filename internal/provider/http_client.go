@@ -14,15 +14,17 @@ import (
 	dtrack "github.com/DependencyTrack/client-go"
 )
 
-type Header struct {
-	Name  string
-	Value string
-}
+type (
+	Header struct {
+		Name  string
+		Value string
+	}
 
-type transport struct {
-	inner   http.RoundTripper
-	headers []Header
-}
+	transport struct {
+		inner   http.RoundTripper
+		headers []Header
+	}
+)
 
 const (
 	uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"

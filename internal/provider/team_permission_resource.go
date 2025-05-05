@@ -23,15 +23,17 @@ func NewTeamPermissionResource() resource.Resource {
 	return &teamPermissionResource{}
 }
 
-type teamPermissionResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	teamPermissionResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type teamPermissionResourceModel struct {
-	TeamID     types.String `tfsdk:"team"`
-	Permission types.String `tfsdk:"permission"`
-}
+	teamPermissionResourceModel struct {
+		TeamID     types.String `tfsdk:"team"`
+		Permission types.String `tfsdk:"permission"`
+	}
+)
 
 func (r *teamPermissionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_permission"

@@ -21,35 +21,37 @@ var (
 	_ provider.Provider = &dependencyTrackProvider{}
 )
 
-type dependencyTrackProvider struct {
-	// Version is set to the provider version on release, "dev" when the
-	// provider is built and ran locally, and "test" when running acceptance
-	// testing.
-	version string
-}
+type (
+	dependencyTrackProvider struct {
+		// Version is set to the provider version on release, "dev" when the
+		// provider is built and ran locally, and "test" when running acceptance
+		// testing.
+		version string
+	}
 
-type dependencyTrackProviderModel struct {
-	Host    types.String                          `tfsdk:"host"`
-	Key     types.String                          `tfsdk:"key"`
-	RootCA  types.String                          `tfsdk:"root_ca"`
-	MTLS    *dependencyTrackProviderMtlsModel     `tfsdk:"mtls"`
-	Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
-}
+	dependencyTrackProviderModel struct {
+		Host    types.String                          `tfsdk:"host"`
+		Key     types.String                          `tfsdk:"key"`
+		RootCA  types.String                          `tfsdk:"root_ca"`
+		MTLS    *dependencyTrackProviderMtlsModel     `tfsdk:"mtls"`
+		Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
+	}
 
-type dependencyTrackProviderHeadersModel struct {
-	Name  types.String `tfsdk:"name"`
-	Value types.String `tfsdk:"value"`
-}
+	dependencyTrackProviderHeadersModel struct {
+		Name  types.String `tfsdk:"name"`
+		Value types.String `tfsdk:"value"`
+	}
 
-type dependencyTrackProviderMtlsModel struct {
-	KeyPath  types.String `tfsdk:"key_path"`
-	CertPath types.String `tfsdk:"cert_path"`
-}
+	dependencyTrackProviderMtlsModel struct {
+		KeyPath  types.String `tfsdk:"key_path"`
+		CertPath types.String `tfsdk:"cert_path"`
+	}
 
-type clientInfo struct {
-	client *dtrack.Client
-	semver *Semver
-}
+	clientInfo struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+)
 
 func (p *dependencyTrackProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "dependencytrack"

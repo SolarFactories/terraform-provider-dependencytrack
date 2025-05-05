@@ -15,15 +15,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type Semver struct {
-	Major int
-	Minor int
-	Patch int
-}
+type (
+	Semver struct {
+		Major int
+		Minor int
+		Patch int
+	}
 
-const SEMVER_COMPONENT_COUNT = 3
+	OIDCMappingInfo struct {
+		Team  uuid.UUID
+		Group uuid.UUID
+	}
 
-const PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
+	LifecycleAction string
+)
+
+const (
+	SEMVER_COMPONENT_COUNT      = 3
+	PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
+	// LifecycleAction.
+	LifecycleCreate LifecycleAction = "Create"
+	LifecycleRead   LifecycleAction = "Read"
+	LifecycleUpdate LifecycleAction = "Update"
+	LifecycleDelete LifecycleAction = "Delete"
+	LifecycleImport LifecycleAction = "Import"
+)
 
 func Filter[T any](items []T, filter func(T) bool) []T {
 	filtered := []T{}
@@ -76,11 +92,6 @@ func FindPaged[T any](
 	}
 	item := filtered[0]
 	return &item, nil
-}
-
-type OIDCMappingInfo struct {
-	Team  uuid.UUID
-	Group uuid.UUID
 }
 
 func FindPagedOidcMapping(
@@ -196,16 +207,6 @@ func Map[T, U any](items []T, actor func(T) U) []U {
 	}
 	return result
 }
-
-type LifecycleAction string
-
-const (
-	LifecycleCreate LifecycleAction = "Create"
-	LifecycleRead   LifecycleAction = "Read"
-	LifecycleUpdate LifecycleAction = "Update"
-	LifecycleDelete LifecycleAction = "Delete"
-	LifecycleImport LifecycleAction = "Import"
-)
 
 func TryParseUUID(value types.String, action LifecycleAction, path path.Path) (uuid.UUID, diag.Diagnostic) {
 	if value.IsUnknown() {

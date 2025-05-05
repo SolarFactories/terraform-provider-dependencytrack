@@ -21,21 +21,23 @@ func NewTeamDataSource() datasource.DataSource {
 	return &teamDataSource{}
 }
 
-type teamDataSource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	teamDataSource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type teamDataSourceModel struct {
-	ID          types.String          `tfsdk:"id"`
-	Name        types.String          `tfsdk:"name"`
-	Permissions []teamPermissionModel `tfsdk:"permissions"`
-}
+	teamDataSourceModel struct {
+		ID          types.String          `tfsdk:"id"`
+		Name        types.String          `tfsdk:"name"`
+		Permissions []teamPermissionModel `tfsdk:"permissions"`
+	}
 
-type teamPermissionModel struct {
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-}
+	teamPermissionModel struct {
+		Name        types.String `tfsdk:"name"`
+		Description types.String `tfsdk:"description"`
+	}
+)
 
 func (d *teamDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team"

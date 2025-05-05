@@ -22,19 +22,21 @@ func NewProjectPropertyDataSource() datasource.DataSource {
 	return &projectPropertyDataSource{}
 }
 
-type projectPropertyDataSource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	projectPropertyDataSource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type projectPropertyDataSourceModel struct {
-	Project     types.String `tfsdk:"project"`
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
+	projectPropertyDataSourceModel struct {
+		Project     types.String `tfsdk:"project"`
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
 
 func (d *projectPropertyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project_property"

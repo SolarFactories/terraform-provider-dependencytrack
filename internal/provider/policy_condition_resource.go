@@ -24,18 +24,20 @@ func NewPolicyConditionResource() resource.Resource {
 	return &policyConditionResource{}
 }
 
-type policyConditionResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	policyConditionResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type policyConditionResourceModel struct {
-	ID       types.String `tfsdk:"id"`
-	PolicyID types.String `tfsdk:"policy"`
-	Subject  types.String `tfsdk:"subject"`
-	Operator types.String `tfsdk:"operator"`
-	Value    types.String `tfsdk:"value"`
-}
+	policyConditionResourceModel struct {
+		ID       types.String `tfsdk:"id"`
+		PolicyID types.String `tfsdk:"policy"`
+		Subject  types.String `tfsdk:"subject"`
+		Operator types.String `tfsdk:"operator"`
+		Value    types.String `tfsdk:"value"`
+	}
+)
 
 func (r *policyConditionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_policy_condition"

@@ -24,24 +24,26 @@ func NewProjectResource() resource.Resource {
 	return &projectResource{}
 }
 
-type projectResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	projectResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type projectResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Version     types.String `tfsdk:"version"`
-	Parent      types.String `tfsdk:"parent"`
-	Classifier  types.String `tfsdk:"classifier"`
-	Group       types.String `tfsdk:"group"`
-	PURL        types.String `tfsdk:"purl"`
-	CPE         types.String `tfsdk:"cpe"`
-	SWID        types.String `tfsdk:"swid"`
-	Active      types.Bool   `tfsdk:"active"`
-}
+	projectResourceModel struct {
+		ID          types.String `tfsdk:"id"`
+		Name        types.String `tfsdk:"name"`
+		Description types.String `tfsdk:"description"`
+		Version     types.String `tfsdk:"version"`
+		Parent      types.String `tfsdk:"parent"`
+		Classifier  types.String `tfsdk:"classifier"`
+		Group       types.String `tfsdk:"group"`
+		PURL        types.String `tfsdk:"purl"`
+		CPE         types.String `tfsdk:"cpe"`
+		SWID        types.String `tfsdk:"swid"`
+		Active      types.Bool   `tfsdk:"active"`
+	}
+)
 
 func (r *projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project"

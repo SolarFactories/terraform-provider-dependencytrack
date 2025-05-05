@@ -25,20 +25,22 @@ func NewProjectPropertyResource() resource.Resource {
 	return &projectPropertyResource{}
 }
 
-type projectPropertyResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	projectPropertyResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type projectPropertyResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Project     types.String `tfsdk:"project"`
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
+	projectPropertyResourceModel struct {
+		ID          types.String `tfsdk:"id"`
+		Project     types.String `tfsdk:"project"`
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
 
 func (r *projectPropertyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project_property"

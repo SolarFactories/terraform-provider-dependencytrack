@@ -25,19 +25,21 @@ func NewConfigPropertyResource() resource.Resource {
 	return &configPropertyResource{}
 }
 
-type configPropertyResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	configPropertyResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type configPropertyResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
+	configPropertyResourceModel struct {
+		ID          types.String `tfsdk:"id"`
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
 
 func (r *configPropertyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_config_property"

@@ -454,7 +454,6 @@ linters:
           - nlreturn
           - unused
           - ireturn
-          - grouper
           - gocritic
           - goconst
           - funlen

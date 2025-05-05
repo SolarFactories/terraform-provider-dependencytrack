@@ -24,15 +24,17 @@ func NewTeamResource() resource.Resource {
 	return &teamResource{}
 }
 
-type teamResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	teamResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type teamResourceModel struct {
-	ID   types.String `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
-}
+	teamResourceModel struct {
+		ID   types.String `tfsdk:"id"`
+		Name types.String `tfsdk:"name"`
+	}
+)
 
 func (r *teamResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team"

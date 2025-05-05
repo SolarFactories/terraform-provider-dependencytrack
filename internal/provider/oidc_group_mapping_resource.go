@@ -24,16 +24,18 @@ func NewOidcGroupMappingResource() resource.Resource {
 	return &oidcGroupMappingResource{}
 }
 
-type oidcGroupMappingResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
+type (
+	oidcGroupMappingResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
 
-type oidcGroupMappingResourceModel struct {
-	ID    types.String `tfsdk:"id"`
-	Team  types.String `tfsdk:"team"`
-	Group types.String `tfsdk:"group"`
-}
+	oidcGroupMappingResourceModel struct {
+		ID    types.String `tfsdk:"id"`
+		Team  types.String `tfsdk:"team"`
+		Group types.String `tfsdk:"group"`
+	}
+)
 
 func (r *oidcGroupMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oidc_group_mapping"
