@@ -301,8 +301,6 @@ linters:
           arguments: [170]
         - name: add-constant
           disabled: true
-        - name: import-shadowing
-          disabled: true
         - name: exported
           disabled: true
         - name: comment-spacings

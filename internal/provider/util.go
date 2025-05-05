@@ -208,31 +208,31 @@ func Map[T, U any](items []T, actor func(T) U) []U {
 	return result
 }
 
-func TryParseUUID(value types.String, action LifecycleAction, path path.Path) (uuid.UUID, diag.Diagnostic) {
+func TryParseUUID(value types.String, action LifecycleAction, tfPath path.Path) (uuid.UUID, diag.Diagnostic) {
 	if value.IsUnknown() {
-		diag := diag.NewAttributeErrorDiagnostic(
-			path,
-			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
-			fmt.Sprintf("Value for %s is unknown.", path.String()),
+		errDiag := diag.NewAttributeErrorDiagnostic(
+			tfPath,
+			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, tfPath.String()),
+			fmt.Sprintf("Value for %s is unknown.", tfPath.String()),
 		)
-		return uuid.Nil, diag
+		return uuid.Nil, errDiag
 	}
 	if value.IsNull() {
-		diag := diag.NewAttributeErrorDiagnostic(
-			path,
-			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
-			fmt.Sprintf("Value for %s is null.", path.String()),
+		errDiag := diag.NewAttributeErrorDiagnostic(
+			tfPath,
+			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, tfPath.String()),
+			fmt.Sprintf("Value for %s is null.", tfPath.String()),
 		)
-		return uuid.Nil, diag
+		return uuid.Nil, errDiag
 	}
 	ret, err := uuid.Parse(value.ValueString())
 	if err != nil {
-		diag := diag.NewAttributeErrorDiagnostic(
-			path,
-			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
+		errDiag := diag.NewAttributeErrorDiagnostic(
+			tfPath,
+			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, tfPath.String()),
 			"Error from: "+err.Error(),
 		)
-		return uuid.Nil, diag
+		return uuid.Nil, errDiag
 	}
 	return ret, nil
 }

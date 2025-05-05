@@ -67,9 +67,9 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	teamID, diag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	teamID, errDiag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
+	if errDiag != nil {
+		resp.Diagnostics.Append(errDiag)
 		return
 	}
 
@@ -125,9 +125,9 @@ func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Refresh.
-	teamID, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	teamID, errDiag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
+	if errDiag != nil {
+		resp.Diagnostics.Append(errDiag)
 		return
 	}
 	tflog.Debug(ctx, "Reading Team Permissions", map[string]any{
@@ -171,9 +171,9 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	team, diag := TryParseUUID(plan.TeamID, LifecycleUpdate, path.Root("team"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	team, errDiag := TryParseUUID(plan.TeamID, LifecycleUpdate, path.Root("team"))
+	if errDiag != nil {
+		resp.Diagnostics.Append(errDiag)
 		return
 	}
 	tflog.Debug(ctx, "Updating Team Permissions", map[string]any{
@@ -233,9 +233,9 @@ func (r *teamPermissionsResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Map TF to SDK.
-	team, diag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	team, errDiag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
+	if errDiag != nil {
+		resp.Diagnostics.Append(errDiag)
 		return
 	}
 	tflog.Debug(ctx, "Deleting Team Permissions", map[string]any{
