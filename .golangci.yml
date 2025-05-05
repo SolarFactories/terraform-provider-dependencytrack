@@ -511,8 +511,6 @@ linters:
           - gosec
       - path: internal/provider/util.go
         linters:
-          - wrapcheck
-          - mnd
           - nonamedreturns
       - path: internal/provider/util_test.go
         linters:

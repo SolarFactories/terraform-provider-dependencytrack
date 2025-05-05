@@ -21,6 +21,8 @@ type Semver struct {
 	Patch int
 }
 
+const SEMVER_COMPONENT_COUNT = 3
+
 const PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
 
 func Filter[T any](items []T, filter func(T) bool) []T {
@@ -56,7 +58,7 @@ func FilterPaged[T any](
 		}
 		return nil
 	})
-	return filtered, err
+	return filtered, errors.New("Error in FilterPaged: " + err.Error())
 }
 
 func FindPaged[T any](
@@ -138,7 +140,7 @@ func FindPagedPolicyCondition(
 
 func ParseSemver(s string) (*Semver, error) {
 	parts := strings.Split(s, ".")
-	if len(parts) != 3 {
+	if len(parts) != SEMVER_COMPONENT_COUNT {
 		return nil, fmt.Errorf("Found semver with %v parts, expected 3.", len(parts))
 	}
 	major, err := strconv.Atoi(parts[0])
