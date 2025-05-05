@@ -145,15 +145,15 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 		resp.Diagnostics.Append(diag)
 		return
 	}
+
 	mappingInfo, err := FindPagedOidcMapping(id, func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
 		return r.client.Team.GetAll(ctx, po)
 	})
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Read",
 			fmt.Sprintf(
-				"Error with reading OIDC Group Mapping with id %s, for team: %s, and group: %s, in original errr: %s",
+				"Error with reading OIDC Group Mapping with id: %s, for team: %s, and group: %s, in original errr: %s",
 				id.String(), state.Team.ValueString(), state.Group.ValueString(), err.Error(),
 			),
 		)
@@ -206,7 +206,7 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Update",
 			fmt.Sprintf(
-				"Error with reading OIDC Group Mapping with id %s, for team: %s, and group: %s, in original errr: %s",
+				"Error with reading OIDC Group Mapping with id: %s, for team: %s, and group: %s, in original errr: %s",
 				id.String(), mappingInfo.Team.String(), mappingInfo.Group.String(), err.Error(),
 			),
 		)

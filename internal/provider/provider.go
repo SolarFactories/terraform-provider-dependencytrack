@@ -164,7 +164,7 @@ func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.Conf
 	}
 	// Headers.
 	headers := loadHeaders(config.Headers, &resp.Diagnostics)
-	// Set mTLS variables from State.
+	// Set mTLS variables from Config.
 	if config.MTLS != nil {
 		clientCertFile = config.MTLS.CertPath.ValueString()
 		clientKeyFile = config.MTLS.KeyPath.ValueString()
