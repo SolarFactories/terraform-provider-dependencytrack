@@ -20,26 +20,28 @@ var (
 	_ resource.ResourceWithImportState = &oidcGroupMappingResource{}
 )
 
+type (
+	oidcGroupMappingResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	oidcGroupMappingResourceModel struct {
+		ID    types.String `tfsdk:"id"`
+		Team  types.String `tfsdk:"team"`
+		Group types.String `tfsdk:"group"`
+	}
+)
+
 func NewOidcGroupMappingResource() resource.Resource {
 	return &oidcGroupMappingResource{}
 }
 
-type oidcGroupMappingResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type oidcGroupMappingResourceModel struct {
-	ID    types.String `tfsdk:"id"`
-	Team  types.String `tfsdk:"team"`
-	Group types.String `tfsdk:"group"`
-}
-
-func (r *oidcGroupMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*oidcGroupMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oidc_group_mapping"
 }
 
-func (r *oidcGroupMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*oidcGroupMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a mapping from OIDC Group to Team.",
 		Attributes: map[string]schema.Attribute{
@@ -107,7 +109,7 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 	plan = oidcGroupMappingResourceModel{
 		ID:    types.StringValue(mappingRes.UUID.String()),
 		Group: types.StringValue(mappingRes.Group.UUID.String()),
-		// Response does not include Team UUID
+		// Response does not include Team UUID.
 		Team: types.StringValue(team.String()),
 	}
 
@@ -124,7 +126,7 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 }
 
 func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state oidcGroupMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -137,20 +139,23 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 		"group": state.Group.ValueString(),
 	})
 
-	// Refresh
+	// Refresh.
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
+
 	mappingInfo, err := FindPagedOidcMapping(id, func(po dtrack.PageOptions) (dtrack.Page[dtrack.Team], error) {
 		return r.client.Team.GetAll(ctx, po)
 	})
-
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Read",
-			"Error with reading mapping with id: "+id.String()+", for team: "+state.Team.ValueString()+", and group: "+state.Group.String()+", in original error: "+err.Error(),
+			fmt.Sprintf(
+				"Error with reading OIDC Group Mapping with id: %s, for team: %s, and group: %s, in original errr: %s",
+				id.String(), state.Team.ValueString(), state.Group.ValueString(), err.Error(),
+			),
 		)
 		return
 	}
@@ -160,7 +165,7 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 		Group: types.StringValue(mappingInfo.Group.String()),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -174,7 +179,7 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan oidcGroupMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -200,7 +205,10 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Update",
-			"Error with reading mapping with id: "+id.String()+", for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String()+", in original error: "+err.Error(),
+			fmt.Sprintf(
+				"Error with reading OIDC Group Mapping with id: %s, for team: %s, and group: %s, in original errr: %s",
+				id.String(), mappingInfo.Team.String(), mappingInfo.Group.String(), err.Error(),
+			),
 		)
 		return
 	}
@@ -211,7 +219,7 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 		Group: types.StringValue(mappingInfo.Group.String()),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -225,7 +233,7 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 }
 
 func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state oidcGroupMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -233,14 +241,14 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting OIDC Group Mapping", map[string]any{
 		"id":    id.String(),
 		"team":  state.Team.ValueString(),
@@ -261,7 +269,7 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 	})
 }
 
-func (r *oidcGroupMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*oidcGroupMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Debug(ctx, "Importing OIDC Group Mapping", map[string]any{
 		"id": req.ID,
 	})
@@ -278,7 +286,7 @@ func (r *oidcGroupMappingResource) Configure(_ context.Context, req resource.Con
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -287,6 +295,6 @@ func (r *oidcGroupMappingResource) Configure(_ context.Context, req resource.Con
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

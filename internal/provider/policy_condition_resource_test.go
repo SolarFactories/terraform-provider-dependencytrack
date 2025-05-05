@@ -9,7 +9,7 @@ func TestAccPolicyConditionyResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_policy" "test" {
@@ -35,13 +35,13 @@ resource "dependencytrack_policy_condition" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "value", "P1Y"),
 				),
 			},
-			// ImportState testing
+			// ImportState testing.
 			{
 				ResourceName:      "dependencytrack_policy_condition.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_policy" "test" {

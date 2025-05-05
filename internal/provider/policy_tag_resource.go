@@ -19,26 +19,28 @@ var (
 	_ resource.ResourceWithConfigure = &policyTagResource{}
 )
 
+type (
+	policyTagResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	policyTagResourceModel struct {
+		PolicyID types.String `tfsdk:"policy"`
+		Tag      types.String `tfsdk:"tag"`
+	}
+)
+
 func NewPolicyTagResource() resource.Resource {
 	return &policyTagResource{}
 }
 
-type policyTagResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type policyTagResourceModel struct {
-	PolicyID types.String `tfsdk:"policy"`
-	Tag      types.String `tfsdk:"tag"`
-}
-
 // TODO: Once have `dependencytrack_tag` resource to create tags, add testing.
-func (r *policyTagResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*policyTagResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_policy_tag"
 }
 
-func (r *policyTagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*policyTagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an application of a Policy to a Tag.",
 		Attributes: map[string]schema.Attribute{
@@ -67,7 +69,7 @@ func (r *policyTagResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleCreate, path.Root("policy"))
+	policyID, diag := TryParseUUID(plan.PolicyID, LifecycleCreate, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
@@ -75,10 +77,10 @@ func (r *policyTagResource) Create(ctx context.Context, req resource.CreateReque
 	tagName := plan.Tag.ValueString()
 
 	tflog.Debug(ctx, "Creating Policy Tag Mapping", map[string]any{
-		"policy": policyId.String(),
+		"policy": policyID.String(),
 		"tag":    tagName,
 	})
-	policy, err := r.client.Policy.AddTag(ctx, policyId, tagName)
+	policy, err := r.client.Policy.AddTag(ctx, policyID, tagName)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Policy Tag Mapping",
@@ -103,7 +105,7 @@ func (r *policyTagResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state policyTagResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -111,8 +113,8 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	// Refresh
-	policyId, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
+	// Refresh.
+	policyID, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
@@ -120,10 +122,10 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 	tagName := state.Tag.ValueString()
 
 	tflog.Debug(ctx, "Reading Policy Tag Mapping", map[string]any{
-		"policy": policyId.String(),
+		"policy": policyID.String(),
 		"tag":    tagName,
 	})
-	policy, err := r.client.Policy.Get(ctx, policyId)
+	policy, err := r.client.Policy.Get(ctx, policyID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Read, unable to retrieve policy",
@@ -146,7 +148,7 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 		Tag:      types.StringValue(tag.Name),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -158,32 +160,32 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 	})
 }
 
-func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (*policyTagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Resource has nothing to update, as it bridges by it's existence. Existence check is done within `Read`.
-	// Get State
+	// Get State.
 	var plan policyTagResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleUpdate, path.Root("policy"))
+	policyID, diag := TryParseUUID(plan.PolicyID, LifecycleUpdate, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 	tagName := plan.Tag.ValueString()
 	tflog.Debug(ctx, "Updating Policy Tag Mapping", map[string]any{
-		"policy": policyId.String(),
+		"policy": policyID.String(),
 		"tag":    tagName,
 	})
 
 	plan = policyTagResourceModel{
-		PolicyID: types.StringValue(policyId.String()),
+		PolicyID: types.StringValue(policyID.String()),
 		Tag:      types.StringValue(tagName),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -196,14 +198,14 @@ func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateReque
 }
 
 func (r *policyTagResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state policyTagResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, diag := TryParseUUID(state.PolicyID, LifecycleDelete, path.Root("policy"))
+	policyID, diag := TryParseUUID(state.PolicyID, LifecycleDelete, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
@@ -211,10 +213,10 @@ func (r *policyTagResource) Delete(ctx context.Context, req resource.DeleteReque
 	tagName := state.Tag.ValueString()
 
 	tflog.Debug(ctx, "Deleting Policy Tag Mapping", map[string]any{
-		"policy": policyId.String(),
+		"policy": policyID.String(),
 		"tag":    tagName,
 	})
-	_, err := r.client.Policy.DeleteTag(ctx, policyId, tagName)
+	_, err := r.client.Policy.DeleteTag(ctx, policyID, tagName)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Policy Tag Mapping",
@@ -231,7 +233,7 @@ func (r *policyTagResource) Configure(_ context.Context, req resource.ConfigureR
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -240,6 +242,6 @@ func (r *policyTagResource) Configure(_ context.Context, req resource.ConfigureR
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

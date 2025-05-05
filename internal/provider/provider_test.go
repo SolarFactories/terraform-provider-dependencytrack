@@ -52,9 +52,7 @@ var (
 			key = "OS_ENV"
 		}`
 	}()
-)
 
-var (
 	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 		"dependencytrack": providerserver.NewProtocol6WithError(New("test")()),
 	}

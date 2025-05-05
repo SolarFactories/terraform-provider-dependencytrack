@@ -21,29 +21,31 @@ var (
 	_ resource.ResourceWithImportState = &configPropertyResource{}
 )
 
+type (
+	configPropertyResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	configPropertyResourceModel struct {
+		ID          types.String `tfsdk:"id"`
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
+
 func NewConfigPropertyResource() resource.Resource {
 	return &configPropertyResource{}
 }
 
-type configPropertyResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type configPropertyResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
-
-func (r *configPropertyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*configPropertyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_config_property"
 }
 
-func (r *configPropertyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*configPropertyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a Config Property.",
 		Attributes: map[string]schema.Attribute{
@@ -312,7 +314,7 @@ func (r *configPropertyResource) ImportState(ctx context.Context, req resource.I
 		ID:    types.StringValue(fmt.Sprintf("%s/%s", property.GroupName, property.Name)),
 		Group: types.StringValue(property.GroupName),
 		Name:  types.StringValue(property.Name),
-		// If Type == "ENCRYPTEDSTRING", then Value will be placeholder text
+		// If Type == "ENCRYPTEDSTRING", then Value will be placeholder text.
 		Value:       types.StringValue(property.Value),
 		Type:        types.StringValue(property.Type),
 		Description: types.StringValue(property.Description),
@@ -336,7 +338,7 @@ func (r *configPropertyResource) Configure(_ context.Context, req resource.Confi
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -345,6 +347,6 @@ func (r *configPropertyResource) Configure(_ context.Context, req resource.Confi
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

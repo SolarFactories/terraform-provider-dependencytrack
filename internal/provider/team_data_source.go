@@ -17,31 +17,33 @@ var (
 	_ datasource.DataSourceWithConfigure = &teamDataSource{}
 )
 
+type (
+	teamDataSource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	teamDataSourceModel struct {
+		ID          types.String          `tfsdk:"id"`
+		Name        types.String          `tfsdk:"name"`
+		Permissions []teamPermissionModel `tfsdk:"permissions"`
+	}
+
+	teamPermissionModel struct {
+		Name        types.String `tfsdk:"name"`
+		Description types.String `tfsdk:"description"`
+	}
+)
+
 func NewTeamDataSource() datasource.DataSource {
 	return &teamDataSource{}
 }
 
-type teamDataSource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type teamDataSourceModel struct {
-	ID          types.String          `tfsdk:"id"`
-	Name        types.String          `tfsdk:"name"`
-	Permissions []teamPermissionModel `tfsdk:"permissions"`
-}
-
-type teamPermissionModel struct {
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-}
-
-func (d *teamDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (*teamDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team"
 }
 
-func (d *teamDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (*teamDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Fetch an existing Team by Name.",
 		Attributes: map[string]schema.Attribute{
@@ -100,7 +102,7 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		)
 		return
 	}
-	// Transform data into model
+	// Transform data into model.
 	teamState := teamDataSourceModel{
 		Name:        types.StringValue(team.Name),
 		ID:          types.StringValue(team.UUID.String()),
@@ -117,7 +119,7 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 			"description": permission.Description,
 		})
 	}
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &teamState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -134,7 +136,7 @@ func (d *teamDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Configure Type",
@@ -142,6 +144,6 @@ func (d *teamDataSource) Configure(_ context.Context, req datasource.ConfigureRe
 		)
 		return
 	}
-	d.client = clientInfo.client
-	d.semver = clientInfo.semver
+	d.client = clientInfoData.client
+	d.semver = clientInfoData.semver
 }

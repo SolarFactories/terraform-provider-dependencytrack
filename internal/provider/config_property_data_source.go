@@ -17,28 +17,30 @@ var (
 	_ datasource.DataSourceWithConfigure = &configPropertyDataSource{}
 )
 
+type (
+	configPropertyDataSource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	configPropertyDataSourceModel struct {
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
+
 func NewConfigPropertyDataSource() datasource.DataSource {
 	return &configPropertyDataSource{}
 }
 
-type configPropertyDataSource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type configPropertyDataSourceModel struct {
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
-
-func (d *configPropertyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (*configPropertyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_config_property"
 }
 
-func (d *configPropertyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (*configPropertyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Fetch a config property by group and name.",
 		Attributes: map[string]schema.Attribute{
@@ -114,7 +116,7 @@ func (d *configPropertyDataSource) Configure(_ context.Context, req datasource.C
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Configure Type",
@@ -122,6 +124,6 @@ func (d *configPropertyDataSource) Configure(_ context.Context, req datasource.C
 		)
 		return
 	}
-	d.client = clientInfo.client
-	d.semver = clientInfo.semver
+	d.client = clientInfoData.client
+	d.semver = clientInfoData.semver
 }

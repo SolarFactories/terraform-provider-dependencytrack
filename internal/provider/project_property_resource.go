@@ -21,30 +21,32 @@ var (
 	_ resource.ResourceWithImportState = &projectPropertyResource{}
 )
 
+type (
+	projectPropertyResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	projectPropertyResourceModel struct {
+		ID          types.String `tfsdk:"id"`
+		Project     types.String `tfsdk:"project"`
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
+
 func NewProjectPropertyResource() resource.Resource {
 	return &projectPropertyResource{}
 }
 
-type projectPropertyResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type projectPropertyResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Project     types.String `tfsdk:"project"`
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
-
-func (r *projectPropertyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*projectPropertyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project_property"
 }
 
-func (r *projectPropertyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*projectPropertyResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a Project Property.",
 		Attributes: map[string]schema.Attribute{
@@ -317,7 +319,7 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		"type":        state.Type.ValueString(),
 		"description": state.Description.ValueString(),
 	})
-	// NOTE: Has a patch applied in `http_client.go`
+	// NOTE: Has a patch applied in `http_client.go`.
 	err := r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -409,7 +411,7 @@ func (r *projectPropertyResource) Configure(_ context.Context, req resource.Conf
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -418,6 +420,6 @@ func (r *projectPropertyResource) Configure(_ context.Context, req resource.Conf
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

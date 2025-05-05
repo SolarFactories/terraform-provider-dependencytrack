@@ -19,26 +19,28 @@ var (
 	_ resource.ResourceWithConfigure = &ldapTeamMappingResource{}
 )
 
+type (
+	ldapTeamMappingResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	ldapTeamMappingResourceModel struct {
+		ID                types.String `tfsdk:"id"`
+		Team              types.String `tfsdk:"team"`
+		DistinguishedName types.String `tfsdk:"distinguished_name"`
+	}
+)
+
 func NewLDAPTeamMappingResource() resource.Resource {
 	return &ldapTeamMappingResource{}
 }
 
-type ldapTeamMappingResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type ldapTeamMappingResourceModel struct {
-	ID                types.String `tfsdk:"id"`
-	Team              types.String `tfsdk:"team"`
-	DistinguishedName types.String `tfsdk:"distinguished_name"`
-}
-
-func (r *ldapTeamMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*ldapTeamMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_ldap_team_mapping"
 }
 
-func (r *ldapTeamMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*ldapTeamMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a mapping from LDAP Distinguished Name to Team.",
 		Attributes: map[string]schema.Attribute{
@@ -102,7 +104,7 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 	plan = ldapTeamMappingResourceModel{
 		ID:                types.StringValue(mappingRes.UUID.String()),
 		DistinguishedName: types.StringValue(mappingRes.DistinguishedName),
-		// Response does not include Team UUID
+		// Response does not include Team UUID.
 		Team: types.StringValue(team.String()),
 	}
 
@@ -119,7 +121,7 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state ldapTeamMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -132,7 +134,7 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 		"distinguished_name": state.DistinguishedName.ValueString(),
 	})
 
-	// Refresh
+	// Refresh.
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -161,7 +163,10 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Read, unable to locate ldap mapping",
-			"Error with finding mapping with id: "+id.String()+", for team: "+team.String()+", and distinguished name: "+distinguishedName+", in original error: "+err.Error(),
+			fmt.Sprintf(
+				"Error with finding mapping with id: %s, for team: %s, and distinguished name: %s, in original error: %s",
+				id.String(), team.String(), distinguishedName, err.Error(),
+			),
 		)
 		return
 	}
@@ -171,7 +176,7 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 		DistinguishedName: types.StringValue(mappingInfo.DistinguishedName),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -184,9 +189,9 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	})
 }
 
-func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Nothing to Update. This resource only has Create, Delete actions
-	// Get State
+func (*ldapTeamMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Nothing to Update. This resource only has Create, Delete actions.
+	// Get State.
 	var plan ldapTeamMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -219,7 +224,7 @@ func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.Updat
 		DistinguishedName: types.StringValue(distingushedName),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -233,7 +238,7 @@ func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.Updat
 }
 
 func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state ldapTeamMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -241,14 +246,14 @@ func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting LDAP Team Mapping", map[string]any{
 		"id":                 id.String(),
 		"team":               state.Team.ValueString(),
@@ -273,7 +278,7 @@ func (r *ldapTeamMappingResource) Configure(_ context.Context, req resource.Conf
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -282,6 +287,6 @@ func (r *ldapTeamMappingResource) Configure(_ context.Context, req resource.Conf
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

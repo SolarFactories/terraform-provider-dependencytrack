@@ -19,32 +19,34 @@ var (
 	_ resource.ResourceWithConfigure = &configPropertiesResource{}
 )
 
+type (
+	configPropertiesResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	configPropertiesResourceModel struct {
+		Properties []configPropertiesElementResourceModel `tfsdk:"properties"`
+	}
+
+	configPropertiesElementResourceModel struct {
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
+
 func NewConfigPropertiesResource() resource.Resource {
 	return &configPropertiesResource{}
 }
 
-type configPropertiesResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type configPropertiesResourceModel struct {
-	Properties []configPropertiesElementResourceModel `tfsdk:"properties"`
-}
-
-type configPropertiesElementResourceModel struct {
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
-
-func (r *configPropertiesResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*configPropertiesResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_config_properties"
 }
 
-func (r *configPropertiesResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*configPropertiesResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages multiple Config Properties.",
 		Attributes: map[string]schema.Attribute{
@@ -393,7 +395,7 @@ func (r *configPropertiesResource) Configure(_ context.Context, req resource.Con
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -402,6 +404,6 @@ func (r *configPropertiesResource) Configure(_ context.Context, req resource.Con
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

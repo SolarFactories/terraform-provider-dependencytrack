@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	dtrack "github.com/DependencyTrack/client-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -19,25 +20,27 @@ var (
 	_ resource.ResourceWithConfigure = &teamPermissionsResource{}
 )
 
+type (
+	teamPermissionsResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	teamPermissionsResourceModel struct {
+		TeamID      types.String   `tfsdk:"team"`
+		Permissions []types.String `tfsdk:"permissions"`
+	}
+)
+
 func NewTeamPermissionsResource() resource.Resource {
 	return &teamPermissionsResource{}
 }
 
-type teamPermissionsResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type teamPermissionsResourceModel struct {
-	TeamID      types.String   `tfsdk:"team"`
-	Permissions []types.String `tfsdk:"permissions"`
-}
-
-func (r *teamPermissionsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*teamPermissionsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_permissions"
 }
 
-func (r *teamPermissionsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*teamPermissionsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages the attachment of Permissions to a Team. Conflicts with `dependencytrack_team_permission`.",
 		Attributes: map[string]schema.Attribute{
@@ -64,16 +67,16 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	team, diag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	teamID, errDiag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
+	if errDiag != nil {
+		resp.Diagnostics.Append(errDiag)
 		return
 	}
 
-	teamInfo, err := r.client.Team.Get(ctx, team)
+	teamInfo, err := r.client.Team.Get(ctx, teamID)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Create, unable to request current team info for: "+team.String(),
+			"Within Create, unable to request current team info for: "+teamID.String(),
 			"Error from: "+err.Error(),
 		)
 		return
@@ -83,47 +86,19 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 	currentPermissions := Map(teamInfo.Permissions, func(current dtrack.Permission) string { return current.Name })
 
 	tflog.Debug(ctx, "Creating Team Permissions", map[string]any{
-		"team":    team.String(),
+		"team":    teamID.String(),
 		"current": currentPermissions,
 		"desired": desiredPermissions,
 	})
 
-	finalPermissions := teamInfo.Permissions // Ensure that only permissions assigned and understood by DT end up in state, rather than user input
 	addPermissions, removePermissions := ListDeltas(currentPermissions, desiredPermissions)
-	for _, permissionName := range addPermissions {
-		permission := dtrack.Permission{
-			Name: permissionName,
-		}
-		updatedTeam, err := r.client.Permission.AddPermissionToTeam(ctx, permission, team)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error adding team permission: "+permission.Name+" for team: "+team.String(),
-				"Error from: "+err.Error(),
-			)
-			continue
-		}
-		finalPermissions = updatedTeam.Permissions
-	}
-	for _, permissionName := range removePermissions {
-		permission := dtrack.Permission{
-			Name: permissionName,
-		}
-		updatedTeam, err := r.client.Permission.RemovePermissionFromTeam(ctx, permission, team)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error removing team permission: "+permission.Name+"for team: "+team.String(),
-				"Error from: "+err.Error(),
-			)
-			continue
-		}
-		finalPermissions = updatedTeam.Permissions
-	}
+	finalPermissions := r.updatePermissions(ctx, &resp.Diagnostics, teamInfo, addPermissions, removePermissions)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	plan = teamPermissionsResourceModel{
-		TeamID: types.StringValue(team.String()),
+		TeamID: types.StringValue(teamID.String()),
 		Permissions: Map(finalPermissions, func(permission dtrack.Permission) types.String {
 			return types.StringValue(permission.Name)
 		}),
@@ -141,7 +116,7 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state teamPermissionsResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -149,33 +124,33 @@ func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	// Refresh
-	teamId, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	// Refresh.
+	teamID, errDiag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
+	if errDiag != nil {
+		resp.Diagnostics.Append(errDiag)
 		return
 	}
 	tflog.Debug(ctx, "Reading Team Permissions", map[string]any{
-		"team":          teamId.String(),
+		"team":          teamID.String(),
 		"permissions.#": len(state.Permissions),
 	})
-	team, err := r.client.Team.Get(ctx, teamId)
+	team, err := r.client.Team.Get(ctx, teamID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated team",
-			"Error with reading team: "+teamId.String()+", in original error: "+err.Error(),
+			"Error with reading team: "+teamID.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
 
 	state = teamPermissionsResourceModel{
-		TeamID: types.StringValue(teamId.String()),
+		TeamID: types.StringValue(teamID.String()),
 		Permissions: Map(team.Permissions, func(permission dtrack.Permission) types.String {
 			return types.StringValue(permission.Name)
 		}),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -188,7 +163,7 @@ func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 func (r *teamPermissionsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan teamPermissionsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -196,9 +171,9 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	team, diag := TryParseUUID(plan.TeamID, LifecycleUpdate, path.Root("team"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	team, errDiag := TryParseUUID(plan.TeamID, LifecycleUpdate, path.Root("team"))
+	if errDiag != nil {
+		resp.Diagnostics.Append(errDiag)
 		return
 	}
 	tflog.Debug(ctx, "Updating Team Permissions", map[string]any{
@@ -223,36 +198,8 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 		"desired": desiredPermissions,
 	})
 
-	finalPermissions := teamInfo.Permissions // Ensure that only permissions assigned and understood by DT end up in state, rather than user input
 	addPermissions, removePermissions := ListDeltas(currentPermissions, desiredPermissions)
-	for _, permissionName := range addPermissions {
-		permission := dtrack.Permission{
-			Name: permissionName,
-		}
-		updatedTeam, err := r.client.Permission.AddPermissionToTeam(ctx, permission, team)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error adding team permission: "+permission.Name+" for team: "+team.String(),
-				"Error from: "+err.Error(),
-			)
-			continue
-		}
-		finalPermissions = updatedTeam.Permissions
-	}
-	for _, permissionName := range removePermissions {
-		permission := dtrack.Permission{
-			Name: permissionName,
-		}
-		updatedTeam, err := r.client.Permission.RemovePermissionFromTeam(ctx, permission, team)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error removing team permission: "+permission.Name+"for team: "+team.String(),
-				"Error from: "+err.Error(),
-			)
-			continue
-		}
-		finalPermissions = updatedTeam.Permissions
-	}
+	finalPermissions := r.updatePermissions(ctx, &resp.Diagnostics, teamInfo, addPermissions, removePermissions)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -264,7 +211,7 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 		}),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -277,7 +224,7 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 }
 
 func (r *teamPermissionsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state teamPermissionsResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -285,10 +232,10 @@ func (r *teamPermissionsResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	// Map TF to SDK
-	team, diag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	// Map TF to SDK.
+	team, errDiag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
+	if errDiag != nil {
+		resp.Diagnostics.Append(errDiag)
 		return
 	}
 	tflog.Debug(ctx, "Deleting Team Permissions", map[string]any{
@@ -329,7 +276,7 @@ func (r *teamPermissionsResource) Configure(_ context.Context, req resource.Conf
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -338,6 +285,39 @@ func (r *teamPermissionsResource) Configure(_ context.Context, req resource.Conf
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
+}
+
+func (r *teamPermissionsResource) updatePermissions(
+	ctx context.Context, diags *diag.Diagnostics,
+	team dtrack.Team, addPermissions, removePermissions []string,
+) []dtrack.Permission {
+	// Ensure that only permissions assigned and understood by DT end up in state, rather than user input.
+	finalPermissions := team.Permissions
+	for _, permissionName := range addPermissions {
+		permission := dtrack.Permission{Name: permissionName}
+		updatedTeam, err := r.client.Permission.AddPermissionToTeam(ctx, permission, team.UUID)
+		if err != nil {
+			diags.AddError(
+				"Error adding team permission: "+permissionName+" for team: "+team.UUID.String(),
+				"Error from: "+err.Error(),
+			)
+			continue
+		}
+		finalPermissions = updatedTeam.Permissions
+	}
+	for _, permissionName := range removePermissions {
+		permission := dtrack.Permission{Name: permissionName}
+		updatedTeam, err := r.client.Permission.RemovePermissionFromTeam(ctx, permission, team.UUID)
+		if err != nil {
+			diags.AddError(
+				"Error removing team permission: "+permissionName+" for team: "+team.UUID.String(),
+				"Error from: "+err.Error(),
+			)
+			continue
+		}
+		finalPermissions = updatedTeam.Permissions
+	}
+	return finalPermissions
 }

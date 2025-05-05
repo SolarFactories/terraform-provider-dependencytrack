@@ -294,7 +294,25 @@ linters:
       max-open-files: 32 # Default unlimited
       severity: "error" # Default warning
       enable-all-rules: true # Default false
-      #directives: [] # TODO
+      directives: []
+      rules:
+        # Marker for Revive
+        - name: line-length-limit
+          arguments: [170]
+        - name: add-constant
+          disabled: true
+        - name: exported
+          disabled: true
+        - name: comment-spacings
+          disabled: true
+        - name: indent-error-flow
+          disabled: true
+        - name: cognitive-complexity
+          disabled: true
+        - name: function-length
+          disabled: true
+        - name: cyclomatic
+          disabled: true
     rowserrcheck:
       packages: [] # Default []
     sloglint:
@@ -449,49 +467,29 @@ linters:
       - path: internal/provider/
         linters:
           - wsl
-          - staticcheck
-          - revive
           - nlreturn
           - unused
           - ireturn
-          - grouper
-          - govet
-          - godot
           - gocritic
           - goconst
           - funlen
-          - gochecknoglobals
           - exhaustruct
           - err113
           - dupl
-          - decorder
       - path: main.go
         linters:
-          - revive
           - exhaustruct
           - cyclop
-          - godot
-          - wsl
       - path: go.mod
         linters:
           - gomoddirectives
-      - path: internal/provider/config_property_data_source_test.go
-        linters:
-          - lll
-      - path: internal/provider/oidc_group_mapping_resource.go
-        linters:
-          - lll
       - path: internal/provider/provider.go
         linters:
-          - lll
           - gocyclo
           - cyclop
-      - path: internal/provider/config_properties_resource_test.go
+      - path: internal/provider/provider_test.go
         linters:
-          - lll
-      - path: internal/provider/config_property_resource_test.go
-        linters:
-          - lll
+          - gochecknoglobals
       - path: internal/provider/project_resource.go
         linters:
           - gocyclo
@@ -499,7 +497,6 @@ linters:
           - gocognit
       - path: internal/provider/http_client.go
         linters:
-          - gocognit
           - wrapcheck
       - path: internal/provider/config_properties_resource.go
         linters:
@@ -511,8 +508,6 @@ linters:
           - gosec
       - path: internal/provider/util.go
         linters:
-          - wrapcheck
-          - mnd
           - nonamedreturns
       - path: internal/provider/util_test.go
         linters:
@@ -520,18 +515,12 @@ linters:
       - path: internal/provider/team_data_source_test.go
         linters:
           - godox
-      - path: internal/provider/team_permissions_resource.go
-        linters:
-          - gocognit
       - path: internal/provider/policy_tag_resource.go
         linters:
           - godox
       - path: internal/provider/team_apikey_resource_test.go
         linters:
           - godox
-      - path: internal/provider/ldap_team_mapping_resource.go
-        linters:
-          - lll
 
 formatters:
   enable:

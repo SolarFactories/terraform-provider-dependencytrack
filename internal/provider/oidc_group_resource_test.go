@@ -9,7 +9,7 @@ func TestAccOidcGroupResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_oidc_group" "test" {
@@ -21,13 +21,13 @@ resource "dependencytrack_oidc_group" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_oidc_group.test", "name", "Test_Group"),
 				),
 			},
-			// ImportState testing
+			// ImportState testing.
 			{
 				ResourceName:      "dependencytrack_oidc_group.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_oidc_group" "test" {

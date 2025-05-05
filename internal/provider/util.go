@@ -15,13 +15,31 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-type Semver struct {
-	Major int
-	Minor int
-	Patch int
-}
+const (
+	SemverComponentCount        = 3
+	PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
+	// LifecycleAction.
+	LifecycleCreate LifecycleAction = "Create"
+	LifecycleRead   LifecycleAction = "Read"
+	LifecycleUpdate LifecycleAction = "Update"
+	LifecycleDelete LifecycleAction = "Delete"
+	LifecycleImport LifecycleAction = "Import"
+)
 
-const PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
+type (
+	Semver struct {
+		Major int
+		Minor int
+		Patch int
+	}
+
+	OIDCMappingInfo struct {
+		Team  uuid.UUID
+		Group uuid.UUID
+	}
+
+	LifecycleAction string
+)
 
 func Filter[T any](items []T, filter func(T) bool) []T {
 	filtered := []T{}
@@ -56,7 +74,10 @@ func FilterPaged[T any](
 		}
 		return nil
 	})
-	return filtered, err
+	if err != nil {
+		return nil, errors.New("Error in FilterPaged: " + err.Error())
+	}
+	return filtered, nil
 }
 
 func FindPaged[T any](
@@ -74,11 +95,6 @@ func FindPaged[T any](
 	}
 	item := filtered[0]
 	return &item, nil
-}
-
-type OIDCMappingInfo struct {
-	Team  uuid.UUID
-	Group uuid.UUID
 }
 
 func FindPagedOidcMapping(
@@ -138,29 +154,29 @@ func FindPagedPolicyCondition(
 
 func ParseSemver(s string) (*Semver, error) {
 	parts := strings.Split(s, ".")
-	if len(parts) != 3 {
-		return nil, fmt.Errorf("Found semver with %v parts, expected 3.", len(parts))
+	if len(parts) != SemverComponentCount {
+		return nil, fmt.Errorf("found semver with %v parts, expected 3", len(parts))
 	}
 	major, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return nil, errors.New("Unable to parse semver major component, from: " + err.Error())
+		return nil, errors.New("unable to parse semver major component, from: " + err.Error())
 	}
 	if major < 0 {
-		return nil, fmt.Errorf("Unable to validate semver major component, from: %d", major)
+		return nil, fmt.Errorf("unable to validate semver major component, from: %d", major)
 	}
 	minor, err := strconv.Atoi(parts[1])
 	if err != nil {
-		return nil, errors.New("Unable to parse semver minor component, from: " + err.Error())
+		return nil, errors.New("unable to parse semver minor component, from: " + err.Error())
 	}
 	if minor < 0 {
-		return nil, fmt.Errorf("Unable to validate semver minor component, from: %d", minor)
+		return nil, fmt.Errorf("unable to validate semver minor component, from: %d", minor)
 	}
 	patch, err := strconv.Atoi(parts[2])
 	if err != nil {
-		return nil, errors.New("Unable to parse semver patch component, from: " + err.Error())
+		return nil, errors.New("unable to parse semver patch component, from: " + err.Error())
 	}
 	if patch < 0 {
-		return nil, fmt.Errorf("Unable to validate semver patch component, from: %d", patch)
+		return nil, fmt.Errorf("unable to validate semver patch component, from: %d", patch)
 	}
 	semver := Semver{
 		Major: major,
@@ -195,41 +211,31 @@ func Map[T, U any](items []T, actor func(T) U) []U {
 	return result
 }
 
-type LifecycleAction string
-
-const (
-	LifecycleCreate LifecycleAction = "Create"
-	LifecycleRead   LifecycleAction = "Read"
-	LifecycleUpdate LifecycleAction = "Update"
-	LifecycleDelete LifecycleAction = "Delete"
-	LifecycleImport LifecycleAction = "Import"
-)
-
-func TryParseUUID(value types.String, action LifecycleAction, path path.Path) (uuid.UUID, diag.Diagnostic) {
+func TryParseUUID(value types.String, action LifecycleAction, tfPath path.Path) (uuid.UUID, diag.Diagnostic) {
 	if value.IsUnknown() {
-		diag := diag.NewAttributeErrorDiagnostic(
-			path,
-			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
-			fmt.Sprintf("Value for %s is unknown.", path.String()),
+		errDiag := diag.NewAttributeErrorDiagnostic(
+			tfPath,
+			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, tfPath.String()),
+			fmt.Sprintf("Value for %s is unknown.", tfPath.String()),
 		)
-		return uuid.Nil, diag
+		return uuid.Nil, errDiag
 	}
 	if value.IsNull() {
-		diag := diag.NewAttributeErrorDiagnostic(
-			path,
-			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
-			fmt.Sprintf("Value for %s is null.", path.String()),
+		errDiag := diag.NewAttributeErrorDiagnostic(
+			tfPath,
+			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, tfPath.String()),
+			fmt.Sprintf("Value for %s is null.", tfPath.String()),
 		)
-		return uuid.Nil, diag
+		return uuid.Nil, errDiag
 	}
 	ret, err := uuid.Parse(value.ValueString())
 	if err != nil {
-		diag := diag.NewAttributeErrorDiagnostic(
-			path,
-			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, path.String()),
+		errDiag := diag.NewAttributeErrorDiagnostic(
+			tfPath,
+			fmt.Sprintf("Within %s, unable to parse %s into UUID.", action, tfPath.String()),
 			"Error from: "+err.Error(),
 		)
-		return uuid.Nil, diag
+		return uuid.Nil, errDiag
 	}
 	return ret, nil
 }

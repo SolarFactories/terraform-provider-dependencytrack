@@ -9,7 +9,7 @@ func TestAccLDAPMappingResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {
@@ -29,7 +29,7 @@ resource "dependencytrack_ldap_team_mapping" "test" {
 					),
 				),
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {

@@ -18,29 +18,31 @@ var (
 	_ datasource.DataSourceWithConfigure = &projectPropertyDataSource{}
 )
 
+type (
+	projectPropertyDataSource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	projectPropertyDataSourceModel struct {
+		Project     types.String `tfsdk:"project"`
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
+
 func NewProjectPropertyDataSource() datasource.DataSource {
 	return &projectPropertyDataSource{}
 }
 
-type projectPropertyDataSource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type projectPropertyDataSourceModel struct {
-	Project     types.String `tfsdk:"project"`
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
-
-func (d *projectPropertyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (*projectPropertyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project_property"
 }
 
-func (d *projectPropertyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (*projectPropertyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Fetch a project property by group and name.",
 		Attributes: map[string]schema.Attribute{
@@ -138,7 +140,7 @@ func (d *projectPropertyDataSource) Configure(_ context.Context, req datasource.
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Configure Type",
@@ -146,6 +148,6 @@ func (d *projectPropertyDataSource) Configure(_ context.Context, req datasource.
 		)
 		return
 	}
-	d.client = clientInfo.client
-	d.semver = clientInfo.semver
+	d.client = clientInfoData.client
+	d.semver = clientInfoData.semver
 }

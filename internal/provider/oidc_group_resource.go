@@ -20,25 +20,27 @@ var (
 	_ resource.ResourceWithImportState = &oidcGroupResource{}
 )
 
+type (
+	oidcGroupResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	oidcGroupResourceModel struct {
+		ID   types.String `tfsdk:"id"`
+		Name types.String `tfsdk:"name"`
+	}
+)
+
 func NewOidcGroupResource() resource.Resource {
 	return &oidcGroupResource{}
 }
 
-type oidcGroupResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type oidcGroupResourceModel struct {
-	ID   types.String `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
-}
-
-func (r *oidcGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*oidcGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oidc_group"
 }
 
-func (r *oidcGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*oidcGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a OIDC Group.",
 		Attributes: map[string]schema.Attribute{
@@ -93,7 +95,7 @@ func (r *oidcGroupResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state oidcGroupResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -101,7 +103,7 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	tflog.Debug(ctx, "Reading OIDC Group", map[string]any{
 		"id":   state.ID.ValueString(),
 		"name": state.Name.ValueString(),
@@ -131,7 +133,7 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 		Name: types.StringValue(oidcGroup.Name),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -144,7 +146,7 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan oidcGroupResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -152,7 +154,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -163,7 +165,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		Name: plan.Name.ValueString(),
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Updating OIDC Group", map[string]any{
 		"id":   oidcGroupReq.UUID.String(),
 		"name": oidcGroupReq.Name,
@@ -177,13 +179,13 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	// Map SDK to TF
+	// Map SDK to TF.
 	plan = oidcGroupResourceModel{
 		ID:   types.StringValue(oidcGroupRes.UUID.String()),
 		Name: types.StringValue(oidcGroupRes.Name),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -196,7 +198,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 }
 
 func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state oidcGroupResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -204,14 +206,14 @@ func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting OIDC Group", map[string]any{
 		"id":   id.String(),
 		"name": state.Name.ValueString(),
@@ -230,7 +232,7 @@ func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	})
 }
 
-func (r *oidcGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*oidcGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Debug(ctx, "Importing OIDC Group", map[string]any{
 		"id": req.ID,
 	})
@@ -247,7 +249,7 @@ func (r *oidcGroupResource) Configure(_ context.Context, req resource.ConfigureR
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -256,6 +258,6 @@ func (r *oidcGroupResource) Configure(_ context.Context, req resource.ConfigureR
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

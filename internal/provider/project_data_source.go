@@ -17,41 +17,43 @@ var (
 	_ datasource.DataSourceWithConfigure = &projectDataSource{}
 )
 
+type (
+	projectDataSource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	projectDataSourceModel struct {
+		Name       types.String             `tfsdk:"name"`
+		Version    types.String             `tfsdk:"version"`
+		ID         types.String             `tfsdk:"id"`
+		Classifier types.String             `tfsdk:"classifier"`
+		CPE        types.String             `tfsdk:"cpe"`
+		Group      types.String             `tfsdk:"group"`
+		Parent     types.String             `tfsdk:"parent"`
+		PURL       types.String             `tfsdk:"purl"`
+		SWID       types.String             `tfsdk:"swid"`
+		Properties []projectPropertiesModel `tfsdk:"properties"`
+	}
+
+	projectPropertiesModel struct {
+		Group       types.String `tfsdk:"group"`
+		Name        types.String `tfsdk:"name"`
+		Value       types.String `tfsdk:"value"`
+		Type        types.String `tfsdk:"type"`
+		Description types.String `tfsdk:"description"`
+	}
+)
+
 func NewProjectDataSource() datasource.DataSource {
 	return &projectDataSource{}
 }
 
-type projectDataSource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type projectDataSourceModel struct {
-	Name       types.String             `tfsdk:"name"`
-	Version    types.String             `tfsdk:"version"`
-	ID         types.String             `tfsdk:"id"`
-	Properties []projectPropertiesModel `tfsdk:"properties"`
-	Classifier types.String             `tfsdk:"classifier"`
-	CPE        types.String             `tfsdk:"cpe"`
-	Group      types.String             `tfsdk:"group"`
-	Parent     types.String             `tfsdk:"parent"`
-	PURL       types.String             `tfsdk:"purl"`
-	SWID       types.String             `tfsdk:"swid"`
-}
-
-type projectPropertiesModel struct {
-	Group       types.String `tfsdk:"group"`
-	Name        types.String `tfsdk:"name"`
-	Value       types.String `tfsdk:"value"`
-	Type        types.String `tfsdk:"type"`
-	Description types.String `tfsdk:"description"`
-}
-
-func (d *projectDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (*projectDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project"
 }
 
-func (d *projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (*projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Fetch an existing Project by name and version. Requires the project to have a version defined on DependencyTrack.",
 		Attributes: map[string]schema.Attribute{
@@ -143,7 +145,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		)
 		return
 	}
-	// Transform data into model
+	// Transform data into model.
 	projectState := projectDataSourceModel{
 		Name:       types.StringValue(project.Name),
 		Version:    types.StringValue(project.Version),
@@ -176,7 +178,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 			"description": property.Description,
 		})
 	}
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &projectState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -200,7 +202,7 @@ func (d *projectDataSource) Configure(_ context.Context, req datasource.Configur
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Configure Type",
@@ -208,6 +210,6 @@ func (d *projectDataSource) Configure(_ context.Context, req datasource.Configur
 		)
 		return
 	}
-	d.client = clientInfo.client
-	d.semver = clientInfo.semver
+	d.client = clientInfoData.client
+	d.semver = clientInfoData.semver
 }

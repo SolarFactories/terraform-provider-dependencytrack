@@ -9,7 +9,7 @@ func TestAccConfigPropertiesResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_config_properties" "test" {
@@ -53,10 +53,12 @@ resource "dependencytrack_config_properties" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.name", "smtp.password"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.value", "TEST_PASSWORD"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.type", "ENCRYPTEDSTRING"),
-					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.description", "The optional password for the username used for authentication"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.description",
+						"The optional password for the username used for authentication",
+					),
 				),
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_config_properties" "test" {
@@ -100,7 +102,9 @@ resource "dependencytrack_config_properties" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.name", "smtp.password"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.value", "TEST_PASSWORD_WITH_CHANGE"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.type", "ENCRYPTEDSTRING"),
-					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.description", "The optional password for the username used for authentication"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.test", "properties.2.description",
+						"The optional password for the username used for authentication",
+					),
 				),
 			},
 		},

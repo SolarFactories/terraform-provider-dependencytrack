@@ -1,3 +1,4 @@
+// Package provider for Terraform for OWASP DependencyTrack https://dependencytrack.org
 package provider
 
 import (
@@ -21,42 +22,44 @@ var (
 	_ provider.Provider = &dependencyTrackProvider{}
 )
 
-type dependencyTrackProvider struct {
-	// version is set to the provider version on release, "dev" when the
-	// provider is built and ran locally, and "test" when running acceptance
-	// testing.
-	version string
-}
+type (
+	dependencyTrackProvider struct {
+		// Version is set to the provider version on release, "dev" when the
+		// provider is built and ran locally, and "test" when running acceptance
+		// testing.
+		version string
+	}
 
-type dependencyTrackProviderModel struct {
-	Host    types.String                          `tfsdk:"host"`
-	Key     types.String                          `tfsdk:"key"`
-	Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
-	RootCA  types.String                          `tfsdk:"root_ca"`
-	MTLS    *dependencyTrackProviderMtlsModel     `tfsdk:"mtls"`
-}
+	dependencyTrackProviderModel struct {
+		Host    types.String                          `tfsdk:"host"`
+		Key     types.String                          `tfsdk:"key"`
+		RootCA  types.String                          `tfsdk:"root_ca"`
+		MTLS    *dependencyTrackProviderMtlsModel     `tfsdk:"mtls"`
+		Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
+	}
 
-type dependencyTrackProviderHeadersModel struct {
-	Name  types.String `tfsdk:"name"`
-	Value types.String `tfsdk:"value"`
-}
+	dependencyTrackProviderHeadersModel struct {
+		Name  types.String `tfsdk:"name"`
+		Value types.String `tfsdk:"value"`
+	}
 
-type dependencyTrackProviderMtlsModel struct {
-	KeyPath  types.String `tfsdk:"key_path"`
-	CertPath types.String `tfsdk:"cert_path"`
-}
+	dependencyTrackProviderMtlsModel struct {
+		KeyPath  types.String `tfsdk:"key_path"`
+		CertPath types.String `tfsdk:"cert_path"`
+	}
 
-type clientInfo struct {
-	client *dtrack.Client
-	semver *Semver
-}
+	clientInfo struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+)
 
 func (p *dependencyTrackProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
 	resp.TypeName = "dependencytrack"
 	resp.Version = p.version
 }
 
-func (p *dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (*dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Interact with DependencyTrack.",
 		Attributes: map[string]schema.Attribute{
@@ -65,9 +68,11 @@ func (p *dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReq
 				Required:    true,
 			},
 			"key": schema.StringAttribute{
-				Description: "API Key for authentication to DependencyTrack. Must have permissions for all attempted actions. Set to 'OS_ENV' to read from DEPENDENCYTRACK_API_KEY environment variable.",
-				Required:    true,
-				Sensitive:   true,
+				Description: "API Key for authentication to DependencyTrack. " +
+					"Must have permissions for all attempted actions. " +
+					"Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable.",
+				Required:  true,
+				Sensitive: true,
 			},
 			"headers": schema.ListNestedAttribute{
 				Description: "Add additional headers to client API requests. Useful for proxy authentication.",
@@ -125,8 +130,8 @@ func loadHeaders(modelHeaders []dependencyTrackProviderHeadersModel, diagnostics
 	return headers
 }
 
-func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	// Get provider data from config
+func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	// Get provider data from config.
 	var config dependencyTrackProviderModel
 	diags := req.Config.Get(ctx, &config)
 	resp.Diagnostics.Append(diags...)
@@ -146,7 +151,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"Host for DependencyTrack was provided, but it was empty.",
 		)
 	}
-	// If key is the magic value 'OS_ENV', load from environment variable
+	// If key is the magic value 'OS_ENV', load from environment variable.
 	if key == "OS_ENV" {
 		key = os.Getenv("DEPENDENCYTRACK_API_KEY")
 	}
@@ -157,9 +162,9 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"API Key for DependencyTrack was provided, but it was empty.",
 		)
 	}
-	// Headers
+	// Headers.
 	headers := loadHeaders(config.Headers, &resp.Diagnostics)
-	// mTLS
+	// Set mTLS variables from Config.
 	if config.MTLS != nil {
 		clientCertFile = config.MTLS.CertPath.ValueString()
 		clientKeyFile = config.MTLS.KeyPath.ValueString()
@@ -213,7 +218,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	})
 }
 
-func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource.Resource {
+func (*dependencyTrackProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewProjectResource,
 		NewProjectPropertyResource,
@@ -230,12 +235,12 @@ func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource
 		NewPolicyConditionResource,
 		NewPolicyProjectResource,
 		NewPolicyTagResource,
-		NewAclMappingResource,
+		NewACLMappingResource,
 		NewLDAPTeamMappingResource,
 	}
 }
 
-func (p *dependencyTrackProvider) DataSources(_ context.Context) []func() datasource.DataSource {
+func (*dependencyTrackProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewProjectDataSource,
 		NewProjectPropertyDataSource,

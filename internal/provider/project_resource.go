@@ -20,34 +20,36 @@ var (
 	_ resource.ResourceWithImportState = &projectResource{}
 )
 
+type (
+	projectResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	projectResourceModel struct {
+		ID          types.String `tfsdk:"id"`
+		Name        types.String `tfsdk:"name"`
+		Description types.String `tfsdk:"description"`
+		Version     types.String `tfsdk:"version"`
+		Parent      types.String `tfsdk:"parent"`
+		Classifier  types.String `tfsdk:"classifier"`
+		Group       types.String `tfsdk:"group"`
+		PURL        types.String `tfsdk:"purl"`
+		CPE         types.String `tfsdk:"cpe"`
+		SWID        types.String `tfsdk:"swid"`
+		Active      types.Bool   `tfsdk:"active"`
+	}
+)
+
 func NewProjectResource() resource.Resource {
 	return &projectResource{}
 }
 
-type projectResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type projectResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Active      types.Bool   `tfsdk:"active"`
-	Version     types.String `tfsdk:"version"`
-	Parent      types.String `tfsdk:"parent"`
-	Classifier  types.String `tfsdk:"classifier"`
-	Group       types.String `tfsdk:"group"`
-	PURL        types.String `tfsdk:"purl"`
-	CPE         types.String `tfsdk:"cpe"`
-	SWID        types.String `tfsdk:"swid"`
-}
-
-func (r *projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project"
 }
 
-func (r *projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a Project.",
 		Attributes: map[string]schema.Attribute{
@@ -167,16 +169,18 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		)
 		return
 	}
-	plan.ID = types.StringValue(projectRes.UUID.String())
-	plan.Name = types.StringValue(projectRes.Name)
-	plan.Description = types.StringValue(projectRes.Description)
-	plan.Active = types.BoolValue(projectRes.Active)
-	plan.Version = types.StringValue(projectRes.Version)
-	plan.Classifier = types.StringValue(projectRes.Classifier)
-	plan.Group = types.StringValue(projectRes.Group)
-	plan.PURL = types.StringValue(projectRes.PURL)
-	plan.CPE = types.StringValue(projectRes.CPE)
-	plan.SWID = types.StringValue(projectRes.SWIDTagID)
+	plan = projectResourceModel{
+		ID:          types.StringValue(projectRes.UUID.String()),
+		Name:        types.StringValue(projectRes.Name),
+		Description: types.StringValue(projectRes.Description),
+		Active:      types.BoolValue(projectRes.Active),
+		Version:     types.StringValue(projectRes.Version),
+		Classifier:  types.StringValue(projectRes.Classifier),
+		Group:       types.StringValue(projectRes.Group),
+		PURL:        types.StringValue(projectRes.PURL),
+		CPE:         types.StringValue(projectRes.CPE),
+		SWID:        types.StringValue(projectRes.SWIDTagID),
+	}
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else if projectReq.ParentRef != nil && r.semver.Major == 4 && r.semver.Minor < 12 {
@@ -208,7 +212,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state projectResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -216,7 +220,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -243,23 +247,26 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		)
 		return
 	}
-	state.ID = types.StringValue(project.UUID.String())
-	state.Name = types.StringValue(project.Name)
-	state.Description = types.StringValue(project.Description)
-	state.Active = types.BoolValue(project.Active)
-	state.Version = types.StringValue(project.Version)
-	state.Classifier = types.StringValue(project.Classifier)
-	state.Group = types.StringValue(project.Group)
-	state.PURL = types.StringValue(project.PURL)
-	state.CPE = types.StringValue(project.CPE)
-	state.SWID = types.StringValue(project.SWIDTagID)
+
+	state = projectResourceModel{
+		ID:          types.StringValue(project.UUID.String()),
+		Name:        types.StringValue(project.Name),
+		Description: types.StringValue(project.Description),
+		Active:      types.BoolValue(project.Active),
+		Version:     types.StringValue(project.Version),
+		Classifier:  types.StringValue(project.Classifier),
+		Group:       types.StringValue(project.Group),
+		PURL:        types.StringValue(project.PURL),
+		CPE:         types.StringValue(project.CPE),
+		SWID:        types.StringValue(project.SWIDTagID),
+	}
 	if project.ParentRef != nil {
 		state.Parent = types.StringValue(project.ParentRef.UUID.String())
 	} else {
 		state.Parent = types.StringNull()
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -281,7 +288,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan projectResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -289,7 +296,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -306,6 +313,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		)
 		return
 	}
+
 	project.Name = plan.Name.ValueString()
 	project.Description = plan.Description.ValueString()
 	project.Active = plan.Active.ValueBool()
@@ -335,7 +343,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		project.ParentRef = nil
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Updating Project", map[string]any{
 		"id":          project.UUID.String(),
 		"name":        project.Name,
@@ -358,24 +366,26 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	// Map SDK to TF
-	plan.ID = types.StringValue(projectRes.UUID.String())
-	plan.Name = types.StringValue(projectRes.Name)
-	plan.Description = types.StringValue(projectRes.Description)
-	plan.Active = types.BoolValue(projectRes.Active)
-	plan.Version = types.StringValue(projectRes.Version)
-	plan.Classifier = types.StringValue(projectRes.Classifier)
-	plan.Group = types.StringValue(projectRes.Group)
-	plan.PURL = types.StringValue(projectRes.PURL)
-	plan.CPE = types.StringValue(projectRes.CPE)
-	plan.SWID = types.StringValue(projectRes.SWIDTagID)
+	// Map SDK to TF.
+	plan = projectResourceModel{
+		ID:          types.StringValue(projectRes.UUID.String()),
+		Name:        types.StringValue(projectRes.Name),
+		Description: types.StringValue(projectRes.Description),
+		Active:      types.BoolValue(projectRes.Active),
+		Version:     types.StringValue(projectRes.Version),
+		Classifier:  types.StringValue(projectRes.Classifier),
+		Group:       types.StringValue(projectRes.Group),
+		PURL:        types.StringValue(projectRes.PURL),
+		CPE:         types.StringValue(projectRes.CPE),
+		SWID:        types.StringValue(projectRes.SWIDTagID),
+	}
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
 		plan.Parent = types.StringNull()
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -397,7 +407,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 }
 
 func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state projectResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -405,14 +415,14 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting Project", map[string]any{
 		"id":          id.String(),
 		"name":        state.Name.ValueString(),
@@ -449,7 +459,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	})
 }
 
-func (r *projectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*projectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Debug(ctx, "Importing Project", map[string]any{
 		"id": req.ID,
 	})
@@ -466,7 +476,7 @@ func (r *projectResource) Configure(_ context.Context, req resource.ConfigureReq
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -475,6 +485,6 @@ func (r *projectResource) Configure(_ context.Context, req resource.ConfigureReq
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

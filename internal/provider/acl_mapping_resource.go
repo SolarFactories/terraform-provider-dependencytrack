@@ -21,26 +21,28 @@ var (
 	_ resource.ResourceWithImportState = &aclMappingResource{}
 )
 
-func NewAclMappingResource() resource.Resource {
+type (
+	aclMappingResource struct {
+		client *dtrack.Client
+		semver *Semver
+	}
+
+	aclMappingResourceModel struct {
+		ID      types.String `tfsdk:"id"`
+		Team    types.String `tfsdk:"team"`
+		Project types.String `tfsdk:"project"`
+	}
+)
+
+func NewACLMappingResource() resource.Resource {
 	return &aclMappingResource{}
 }
 
-type aclMappingResource struct {
-	client *dtrack.Client
-	semver *Semver
-}
-
-type aclMappingResourceModel struct {
-	ID      types.String `tfsdk:"id"`
-	Team    types.String `tfsdk:"team"`
-	Project types.String `tfsdk:"project"`
-}
-
-func (r *aclMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*aclMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_acl_mapping"
 }
 
-func (r *aclMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*aclMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an ACL mapping to grant a Team access to a Project",
 		Attributes: map[string]schema.Attribute{
@@ -124,19 +126,19 @@ func (r *aclMappingResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state aclMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// Refresh
-	team, diag := TryParseUUID(state.Team, LifecycleRead, path.Root("team"))
+	// Refresh.
+	teamID, diag := TryParseUUID(state.Team, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
-	projectId, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("project"))
+	projectID, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("project"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
@@ -146,29 +148,29 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	tflog.Debug(ctx, "Reading Project ACL Mapping", map[string]any{
 		"id":      state.ID.ValueString(),
-		"team":    team.String(),
-		"project": projectId.String(),
+		"team":    teamID.String(),
+		"project": projectID.String(),
 	})
 	project, err := FindPaged(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Project], error) {
-		return r.client.ACL.GetAllProjects(ctx, team, po)
+		return r.client.ACL.GetAllProjects(ctx, teamID, po)
 	}, func(project dtrack.Project) bool {
-		return project.UUID == projectId
+		return project.UUID == projectID
 	})
 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get ACL mapping within Read",
-			"Error with reading acl mapping for team: "+team.String()+", and project: "+projectId.String()+", in original error: "+err.Error(),
+			"Error with reading acl mapping for team: "+teamID.String()+", and project: "+projectID.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
 	state = aclMappingResourceModel{
-		ID:      types.StringValue(fmt.Sprintf("%s/%s", team.String(), project.UUID.String())),
-		Team:    types.StringValue(team.String()),
+		ID:      types.StringValue(fmt.Sprintf("%s/%s", teamID.String(), project.UUID.String())),
+		Team:    types.StringValue(teamID.String()),
 		Project: types.StringValue(project.UUID.String()),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -181,9 +183,9 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 	})
 }
 
-func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Nothing to Update. This resource only has Create, Delete actions
-	// Get State
+func (*aclMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Nothing to Update. This resource only has Create, Delete actions.
+	// Get State.
 	var plan aclMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -209,7 +211,7 @@ func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequ
 		Project: types.StringValue(project.String()),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -223,7 +225,7 @@ func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequ
 }
 
 func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state aclMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -231,7 +233,7 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	team, diag := TryParseUUID(state.Team, LifecycleDelete, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -244,7 +246,7 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting Project ACL Mapping", map[string]any{
 		"id":      state.ID.ValueString(),
 		"team":    team.String(),
@@ -265,7 +267,7 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 	})
 }
 
-func (r *aclMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*aclMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	idParts := strings.Split(req.ID, "/")
 	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
 		resp.Diagnostics.AddError(
@@ -274,18 +276,18 @@ func (r *aclMappingResource) ImportState(ctx context.Context, req resource.Impor
 		)
 		return
 	}
-	teamIdString := idParts[0]
-	projectIdString := idParts[1]
+	teamIDString := idParts[0]
+	projectIDString := idParts[1]
 	tflog.Debug(ctx, "Importing Project ACL Mapping", map[string]any{
-		"team":    teamIdString,
-		"project": projectIdString,
+		"team":    teamIDString,
+		"project": projectIDString,
 	})
 
-	teamId, diag := TryParseUUID(types.StringValue(teamIdString), LifecycleImport, path.Root("team"))
+	teamID, diag := TryParseUUID(types.StringValue(teamIDString), LifecycleImport, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
-	projectId, diag := TryParseUUID(types.StringValue(projectIdString), LifecycleImport, path.Root("project"))
+	projectID, diag := TryParseUUID(types.StringValue(projectIDString), LifecycleImport, path.Root("project"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
@@ -293,9 +295,9 @@ func (r *aclMappingResource) ImportState(ctx context.Context, req resource.Impor
 		return
 	}
 	aclMappingState := aclMappingResourceModel{
-		ID:      types.StringValue(fmt.Sprintf("%s/%s", teamId.String(), projectId.String())),
-		Team:    types.StringValue(teamId.String()),
-		Project: types.StringValue(projectId.String()),
+		ID:      types.StringValue(fmt.Sprintf("%s/%s", teamID.String(), projectID.String())),
+		Team:    types.StringValue(teamID.String()),
+		Project: types.StringValue(projectID.String()),
 	}
 	diags := resp.State.Set(ctx, aclMappingState)
 	resp.Diagnostics.Append(diags...)
@@ -313,7 +315,7 @@ func (r *aclMappingResource) Configure(_ context.Context, req resource.Configure
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -322,6 +324,6 @@ func (r *aclMappingResource) Configure(_ context.Context, req resource.Configure
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

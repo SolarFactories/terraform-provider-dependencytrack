@@ -1,6 +1,7 @@
 // Copyright (c) HashiCorp, Inc.
-// SPDX-License-Identifier: MPL-2.0
+// SPDX-License-Identifier: MPL-2.0.
 
+// Terraform Provider Communication for DependencyTrack Provider.
 package main
 
 import (
@@ -13,18 +14,20 @@ import (
 )
 
 var (
-	// these will be set by the goreleaser configuration
-	// to appropriate values for the compiled binary.
+	// These will be set by the goreleaser configuration.
+	// Set to appropriate values for the compiled binary.
 	version = "dev"
 
-	// goreleaser can pass other information to the main package, such as the specific commit
+	// `goreleaser` can pass other info to the main package, e.g. commit hash.
 	// https://goreleaser.com/cookbooks/using-main.version/
 )
 
 func main() {
 	var debug bool
 
-	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
+	flag.BoolVar(&debug, "debug", false,
+		"set to true to run the provider with support for debuggers like delve",
+	)
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
@@ -32,8 +35,11 @@ func main() {
 		Debug:   debug,
 	}
 
-	err := providerserver.Serve(context.Background(), provider.New(version), opts)
-
+	err := providerserver.Serve(
+		context.Background(),
+		provider.New(version),
+		opts,
+	)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
