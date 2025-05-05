@@ -294,7 +294,33 @@ linters:
       max-open-files: 32 # Default unlimited
       severity: "error" # Default warning
       enable-all-rules: true # Default false
-      #directives: [] # TODO
+      directives: []
+      rules:
+        # Marker for Revive
+        - name: line-length-limit
+          arguments: [170]
+        - name: add-constant
+          disabled: true
+        - name: import-shadowing
+          disabled: true
+        - name: error-strings
+          disabled: true
+        - name: exported
+          disabled: true
+        - name: unused-receiver
+          disabled: true
+        - name: var-naming
+          disabled: true
+        - name: comment-spacings
+          disabled: true
+        - name: indent-error-flow
+          disabled: true
+        - name: cognitive-complexity
+          disabled: true
+        - name: function-length
+          disabled: true
+        - name: cyclomatic
+          disabled: true
     rowserrcheck:
       packages: [] # Default []
     sloglint:
@@ -450,7 +476,6 @@ linters:
         linters:
           - wsl
           - staticcheck
-          - revive
           - nlreturn
           - unused
           - ireturn

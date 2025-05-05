@@ -1,3 +1,4 @@
+// Package provider for Terraform for OWASP DependencyTrack https://dependencytrack.org
 package provider
 
 import (
