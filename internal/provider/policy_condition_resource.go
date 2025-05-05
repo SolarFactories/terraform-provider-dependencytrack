@@ -205,7 +205,7 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
-	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleUpdate, path.Root("policy"))
+	policyID, diag := TryParseUUID(plan.PolicyID, LifecycleUpdate, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
@@ -241,7 +241,7 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 	// Map SDK to TF.
 	plan = policyConditionResourceModel{
 		ID:       types.StringValue(conditionRes.UUID.String()),
-		PolicyID: types.StringValue(policyId.String()),
+		PolicyID: types.StringValue(policyID.String()),
 		Subject:  types.StringValue(string(conditionRes.Subject)),
 		Operator: types.StringValue(string(conditionRes.Operator)),
 		Value:    types.StringValue(conditionRes.Value),

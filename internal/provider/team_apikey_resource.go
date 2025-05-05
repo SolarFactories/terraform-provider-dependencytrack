@@ -38,7 +38,7 @@ type (
 		Key      types.String `tfsdk:"key"`
 		Comment  types.String `tfsdk:"comment"`
 		Masked   types.String `tfsdk:"masked"`
-		PublicId types.String `tfsdk:"public_id"`
+		PublicID types.String `tfsdk:"public_id"`
 		Legacy   types.Bool   `tfsdk:"legacy"`
 	}
 )
@@ -111,7 +111,7 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	team, diag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
+	teamID, diag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
@@ -119,9 +119,9 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	comment := plan.Comment.ValueString()
 
 	tflog.Debug(ctx, "Creating API Key", map[string]any{
-		"team": team.String(),
+		"team": teamID.String(),
 	})
-	key, err := r.client.Team.GenerateAPIKey(ctx, team)
+	key, err := r.client.Team.GenerateAPIKey(ctx, teamID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating team API Key",
@@ -131,7 +131,7 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	if comment != "" {
 		tflog.Debug(ctx, "Setting Comment for API Key", map[string]any{
-			"team":    team.String(),
+			"team":    teamID.String(),
 			"masked":  key.MaskedKey,
 			"comment": comment,
 		})
@@ -146,17 +146,17 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	plan = teamAPIKeyResourceModel{
-		TeamID:   types.StringValue(team.String()),
+		TeamID:   types.StringValue(teamID.String()),
 		Key:      types.StringValue(key.Key),
 		Comment:  types.StringValue(comment),
 		Masked:   types.StringValue(key.MaskedKey),
-		PublicId: types.StringValue(key.PublicId),
+		PublicID: types.StringValue(key.PublicId),
 		Legacy:   types.BoolValue(key.Legacy),
 	}
 	if r.isLegacy(key) {
-		plan.ID = types.StringValue(fmt.Sprintf("%s/%s", team.String(), key.Key))
+		plan.ID = types.StringValue(fmt.Sprintf("%s/%s", teamID.String(), key.Key))
 	} else {
-		plan.ID = types.StringValue(fmt.Sprintf("%s/%s", team.String(), key.PublicId))
+		plan.ID = types.StringValue(fmt.Sprintf("%s/%s", teamID.String(), key.PublicId))
 	}
 
 	diags = resp.State.Set(ctx, plan)
@@ -181,7 +181,7 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	key := state.Key.ValueString()
-	publicId := state.PublicId.ValueString() // DT API v4.13+.
+	publicID := state.PublicID.ValueString() // DT API v4.13+.
 	team, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -206,7 +206,7 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 		if r.isLegacy(apiKey) {
 			return apiKey.Key == key
 		} else {
-			return apiKey.PublicId == publicId
+			return apiKey.PublicId == publicID
 		}
 	})
 	if err != nil {
@@ -225,7 +225,7 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 		Key:      types.StringValue(state.Key.ValueString()),
 		Comment:  types.StringValue(apiKey.Comment),
 		Masked:   types.StringValue(apiKey.MaskedKey),
-		PublicId: types.StringValue(apiKey.PublicId),
+		PublicID: types.StringValue(apiKey.PublicId),
 		Legacy:   types.BoolValue(apiKey.Legacy),
 	}
 
@@ -251,7 +251,7 @@ func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	publicIdOrKey := r.getPublicIdOrKey(plan)
+	publicIDOrKey := r.getPublicIDOrKey(plan)
 	comment := plan.Comment.ValueString()
 	tflog.Debug(ctx, "Updating API Key Comment", map[string]any{
 		"team":    plan.TeamID.ValueString(),
@@ -259,7 +259,7 @@ func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 		"comment": comment,
 	})
 
-	commentOut, err := r.client.Team.UpdateAPIKeyComment(ctx, publicIdOrKey, comment)
+	commentOut, err := r.client.Team.UpdateAPIKeyComment(ctx, publicIDOrKey, comment)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update the API Key comment.",
@@ -293,7 +293,7 @@ func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	// Map TF to SDK.
-	publicIdOrKey := r.getPublicIdOrKey(state)
+	publicIDOrKey := r.getPublicIDOrKey(state)
 	team, diag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -305,7 +305,7 @@ func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 		"masked":  state.Masked.ValueString(),
 		"comment": state.Comment.ValueString(),
 	})
-	err := r.client.Team.DeleteAPIKey(ctx, publicIdOrKey)
+	err := r.client.Team.DeleteAPIKey(ctx, publicIDOrKey)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Team API Key",
@@ -329,16 +329,16 @@ func (r *teamAPIKeyResource) ImportState(ctx context.Context, req resource.Impor
 		)
 		return
 	}
-	teamId, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("id"))
+	teamID, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	publicIdOrKey := idParts[1]
+	publicIDOrKey := idParts[1]
 	tflog.Debug(ctx, "Importing API Key", map[string]any{
-		"team": teamId.String(),
+		"team": teamID.String(),
 	})
-	keys, err := r.client.Team.GetAPIKeys(ctx, teamId)
+	keys, err := r.client.Team.GetAPIKeys(ctx, teamID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Import, unable to retrieve Team API Keys.",
@@ -348,9 +348,9 @@ func (r *teamAPIKeyResource) ImportState(ctx context.Context, req resource.Impor
 	}
 	apiKey, err := Find(keys, func(apiKey dtrack.APIKey) bool {
 		if r.isLegacy(apiKey) {
-			return apiKey.Key == publicIdOrKey
+			return apiKey.Key == publicIDOrKey
 		} else {
-			return apiKey.PublicId == publicIdOrKey
+			return apiKey.PublicId == publicIDOrKey
 		}
 	})
 	if err != nil {
@@ -362,12 +362,12 @@ func (r *teamAPIKeyResource) ImportState(ctx context.Context, req resource.Impor
 	}
 
 	keyState := teamAPIKeyResourceModel{
-		ID:       types.StringValue(fmt.Sprintf("%s/%s", teamId.String(), publicIdOrKey)),
-		TeamID:   types.StringValue(teamId.String()),
+		ID:       types.StringValue(fmt.Sprintf("%s/%s", teamID.String(), publicIDOrKey)),
+		TeamID:   types.StringValue(teamID.String()),
 		Key:      types.StringValue(apiKey.Key),
 		Comment:  types.StringValue(apiKey.Comment),
 		Masked:   types.StringValue(apiKey.MaskedKey),
-		PublicId: types.StringValue(apiKey.PublicId),
+		PublicID: types.StringValue(apiKey.PublicId),
 		Legacy:   types.BoolValue(apiKey.Legacy),
 	}
 
@@ -407,11 +407,11 @@ func (r *teamAPIKeyResource) isLegacy(key dtrack.APIKey) bool {
 	return key.Legacy
 }
 
-func (r *teamAPIKeyResource) getPublicIdOrKey(model teamAPIKeyResourceModel) string {
+func (r *teamAPIKeyResource) getPublicIDOrKey(model teamAPIKeyResourceModel) string {
 	key := dtrack.APIKey{Legacy: model.Legacy.ValueBool()}
 	if r.isLegacy(key) {
 		return model.Key.ValueString()
 	} else {
-		return model.PublicId.ValueString()
+		return model.PublicID.ValueString()
 	}
 }

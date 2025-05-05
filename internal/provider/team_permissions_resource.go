@@ -67,16 +67,16 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	team, diag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
+	teamID, diag := TryParseUUID(plan.TeamID, LifecycleCreate, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	teamInfo, err := r.client.Team.Get(ctx, team)
+	teamInfo, err := r.client.Team.Get(ctx, teamID)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Create, unable to request current team info for: "+team.String(),
+			"Within Create, unable to request current team info for: "+teamID.String(),
 			"Error from: "+err.Error(),
 		)
 		return
@@ -86,7 +86,7 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 	currentPermissions := Map(teamInfo.Permissions, func(current dtrack.Permission) string { return current.Name })
 
 	tflog.Debug(ctx, "Creating Team Permissions", map[string]any{
-		"team":    team.String(),
+		"team":    teamID.String(),
 		"current": currentPermissions,
 		"desired": desiredPermissions,
 	})
@@ -98,7 +98,7 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	plan = teamPermissionsResourceModel{
-		TeamID: types.StringValue(team.String()),
+		TeamID: types.StringValue(teamID.String()),
 		Permissions: Map(finalPermissions, func(permission dtrack.Permission) types.String {
 			return types.StringValue(permission.Name)
 		}),
@@ -125,26 +125,26 @@ func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Refresh.
-	teamId, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
+	teamID, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 	tflog.Debug(ctx, "Reading Team Permissions", map[string]any{
-		"team":          teamId.String(),
+		"team":          teamID.String(),
 		"permissions.#": len(state.Permissions),
 	})
-	team, err := r.client.Team.Get(ctx, teamId)
+	team, err := r.client.Team.Get(ctx, teamID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated team",
-			"Error with reading team: "+teamId.String()+", in original error: "+err.Error(),
+			"Error with reading team: "+teamID.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
 
 	state = teamPermissionsResourceModel{
-		TeamID: types.StringValue(teamId.String()),
+		TeamID: types.StringValue(teamID.String()),
 		Permissions: Map(team.Permissions, func(permission dtrack.Permission) types.String {
 			return types.StringValue(permission.Name)
 		}),

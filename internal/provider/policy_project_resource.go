@@ -68,11 +68,11 @@ func (r *policyProjectResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleCreate, path.Root("policy"))
+	policyID, diag := TryParseUUID(plan.PolicyID, LifecycleCreate, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
-	projectId, diag := TryParseUUID(plan.ProjectID, LifecycleCreate, path.Root("project"))
+	projectID, diag := TryParseUUID(plan.ProjectID, LifecycleCreate, path.Root("project"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
@@ -81,10 +81,10 @@ func (r *policyProjectResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	tflog.Debug(ctx, "Creating Policy Project Mapping", map[string]any{
-		"policy":  policyId.String(),
-		"project": projectId.String(),
+		"policy":  policyID.String(),
+		"project": projectID.String(),
 	})
-	policy, err := r.client.Policy.AddProject(ctx, policyId, projectId)
+	policy, err := r.client.Policy.AddProject(ctx, policyID, projectID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating project policy mapping",
@@ -94,7 +94,7 @@ func (r *policyProjectResource) Create(ctx context.Context, req resource.CreateR
 	}
 	plan = policyProjectResourceModel{
 		PolicyID:  types.StringValue(policy.UUID.String()),
-		ProjectID: types.StringValue(projectId.String()),
+		ProjectID: types.StringValue(projectID.String()),
 	}
 
 	diags = resp.State.Set(ctx, plan)
@@ -123,11 +123,11 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 	})
 
 	// Refresh.
-	policyId, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
+	policyID, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
-	projectId, diag := TryParseUUID(state.ProjectID, LifecycleRead, path.Root("project"))
+	projectID, diag := TryParseUUID(state.ProjectID, LifecycleRead, path.Root("project"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
@@ -135,7 +135,7 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	policy, err := r.client.Policy.Get(ctx, policyId)
+	policy, err := r.client.Policy.Get(ctx, policyID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Read, unable to retrieve policy",
@@ -144,7 +144,7 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 	project, err := Find(policy.Projects, func(project dtrack.Project) bool {
-		return project.UUID == projectId
+		return project.UUID == projectID
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -180,11 +180,11 @@ func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	policyId, diag := TryParseUUID(plan.PolicyID, LifecycleUpdate, path.Root("policy"))
+	policyID, diag := TryParseUUID(plan.PolicyID, LifecycleUpdate, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
-	projectId, diag := TryParseUUID(plan.ProjectID, LifecycleUpdate, path.Root("project"))
+	projectID, diag := TryParseUUID(plan.ProjectID, LifecycleUpdate, path.Root("project"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
@@ -193,13 +193,13 @@ func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	tflog.Debug(ctx, "Updating Policy Project Mapping", map[string]any{
-		"policy":  policyId.String(),
-		"project": projectId.String(),
+		"policy":  policyID.String(),
+		"project": projectID.String(),
 	})
 
 	plan = policyProjectResourceModel{
-		PolicyID:  types.StringValue(policyId.String()),
-		ProjectID: types.StringValue(projectId.String()),
+		PolicyID:  types.StringValue(policyID.String()),
+		ProjectID: types.StringValue(projectID.String()),
 	}
 
 	// Update State.
@@ -223,11 +223,11 @@ func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	policyId, diag := TryParseUUID(state.PolicyID, LifecycleDelete, path.Root("policy"))
+	policyID, diag := TryParseUUID(state.PolicyID, LifecycleDelete, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
-	projectId, diag := TryParseUUID(state.ProjectID, LifecycleDelete, path.Root("project"))
+	projectID, diag := TryParseUUID(state.ProjectID, LifecycleDelete, path.Root("project"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
@@ -236,10 +236,10 @@ func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 
 	tflog.Debug(ctx, "Deleting Policy Project Mapping", map[string]any{
-		"policy":  policyId.String(),
-		"project": projectId.String(),
+		"policy":  policyID.String(),
+		"project": projectID.String(),
 	})
-	_, err := r.client.Policy.DeleteProject(ctx, policyId, projectId)
+	_, err := r.client.Policy.DeleteProject(ctx, policyID, projectID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete project-policy mapping",

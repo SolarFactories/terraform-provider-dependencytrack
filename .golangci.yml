@@ -475,7 +475,6 @@ linters:
       - path: internal/provider/
         linters:
           - wsl
-          - staticcheck
           - nlreturn
           - unused
           - ireturn

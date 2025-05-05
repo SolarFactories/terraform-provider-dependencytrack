@@ -21,7 +21,7 @@ var (
 	_ resource.ResourceWithImportState = &aclMappingResource{}
 )
 
-func NewAclMappingResource() resource.Resource {
+func NewACLMappingResource() resource.Resource {
 	return &aclMappingResource{}
 }
 
@@ -134,11 +134,11 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 	// Refresh.
-	team, diag := TryParseUUID(state.Team, LifecycleRead, path.Root("team"))
+	teamID, diag := TryParseUUID(state.Team, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
-	projectId, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("project"))
+	projectID, diag := TryParseUUID(state.Project, LifecycleRead, path.Root("project"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
@@ -148,25 +148,25 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	tflog.Debug(ctx, "Reading Project ACL Mapping", map[string]any{
 		"id":      state.ID.ValueString(),
-		"team":    team.String(),
-		"project": projectId.String(),
+		"team":    teamID.String(),
+		"project": projectID.String(),
 	})
 	project, err := FindPaged(func(po dtrack.PageOptions) (dtrack.Page[dtrack.Project], error) {
-		return r.client.ACL.GetAllProjects(ctx, team, po)
+		return r.client.ACL.GetAllProjects(ctx, teamID, po)
 	}, func(project dtrack.Project) bool {
-		return project.UUID == projectId
+		return project.UUID == projectID
 	})
 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get ACL mapping within Read",
-			"Error with reading acl mapping for team: "+team.String()+", and project: "+projectId.String()+", in original error: "+err.Error(),
+			"Error with reading acl mapping for team: "+teamID.String()+", and project: "+projectID.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
 	state = aclMappingResourceModel{
-		ID:      types.StringValue(fmt.Sprintf("%s/%s", team.String(), project.UUID.String())),
-		Team:    types.StringValue(team.String()),
+		ID:      types.StringValue(fmt.Sprintf("%s/%s", teamID.String(), project.UUID.String())),
+		Team:    types.StringValue(teamID.String()),
 		Project: types.StringValue(project.UUID.String()),
 	}
 
@@ -276,18 +276,18 @@ func (r *aclMappingResource) ImportState(ctx context.Context, req resource.Impor
 		)
 		return
 	}
-	teamIdString := idParts[0]
-	projectIdString := idParts[1]
+	teamIDString := idParts[0]
+	projectIDString := idParts[1]
 	tflog.Debug(ctx, "Importing Project ACL Mapping", map[string]any{
-		"team":    teamIdString,
-		"project": projectIdString,
+		"team":    teamIDString,
+		"project": projectIDString,
 	})
 
-	teamId, diag := TryParseUUID(types.StringValue(teamIdString), LifecycleImport, path.Root("team"))
+	teamID, diag := TryParseUUID(types.StringValue(teamIDString), LifecycleImport, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
-	projectId, diag := TryParseUUID(types.StringValue(projectIdString), LifecycleImport, path.Root("project"))
+	projectID, diag := TryParseUUID(types.StringValue(projectIDString), LifecycleImport, path.Root("project"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 	}
@@ -295,9 +295,9 @@ func (r *aclMappingResource) ImportState(ctx context.Context, req resource.Impor
 		return
 	}
 	aclMappingState := aclMappingResourceModel{
-		ID:      types.StringValue(fmt.Sprintf("%s/%s", teamId.String(), projectId.String())),
-		Team:    types.StringValue(teamId.String()),
-		Project: types.StringValue(projectId.String()),
+		ID:      types.StringValue(fmt.Sprintf("%s/%s", teamID.String(), projectID.String())),
+		Team:    types.StringValue(teamID.String()),
+		Project: types.StringValue(projectID.String()),
 	}
 	diags := resp.State.Set(ctx, aclMappingState)
 	resp.Diagnostics.Append(diags...)

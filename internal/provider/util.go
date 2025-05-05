@@ -31,7 +31,7 @@ type (
 )
 
 const (
-	SEMVER_COMPONENT_COUNT      = 3
+	SemverComponentCount        = 3
 	PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
 	// LifecycleAction.
 	LifecycleCreate LifecycleAction = "Create"
@@ -151,29 +151,29 @@ func FindPagedPolicyCondition(
 
 func ParseSemver(s string) (*Semver, error) {
 	parts := strings.Split(s, ".")
-	if len(parts) != SEMVER_COMPONENT_COUNT {
-		return nil, fmt.Errorf("Found semver with %v parts, expected 3.", len(parts))
+	if len(parts) != SemverComponentCount {
+		return nil, fmt.Errorf("found semver with %v parts, expected 3", len(parts))
 	}
 	major, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return nil, errors.New("Unable to parse semver major component, from: " + err.Error())
+		return nil, errors.New("unable to parse semver major component, from: " + err.Error())
 	}
 	if major < 0 {
-		return nil, fmt.Errorf("Unable to validate semver major component, from: %d", major)
+		return nil, fmt.Errorf("unable to validate semver major component, from: %d", major)
 	}
 	minor, err := strconv.Atoi(parts[1])
 	if err != nil {
-		return nil, errors.New("Unable to parse semver minor component, from: " + err.Error())
+		return nil, errors.New("unable to parse semver minor component, from: " + err.Error())
 	}
 	if minor < 0 {
-		return nil, fmt.Errorf("Unable to validate semver minor component, from: %d", minor)
+		return nil, fmt.Errorf("unable to validate semver minor component, from: %d", minor)
 	}
 	patch, err := strconv.Atoi(parts[2])
 	if err != nil {
-		return nil, errors.New("Unable to parse semver patch component, from: " + err.Error())
+		return nil, errors.New("unable to parse semver patch component, from: " + err.Error())
 	}
 	if patch < 0 {
-		return nil, fmt.Errorf("Unable to validate semver patch component, from: %d", patch)
+		return nil, fmt.Errorf("unable to validate semver patch component, from: %d", patch)
 	}
 	semver := Semver{
 		Major: major,

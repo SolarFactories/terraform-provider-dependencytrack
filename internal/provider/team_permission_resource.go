@@ -114,20 +114,20 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Refresh.
-	teamId, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
+	teamID, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 	tflog.Debug(ctx, "Read Team Permission", map[string]any{
-		"team":       teamId.String(),
+		"team":       teamID.String(),
 		"permission": state.Permission.ValueString(),
 	})
-	team, err := r.client.Team.Get(ctx, teamId)
+	team, err := r.client.Team.Get(ctx, teamID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated team",
-			"Error with reading team: "+teamId.String()+", in original error: "+err.Error(),
+			"Error with reading team: "+teamID.String()+", in original error: "+err.Error(),
 		)
 		return
 	}

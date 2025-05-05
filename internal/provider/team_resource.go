@@ -105,20 +105,20 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	// Refresh.
-	teamId, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	teamID, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 	tflog.Debug(ctx, "Reading Team", map[string]any{
-		"id":   teamId.String(),
+		"id":   teamID.String(),
 		"name": state.Name.ValueString(),
 	})
-	team, err := r.client.Team.Get(ctx, teamId)
+	team, err := r.client.Team.Get(ctx, teamID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated team",
-			"Error with reading team: "+teamId.String()+", in original error: "+err.Error(),
+			"Error with reading team: "+teamID.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
