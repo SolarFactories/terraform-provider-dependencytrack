@@ -95,7 +95,6 @@ func (r *policyConditionResource) Create(ctx context.Context, req resource.Creat
 		Value:    plan.Value.ValueString(),
 	}
 
-	//tflog.Debug(ctx, "Creating a new policy condition within policy: "+policyID.String())
 	tflog.Debug(ctx, "Creating Policy Condition", map[string]any{
 		"policy":   policyID.String(),
 		"operator": string(conditionReq.Operator),

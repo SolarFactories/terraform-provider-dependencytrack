@@ -121,14 +121,14 @@ func (r *projectPropertyResource) Create(ctx context.Context, req resource.Creat
 		"project": project.String(),
 		"group":   propertyReq.Group,
 		"name":    propertyReq.Name,
-		"type":    propertyReq.Type,
 		"value":   propertyReq.Value,
+		"type":    propertyReq.Type,
 	})
 	propertyRes, err := r.client.ProjectProperty.Create(ctx, project, propertyReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating project property.",
-			"Unexpected error: "+err.Error(),
+			"Error creating Project Property.",
+			"Error from: "+err.Error(),
 		)
 		return
 	}
@@ -196,8 +196,8 @@ func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadReq
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to locate project property.",
-			"Unexpected error from: "+err.Error(),
+			"Within Read, unable to locate Project Property.",
+			"Error from: "+err.Error(),
 		)
 	}
 	propertyState := projectPropertyResourceModel{
@@ -260,7 +260,7 @@ func (r *projectPropertyResource) Update(ctx context.Context, req resource.Updat
 	propertyRes, err := r.client.ProjectProperty.Update(ctx, project, propertyReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to update project property.",
+			"Unable to update Project Property.",
 			"Error from: "+err.Error(),
 		)
 		return

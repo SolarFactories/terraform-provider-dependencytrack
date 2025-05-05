@@ -104,6 +104,7 @@ func (d *configPropertyDataSource) Read(ctx context.Context, req datasource.Read
 	tflog.Debug(ctx, "Read Config Property", map[string]any{
 		"group":       propertyState.Group.ValueString(),
 		"name":        propertyState.Name.ValueString(),
+		"value":       propertyState.Value.ValueString(),
 		"type":        propertyState.Type.ValueString(),
 		"description": propertyState.Description.ValueString(),
 	})

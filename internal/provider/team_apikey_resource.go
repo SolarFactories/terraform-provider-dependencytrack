@@ -164,8 +164,8 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	tflog.Debug(ctx, "Created API Key", map[string]any{
 		"team":    plan.TeamID.ValueString(),
-		"comment": plan.Comment.ValueString(),
 		"masked":  plan.Masked.ValueString(),
+		"comment": plan.Comment.ValueString(),
 	})
 }
 

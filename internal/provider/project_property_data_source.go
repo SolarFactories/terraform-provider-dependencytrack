@@ -105,7 +105,7 @@ func (d *projectPropertyDataSource) Read(ctx context.Context, req datasource.Rea
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to locate project property.",
+			"Within Read, unable to locate Project Property.",
 			"Error from: "+err.Error(),
 		)
 		return
@@ -124,7 +124,7 @@ func (d *projectPropertyDataSource) Read(ctx context.Context, req datasource.Rea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Read DependencyTrack ProjectProperty", map[string]any{
+	tflog.Debug(ctx, "Read Project Property", map[string]any{
 		"project":     propertyState.Project.ValueString(),
 		"group":       propertyState.Group.ValueString(),
 		"name":        propertyState.Name.ValueString(),

@@ -126,6 +126,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		tflog.Debug(ctx, "Creating bulk config property", map[string]any{
 			"group": configProperty.GroupName,
 			"name":  configProperty.Name,
+			"value": configProperty.Value,
 			"type":  configProperty.Type,
 		})
 	}
@@ -164,6 +165,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		tflog.Debug(ctx, "Created bulk config property", map[string]any{
 			"group": propertyRes.GroupName,
 			"name":  propertyRes.Name,
+			"value": propertyRes.Value,
 			"type":  propertyRes.Type,
 		})
 	}
@@ -186,7 +188,7 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	tflog.Debug(ctx, "Reading bulk config properties")
+	tflog.Debug(ctx, "Reading all config properties")
 	configPropertiesAll, err := r.client.Config.GetAll(ctx)
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
@@ -240,6 +242,7 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 		tflog.Debug(ctx, "Read bulk config property", map[string]any{
 			"group":       state.Properties[idx].Group.ValueString(),
 			"name":        state.Properties[idx].Name.ValueString(),
+			"value":       state.Properties[idx].Value.ValueString(),
 			"type":        state.Properties[idx].Type.ValueString(),
 			"description": state.Properties[idx].Description.ValueString(),
 		})
@@ -290,6 +293,7 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 		tflog.Debug(ctx, "Updating bulk config properties", map[string]any{
 			"group": configProperty.GroupName,
 			"name":  configProperty.Name,
+			"value": configProperty.Value,
 			"type":  configProperty.Type,
 		})
 	}
@@ -328,6 +332,7 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 		tflog.Debug(ctx, "Updated bulk config property", map[string]any{
 			"group":       model.Group.ValueString(),
 			"name":        model.Name.ValueString(),
+			"value":       model.Type.ValueString(),
 			"type":        model.Type.ValueString(),
 			"description": model.Description.ValueString(),
 		})
@@ -363,6 +368,7 @@ func (r *configPropertiesResource) Delete(ctx context.Context, req resource.Dele
 		tflog.Debug(ctx, "Deleting bulk config property", map[string]any{
 			"group": configProperty.GroupName,
 			"name":  configProperty.Name,
+			"value": configProperty.Value,
 			"type":  configProperty.Type,
 		})
 	}

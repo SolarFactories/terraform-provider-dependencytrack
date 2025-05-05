@@ -187,6 +187,7 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 		"id":          propertyState.ID.ValueString(),
 		"group":       propertyState.Group.ValueString(),
 		"name":        propertyState.Name.ValueString(),
+		"value":       propertyState.Value.ValueString(),
 		"type":        propertyState.Type.ValueString(),
 		"description": propertyState.Description.ValueString(),
 	})
@@ -266,7 +267,7 @@ func (r *configPropertyResource) Delete(ctx context.Context, req resource.Delete
 		"name":  propertyReq.Name,
 		"type":  propertyReq.Type,
 	})
-	propertyRes, err := r.client.Config.Update(ctx, propertyReq)
+	_, err := r.client.Config.Update(ctx, propertyReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete config property.",
@@ -276,10 +277,10 @@ func (r *configPropertyResource) Delete(ctx context.Context, req resource.Delete
 	}
 	tflog.Debug(ctx, "Deleted config property", map[string]any{
 		"id":    state.ID.ValueString(),
-		"group": propertyRes.GroupName,
-		"name":  propertyRes.Name,
-		"value": propertyRes.Value,
-		"type":  propertyRes.Type,
+		"group": state.Group.ValueString(),
+		"name":  state.Name.ValueString(),
+		"value": state.Value.ValueString(),
+		"type":  state.Type.ValueString(),
 	})
 }
 
