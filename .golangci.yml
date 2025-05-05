@@ -460,7 +460,6 @@ linters:
           - gocritic
           - goconst
           - funlen
-          - gochecknoglobals
           - exhaustruct
           - err113
           - dupl
@@ -476,6 +475,9 @@ linters:
         linters:
           - gocyclo
           - cyclop
+      - path: internal/provider/provider_test.go
+        linters:
+          - gochecknoglobals
       - path: internal/provider/project_resource.go
         linters:
           - gocyclo
