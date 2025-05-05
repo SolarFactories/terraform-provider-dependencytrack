@@ -23,42 +23,42 @@ func TestParseSemver(t *testing.T) {
 	}
 	{
 		semver, err := ParseSemver("1.2")
-		requireError(t, err, "^Found semver with 2 parts, expected 3.$")
+		requireError(t, err, "^found semver with 2 parts, expected 3$")
 		requireNil(t, semver)
 	}
 	{
 		semver, err := ParseSemver("1.2.3.4.5.6")
-		requireError(t, err, "^Found semver with 6 parts, expected 3.$")
+		requireError(t, err, "^found semver with 6 parts, expected 3$")
 		requireNil(t, semver)
 	}
 	{
 		semver, err := ParseSemver("a.2.3")
-		requireError(t, err, "^Unable to parse semver major component, from: strconv.Atoi: parsing \"a\": invalid syntax$")
+		requireError(t, err, "^unable to parse semver major component, from: strconv.Atoi: parsing \"a\": invalid syntax$")
 		requireNil(t, semver)
 	}
 	{
 		semver, err := ParseSemver("1.0x2.3")
-		requireError(t, err, "^Unable to parse semver minor component, from: strconv.Atoi: parsing \"0x2\": invalid syntax$")
+		requireError(t, err, "^unable to parse semver minor component, from: strconv.Atoi: parsing \"0x2\": invalid syntax$")
 		requireNil(t, semver)
 	}
 	{
 		semver, err := ParseSemver("1.2.0b1")
-		requireError(t, err, "^Unable to parse semver patch component, from: strconv.Atoi: parsing \"0b1\": invalid syntax$")
+		requireError(t, err, "^unable to parse semver patch component, from: strconv.Atoi: parsing \"0b1\": invalid syntax$")
 		requireNil(t, semver)
 	}
 	{
 		semver, err := ParseSemver("-1.2.3")
-		requireError(t, err, "^Unable to validate semver major component, from: -1$")
+		requireError(t, err, "^unable to validate semver major component, from: -1$")
 		requireNil(t, semver)
 	}
 	{
 		semver, err := ParseSemver("1.-2.3")
-		requireError(t, err, "^Unable to validate semver minor component, from: -2$")
+		requireError(t, err, "^unable to validate semver minor component, from: -2$")
 		requireNil(t, semver)
 	}
 	{
 		semver, err := ParseSemver("1.2.-3")
-		requireError(t, err, "^Unable to validate semver patch component, from: -3$")
+		requireError(t, err, "^unable to validate semver patch component, from: -3$")
 		requireNil(t, semver)
 	}
 }

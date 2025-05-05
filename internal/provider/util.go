@@ -74,7 +74,10 @@ func FilterPaged[T any](
 		}
 		return nil
 	})
-	return filtered, errors.New("Error in FilterPaged: " + err.Error())
+	if err != nil {
+		return nil, errors.New("Error in FilterPaged: " + err.Error())
+	}
+	return filtered, nil
 }
 
 func FindPaged[T any](
