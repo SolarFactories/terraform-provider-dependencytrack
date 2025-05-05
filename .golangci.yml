@@ -520,18 +520,12 @@ linters:
       - path: internal/provider/team_data_source_test.go
         linters:
           - godox
-      - path: internal/provider/team_permissions_resource.go
-        linters:
-          - gocognit
       - path: internal/provider/policy_tag_resource.go
         linters:
           - godox
       - path: internal/provider/team_apikey_resource_test.go
         linters:
           - godox
-      - path: internal/provider/ldap_team_mapping_resource.go
-        linters:
-          - lll
 
 formatters:
   enable:

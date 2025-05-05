@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	dtrack "github.com/DependencyTrack/client-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -88,36 +89,8 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 		"desired": desiredPermissions,
 	})
 
-	finalPermissions := teamInfo.Permissions // Ensure that only permissions assigned and understood by DT end up in state, rather than user input
 	addPermissions, removePermissions := ListDeltas(currentPermissions, desiredPermissions)
-	for _, permissionName := range addPermissions {
-		permission := dtrack.Permission{
-			Name: permissionName,
-		}
-		updatedTeam, err := r.client.Permission.AddPermissionToTeam(ctx, permission, team)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error adding team permission: "+permission.Name+" for team: "+team.String(),
-				"Error from: "+err.Error(),
-			)
-			continue
-		}
-		finalPermissions = updatedTeam.Permissions
-	}
-	for _, permissionName := range removePermissions {
-		permission := dtrack.Permission{
-			Name: permissionName,
-		}
-		updatedTeam, err := r.client.Permission.RemovePermissionFromTeam(ctx, permission, team)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error removing team permission: "+permission.Name+"for team: "+team.String(),
-				"Error from: "+err.Error(),
-			)
-			continue
-		}
-		finalPermissions = updatedTeam.Permissions
-	}
+	finalPermissions := r.updatePermissions(ctx, &resp.Diagnostics, teamInfo, addPermissions, removePermissions)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -223,36 +196,8 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 		"desired": desiredPermissions,
 	})
 
-	finalPermissions := teamInfo.Permissions // Ensure that only permissions assigned and understood by DT end up in state, rather than user input
 	addPermissions, removePermissions := ListDeltas(currentPermissions, desiredPermissions)
-	for _, permissionName := range addPermissions {
-		permission := dtrack.Permission{
-			Name: permissionName,
-		}
-		updatedTeam, err := r.client.Permission.AddPermissionToTeam(ctx, permission, team)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error adding team permission: "+permission.Name+" for team: "+team.String(),
-				"Error from: "+err.Error(),
-			)
-			continue
-		}
-		finalPermissions = updatedTeam.Permissions
-	}
-	for _, permissionName := range removePermissions {
-		permission := dtrack.Permission{
-			Name: permissionName,
-		}
-		updatedTeam, err := r.client.Permission.RemovePermissionFromTeam(ctx, permission, team)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Error removing team permission: "+permission.Name+"for team: "+team.String(),
-				"Error from: "+err.Error(),
-			)
-			continue
-		}
-		finalPermissions = updatedTeam.Permissions
-	}
+	finalPermissions := r.updatePermissions(ctx, &resp.Diagnostics, teamInfo, addPermissions, removePermissions)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -340,4 +285,37 @@ func (r *teamPermissionsResource) Configure(_ context.Context, req resource.Conf
 	}
 	r.client = clientInfo.client
 	r.semver = clientInfo.semver
+}
+
+func (r *teamPermissionsResource) updatePermissions(
+	ctx context.Context, diags *diag.Diagnostics,
+	team dtrack.Team, addPermissions, removePermissions []string,
+) []dtrack.Permission {
+	// Ensure that only permissions assigned and understood by DT end up in state, rather than user input
+	finalPermissions := team.Permissions
+	for _, permissionName := range addPermissions {
+		permission := dtrack.Permission{Name: permissionName}
+		updatedTeam, err := r.client.Permission.AddPermissionToTeam(ctx, permission, team.UUID)
+		if err != nil {
+			diags.AddError(
+				"Error adding team permission: "+permissionName+" for team: "+team.UUID.String(),
+				"Error from: "+err.Error(),
+			)
+			continue
+		}
+		finalPermissions = updatedTeam.Permissions
+	}
+	for _, permissionName := range removePermissions {
+		permission := dtrack.Permission{Name: permissionName}
+		updatedTeam, err := r.client.Permission.RemovePermissionFromTeam(ctx, permission, team.UUID)
+		if err != nil {
+			diags.AddError(
+				"Error removing team permission: "+permissionName+" for team: "+team.UUID.String(),
+				"Error from: "+err.Error(),
+			)
+			continue
+		}
+		finalPermissions = updatedTeam.Permissions
+	}
+	return finalPermissions
 }

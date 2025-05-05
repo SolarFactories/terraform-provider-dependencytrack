@@ -161,7 +161,10 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Read, unable to locate ldap mapping",
-			"Error with finding mapping with id: "+id.String()+", for team: "+team.String()+", and distinguished name: "+distinguishedName+", in original error: "+err.Error(),
+			fmt.Sprintf(
+				"Error with finding mapping with id: %s, for team: %s, and distinguished name: %s, in original error: %s",
+				id.String(), team.String(), distinguishedName, err.Error(),
+			),
 		)
 		return
 	}
