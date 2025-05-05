@@ -467,11 +467,8 @@ linters:
           - decorder
       - path: main.go
         linters:
-          - revive
           - exhaustruct
           - cyclop
-          - godot
-          - wsl
       - path: go.mod
         linters:
           - gomoddirectives
