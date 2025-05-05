@@ -22,10 +22,6 @@ var (
 	_ resource.ResourceWithImportState = &teamAPIKeyResource{}
 )
 
-func NewTeamAPIKeyResource() resource.Resource {
-	return &teamAPIKeyResource{}
-}
-
 type (
 	teamAPIKeyResource struct {
 		client *dtrack.Client
@@ -42,6 +38,10 @@ type (
 		Legacy   types.Bool   `tfsdk:"legacy"`
 	}
 )
+
+func NewTeamAPIKeyResource() resource.Resource {
+	return &teamAPIKeyResource{}
+}
 
 func (*teamAPIKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_apikey"

@@ -20,10 +20,6 @@ var (
 	_ resource.ResourceWithImportState = &policyResource{}
 )
 
-func NewPolicyResource() resource.Resource {
-	return &policyResource{}
-}
-
 type (
 	policyResource struct {
 		client *dtrack.Client
@@ -37,6 +33,10 @@ type (
 		Violation types.String `tfsdk:"violation"`
 	}
 )
+
+func NewPolicyResource() resource.Resource {
+	return &policyResource{}
+}
 
 func (*policyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_policy"

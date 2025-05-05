@@ -19,10 +19,6 @@ var (
 	_ resource.ResourceWithConfigure = &policyTagResource{}
 )
 
-func NewPolicyTagResource() resource.Resource {
-	return &policyTagResource{}
-}
-
 type (
 	policyTagResource struct {
 		client *dtrack.Client
@@ -34,6 +30,10 @@ type (
 		Tag      types.String `tfsdk:"tag"`
 	}
 )
+
+func NewPolicyTagResource() resource.Resource {
+	return &policyTagResource{}
+}
 
 // TODO: Once have `dependencytrack_tag` resource to create tags, add testing.
 func (*policyTagResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {

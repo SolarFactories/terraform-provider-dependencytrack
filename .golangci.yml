@@ -476,7 +476,6 @@ linters:
           - exhaustruct
           - err113
           - dupl
-          - decorder
       - path: main.go
         linters:
           - exhaustruct

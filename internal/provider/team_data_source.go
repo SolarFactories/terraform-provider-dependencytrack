@@ -17,10 +17,6 @@ var (
 	_ datasource.DataSourceWithConfigure = &teamDataSource{}
 )
 
-func NewTeamDataSource() datasource.DataSource {
-	return &teamDataSource{}
-}
-
 type (
 	teamDataSource struct {
 		client *dtrack.Client
@@ -38,6 +34,10 @@ type (
 		Description types.String `tfsdk:"description"`
 	}
 )
+
+func NewTeamDataSource() datasource.DataSource {
+	return &teamDataSource{}
+}
 
 func (*teamDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team"

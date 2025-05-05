@@ -18,10 +18,6 @@ var (
 	_ datasource.DataSourceWithConfigure = &projectPropertyDataSource{}
 )
 
-func NewProjectPropertyDataSource() datasource.DataSource {
-	return &projectPropertyDataSource{}
-}
-
 type (
 	projectPropertyDataSource struct {
 		client *dtrack.Client
@@ -37,6 +33,10 @@ type (
 		Description types.String `tfsdk:"description"`
 	}
 )
+
+func NewProjectPropertyDataSource() datasource.DataSource {
+	return &projectPropertyDataSource{}
+}
 
 func (*projectPropertyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project_property"

@@ -19,10 +19,6 @@ var (
 	_ resource.ResourceWithConfigure = &policyProjectResource{}
 )
 
-func NewPolicyProjectResource() resource.Resource {
-	return &policyProjectResource{}
-}
-
 type (
 	policyProjectResource struct {
 		client *dtrack.Client
@@ -34,6 +30,10 @@ type (
 		ProjectID types.String `tfsdk:"project"`
 	}
 )
+
+func NewPolicyProjectResource() resource.Resource {
+	return &policyProjectResource{}
+}
 
 func (*policyProjectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_policy_project"

@@ -20,10 +20,6 @@ var (
 	_ resource.ResourceWithImportState = &repositoryResource{}
 )
 
-func NewRepositoryResource() resource.Resource {
-	return &repositoryResource{}
-}
-
 type (
 	repositoryResource struct {
 		client *dtrack.Client
@@ -42,6 +38,10 @@ type (
 		Internal   types.Bool   `tfsdk:"internal"`
 	}
 )
+
+func NewRepositoryResource() resource.Resource {
+	return &repositoryResource{}
+}
 
 func (*repositoryResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_repository"

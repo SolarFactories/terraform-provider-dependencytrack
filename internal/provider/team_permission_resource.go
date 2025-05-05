@@ -19,10 +19,6 @@ var (
 	_ resource.ResourceWithConfigure = &teamPermissionResource{}
 )
 
-func NewTeamPermissionResource() resource.Resource {
-	return &teamPermissionResource{}
-}
-
 type (
 	teamPermissionResource struct {
 		client *dtrack.Client
@@ -34,6 +30,10 @@ type (
 		Permission types.String `tfsdk:"permission"`
 	}
 )
+
+func NewTeamPermissionResource() resource.Resource {
+	return &teamPermissionResource{}
+}
 
 func (*teamPermissionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_permission"

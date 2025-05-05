@@ -21,10 +21,6 @@ var (
 	_ resource.ResourceWithImportState = &aclMappingResource{}
 )
 
-func NewACLMappingResource() resource.Resource {
-	return &aclMappingResource{}
-}
-
 type (
 	aclMappingResource struct {
 		client *dtrack.Client
@@ -37,6 +33,10 @@ type (
 		Project types.String `tfsdk:"project"`
 	}
 )
+
+func NewACLMappingResource() resource.Resource {
+	return &aclMappingResource{}
+}
 
 func (*aclMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_acl_mapping"

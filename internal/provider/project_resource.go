@@ -20,10 +20,6 @@ var (
 	_ resource.ResourceWithImportState = &projectResource{}
 )
 
-func NewProjectResource() resource.Resource {
-	return &projectResource{}
-}
-
 type (
 	projectResource struct {
 		client *dtrack.Client
@@ -44,6 +40,10 @@ type (
 		Active      types.Bool   `tfsdk:"active"`
 	}
 )
+
+func NewProjectResource() resource.Resource {
+	return &projectResource{}
+}
 
 func (*projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project"

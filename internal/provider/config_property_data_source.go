@@ -17,10 +17,6 @@ var (
 	_ datasource.DataSourceWithConfigure = &configPropertyDataSource{}
 )
 
-func NewConfigPropertyDataSource() datasource.DataSource {
-	return &configPropertyDataSource{}
-}
-
 type (
 	configPropertyDataSource struct {
 		client *dtrack.Client
@@ -35,6 +31,10 @@ type (
 		Description types.String `tfsdk:"description"`
 	}
 )
+
+func NewConfigPropertyDataSource() datasource.DataSource {
+	return &configPropertyDataSource{}
+}
 
 func (*configPropertyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_config_property"

@@ -21,10 +21,6 @@ var (
 	_ resource.ResourceWithImportState = &projectPropertyResource{}
 )
 
-func NewProjectPropertyResource() resource.Resource {
-	return &projectPropertyResource{}
-}
-
 type (
 	projectPropertyResource struct {
 		client *dtrack.Client
@@ -41,6 +37,10 @@ type (
 		Description types.String `tfsdk:"description"`
 	}
 )
+
+func NewProjectPropertyResource() resource.Resource {
+	return &projectPropertyResource{}
+}
 
 func (*projectPropertyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_project_property"

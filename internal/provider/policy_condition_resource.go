@@ -20,10 +20,6 @@ var (
 	_ resource.ResourceWithImportState = &policyConditionResource{}
 )
 
-func NewPolicyConditionResource() resource.Resource {
-	return &policyConditionResource{}
-}
-
 type (
 	policyConditionResource struct {
 		client *dtrack.Client
@@ -38,6 +34,10 @@ type (
 		Value    types.String `tfsdk:"value"`
 	}
 )
+
+func NewPolicyConditionResource() resource.Resource {
+	return &policyConditionResource{}
+}
 
 func (*policyConditionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_policy_condition"

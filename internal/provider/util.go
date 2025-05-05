@@ -15,6 +15,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+const (
+	SemverComponentCount        = 3
+	PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
+	// LifecycleAction.
+	LifecycleCreate LifecycleAction = "Create"
+	LifecycleRead   LifecycleAction = "Read"
+	LifecycleUpdate LifecycleAction = "Update"
+	LifecycleDelete LifecycleAction = "Delete"
+	LifecycleImport LifecycleAction = "Import"
+)
+
 type (
 	Semver struct {
 		Major int
@@ -28,17 +39,6 @@ type (
 	}
 
 	LifecycleAction string
-)
-
-const (
-	SemverComponentCount        = 3
-	PropertyTypeEncryptedString = "ENCRYPTEDSTRING"
-	// LifecycleAction.
-	LifecycleCreate LifecycleAction = "Create"
-	LifecycleRead   LifecycleAction = "Read"
-	LifecycleUpdate LifecycleAction = "Update"
-	LifecycleDelete LifecycleAction = "Delete"
-	LifecycleImport LifecycleAction = "Import"
 )
 
 func Filter[T any](items []T, filter func(T) bool) []T {

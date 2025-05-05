@@ -20,10 +20,6 @@ var (
 	_ resource.ResourceWithImportState = &oidcGroupMappingResource{}
 )
 
-func NewOidcGroupMappingResource() resource.Resource {
-	return &oidcGroupMappingResource{}
-}
-
 type (
 	oidcGroupMappingResource struct {
 		client *dtrack.Client
@@ -36,6 +32,10 @@ type (
 		Group types.String `tfsdk:"group"`
 	}
 )
+
+func NewOidcGroupMappingResource() resource.Resource {
+	return &oidcGroupMappingResource{}
+}
 
 func (*oidcGroupMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oidc_group_mapping"

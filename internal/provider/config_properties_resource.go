@@ -19,10 +19,6 @@ var (
 	_ resource.ResourceWithConfigure = &configPropertiesResource{}
 )
 
-func NewConfigPropertiesResource() resource.Resource {
-	return &configPropertiesResource{}
-}
-
 type (
 	configPropertiesResource struct {
 		client *dtrack.Client
@@ -41,6 +37,10 @@ type (
 		Description types.String `tfsdk:"description"`
 	}
 )
+
+func NewConfigPropertiesResource() resource.Resource {
+	return &configPropertiesResource{}
+}
 
 func (*configPropertiesResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_config_properties"

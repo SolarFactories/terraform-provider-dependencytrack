@@ -14,6 +14,14 @@ import (
 	dtrack "github.com/DependencyTrack/client-go"
 )
 
+const (
+	uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+)
+
+var (
+	projectPropertyURLRegex *regexp.Regexp = regexp.MustCompile("^/api/v1/project/" + uuidRegex + "/property$")
+)
+
 type (
 	Header struct {
 		Name  string
@@ -24,14 +32,6 @@ type (
 		inner   http.RoundTripper
 		headers []Header
 	}
-)
-
-const (
-	uuidRegex = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
-)
-
-var (
-	projectPropertyURLRegex *regexp.Regexp = regexp.MustCompile("^/api/v1/project/" + uuidRegex + "/property$")
 )
 
 func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {

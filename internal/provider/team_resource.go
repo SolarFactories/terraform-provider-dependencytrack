@@ -20,10 +20,6 @@ var (
 	_ resource.ResourceWithImportState = &teamResource{}
 )
 
-func NewTeamResource() resource.Resource {
-	return &teamResource{}
-}
-
 type (
 	teamResource struct {
 		client *dtrack.Client
@@ -35,6 +31,10 @@ type (
 		Name types.String `tfsdk:"name"`
 	}
 )
+
+func NewTeamResource() resource.Resource {
+	return &teamResource{}
+}
 
 func (*teamResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team"
