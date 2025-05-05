@@ -30,13 +30,13 @@ type projectDataSourceModel struct {
 	Name       types.String             `tfsdk:"name"`
 	Version    types.String             `tfsdk:"version"`
 	ID         types.String             `tfsdk:"id"`
-	Properties []projectPropertiesModel `tfsdk:"properties"`
 	Classifier types.String             `tfsdk:"classifier"`
 	CPE        types.String             `tfsdk:"cpe"`
 	Group      types.String             `tfsdk:"group"`
 	Parent     types.String             `tfsdk:"parent"`
 	PURL       types.String             `tfsdk:"purl"`
 	SWID       types.String             `tfsdk:"swid"`
+	Properties []projectPropertiesModel `tfsdk:"properties"`
 }
 
 type projectPropertiesModel struct {
@@ -200,7 +200,7 @@ func (d *projectDataSource) Configure(_ context.Context, req datasource.Configur
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Configure Type",
@@ -208,6 +208,6 @@ func (d *projectDataSource) Configure(_ context.Context, req datasource.Configur
 		)
 		return
 	}
-	d.client = clientInfo.client
-	d.semver = clientInfo.semver
+	d.client = clientInfoData.client
+	d.semver = clientInfoData.semver
 }

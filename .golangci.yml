@@ -455,7 +455,6 @@ linters:
           - unused
           - ireturn
           - grouper
-          - govet
           - gocritic
           - goconst
           - funlen

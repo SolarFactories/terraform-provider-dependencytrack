@@ -31,9 +31,9 @@ type dependencyTrackProvider struct {
 type dependencyTrackProviderModel struct {
 	Host    types.String                          `tfsdk:"host"`
 	Key     types.String                          `tfsdk:"key"`
-	Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
 	RootCA  types.String                          `tfsdk:"root_ca"`
 	MTLS    *dependencyTrackProviderMtlsModel     `tfsdk:"mtls"`
+	Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
 }
 
 type dependencyTrackProviderHeadersModel struct {

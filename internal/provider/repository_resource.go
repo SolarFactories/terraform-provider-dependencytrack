@@ -34,11 +34,11 @@ type repositoryResourceModel struct {
 	Type       types.String `tfsdk:"type"`
 	Identifier types.String `tfsdk:"identifier"`
 	URL        types.String `tfsdk:"url"`
+	Username   types.String `tfsdk:"username"`
+	Password   types.String `tfsdk:"password"`
 	Precedence types.Int32  `tfsdk:"precedence"`
 	Enabled    types.Bool   `tfsdk:"enabled"`
 	Internal   types.Bool   `tfsdk:"internal"`
-	Username   types.String `tfsdk:"username"`
-	Password   types.String `tfsdk:"password"`
 }
 
 func (r *repositoryResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -377,7 +377,7 @@ func (r *repositoryResource) Configure(_ context.Context, req resource.Configure
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -386,6 +386,6 @@ func (r *repositoryResource) Configure(_ context.Context, req resource.Configure
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }

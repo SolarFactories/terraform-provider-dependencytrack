@@ -33,7 +33,6 @@ type projectResourceModel struct {
 	ID          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
-	Active      types.Bool   `tfsdk:"active"`
 	Version     types.String `tfsdk:"version"`
 	Parent      types.String `tfsdk:"parent"`
 	Classifier  types.String `tfsdk:"classifier"`
@@ -41,6 +40,7 @@ type projectResourceModel struct {
 	PURL        types.String `tfsdk:"purl"`
 	CPE         types.String `tfsdk:"cpe"`
 	SWID        types.String `tfsdk:"swid"`
+	Active      types.Bool   `tfsdk:"active"`
 }
 
 func (r *projectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -474,7 +474,7 @@ func (r *projectResource) Configure(_ context.Context, req resource.ConfigureReq
 	if req.ProviderData == nil {
 		return
 	}
-	clientInfo, ok := req.ProviderData.(clientInfo)
+	clientInfoData, ok := req.ProviderData.(clientInfo)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -483,6 +483,6 @@ func (r *projectResource) Configure(_ context.Context, req resource.ConfigureReq
 		)
 		return
 	}
-	r.client = clientInfo.client
-	r.semver = clientInfo.semver
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
 }
