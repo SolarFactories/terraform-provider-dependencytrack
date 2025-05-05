@@ -167,16 +167,18 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		)
 		return
 	}
-	plan.ID = types.StringValue(projectRes.UUID.String())
-	plan.Name = types.StringValue(projectRes.Name)
-	plan.Description = types.StringValue(projectRes.Description)
-	plan.Active = types.BoolValue(projectRes.Active)
-	plan.Version = types.StringValue(projectRes.Version)
-	plan.Classifier = types.StringValue(projectRes.Classifier)
-	plan.Group = types.StringValue(projectRes.Group)
-	plan.PURL = types.StringValue(projectRes.PURL)
-	plan.CPE = types.StringValue(projectRes.CPE)
-	plan.SWID = types.StringValue(projectRes.SWIDTagID)
+	plan = projectResourceModel{
+		ID:          types.StringValue(projectRes.UUID.String()),
+		Name:        types.StringValue(projectRes.Name),
+		Description: types.StringValue(projectRes.Description),
+		Active:      types.BoolValue(projectRes.Active),
+		Version:     types.StringValue(projectRes.Version),
+		Classifier:  types.StringValue(projectRes.Classifier),
+		Group:       types.StringValue(projectRes.Group),
+		PURL:        types.StringValue(projectRes.PURL),
+		CPE:         types.StringValue(projectRes.CPE),
+		SWID:        types.StringValue(projectRes.SWIDTagID),
+	}
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else if projectReq.ParentRef != nil && r.semver.Major == 4 && r.semver.Minor < 12 {
@@ -243,16 +245,19 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		)
 		return
 	}
-	state.ID = types.StringValue(project.UUID.String())
-	state.Name = types.StringValue(project.Name)
-	state.Description = types.StringValue(project.Description)
-	state.Active = types.BoolValue(project.Active)
-	state.Version = types.StringValue(project.Version)
-	state.Classifier = types.StringValue(project.Classifier)
-	state.Group = types.StringValue(project.Group)
-	state.PURL = types.StringValue(project.PURL)
-	state.CPE = types.StringValue(project.CPE)
-	state.SWID = types.StringValue(project.SWIDTagID)
+
+	state = projectResourceModel{
+		ID:          types.StringValue(project.UUID.String()),
+		Name:        types.StringValue(project.Name),
+		Description: types.StringValue(project.Description),
+		Active:      types.BoolValue(project.Active),
+		Version:     types.StringValue(project.Version),
+		Classifier:  types.StringValue(project.Classifier),
+		Group:       types.StringValue(project.Group),
+		PURL:        types.StringValue(project.PURL),
+		CPE:         types.StringValue(project.CPE),
+		SWID:        types.StringValue(project.SWIDTagID),
+	}
 	if project.ParentRef != nil {
 		state.Parent = types.StringValue(project.ParentRef.UUID.String())
 	} else {
@@ -306,6 +311,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		)
 		return
 	}
+
 	project.Name = plan.Name.ValueString()
 	project.Description = plan.Description.ValueString()
 	project.Active = plan.Active.ValueBool()
@@ -359,16 +365,18 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	// Map SDK to TF
-	plan.ID = types.StringValue(projectRes.UUID.String())
-	plan.Name = types.StringValue(projectRes.Name)
-	plan.Description = types.StringValue(projectRes.Description)
-	plan.Active = types.BoolValue(projectRes.Active)
-	plan.Version = types.StringValue(projectRes.Version)
-	plan.Classifier = types.StringValue(projectRes.Classifier)
-	plan.Group = types.StringValue(projectRes.Group)
-	plan.PURL = types.StringValue(projectRes.PURL)
-	plan.CPE = types.StringValue(projectRes.CPE)
-	plan.SWID = types.StringValue(projectRes.SWIDTagID)
+	plan = projectResourceModel{
+		ID:          types.StringValue(projectRes.UUID.String()),
+		Name:        types.StringValue(projectRes.Name),
+		Description: types.StringValue(projectRes.Description),
+		Active:      types.BoolValue(projectRes.Active),
+		Version:     types.StringValue(projectRes.Version),
+		Classifier:  types.StringValue(projectRes.Classifier),
+		Group:       types.StringValue(projectRes.Group),
+		PURL:        types.StringValue(projectRes.PURL),
+		CPE:         types.StringValue(projectRes.CPE),
+		SWID:        types.StringValue(projectRes.SWIDTagID),
+	}
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {

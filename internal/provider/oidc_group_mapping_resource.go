@@ -150,7 +150,10 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Read",
-			"Error with reading mapping with id: "+id.String()+", for team: "+state.Team.ValueString()+", and group: "+state.Group.String()+", in original error: "+err.Error(),
+			fmt.Sprintf(
+				"Error with reading OIDC Group Mapping with id %s, for team: %s, and group: %s, in original errr: %s",
+				id.String(), state.Team.ValueString(), state.Group.ValueString(), err.Error(),
+			),
 		)
 		return
 	}
@@ -200,7 +203,10 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Update",
-			"Error with reading mapping with id: "+id.String()+", for team: "+mappingInfo.Team.String()+", and group: "+mappingInfo.Group.String()+", in original error: "+err.Error(),
+			fmt.Sprintf(
+				"Error with reading OIDC Group Mapping with id %s, for team: %s, and group: %s, in original errr: %s",
+				id.String(), mappingInfo.Team.String(), mappingInfo.Group.String(), err.Error(),
+			),
 		)
 		return
 	}

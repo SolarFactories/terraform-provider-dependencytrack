@@ -65,9 +65,11 @@ func (p *dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReq
 				Required:    true,
 			},
 			"key": schema.StringAttribute{
-				Description: "API Key for authentication to DependencyTrack. Must have permissions for all attempted actions. Set to 'OS_ENV' to read from DEPENDENCYTRACK_API_KEY environment variable.",
-				Required:    true,
-				Sensitive:   true,
+				Description: "API Key for authentication to DependencyTrack. " +
+					"Must have permissions for all attempted actions. " +
+					"Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable.",
+				Required:  true,
+				Sensitive: true,
 			},
 			"headers": schema.ListNestedAttribute{
 				Description: "Add additional headers to client API requests. Useful for proxy authentication.",

@@ -475,23 +475,10 @@ linters:
       - path: go.mod
         linters:
           - gomoddirectives
-      - path: internal/provider/config_property_data_source_test.go
-        linters:
-          - lll
-      - path: internal/provider/oidc_group_mapping_resource.go
-        linters:
-          - lll
       - path: internal/provider/provider.go
         linters:
-          - lll
           - gocyclo
           - cyclop
-      - path: internal/provider/config_properties_resource_test.go
-        linters:
-          - lll
-      - path: internal/provider/config_property_resource_test.go
-        linters:
-          - lll
       - path: internal/provider/project_resource.go
         linters:
           - gocyclo
@@ -499,7 +486,6 @@ linters:
           - gocognit
       - path: internal/provider/http_client.go
         linters:
-          - gocognit
           - wrapcheck
       - path: internal/provider/config_properties_resource.go
         linters:
