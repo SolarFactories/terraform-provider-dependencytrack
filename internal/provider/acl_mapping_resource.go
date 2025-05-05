@@ -124,14 +124,14 @@ func (r *aclMappingResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state aclMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// Refresh
+	// Refresh.
 	team, diag := TryParseUUID(state.Team, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -168,7 +168,7 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 		Project: types.StringValue(project.UUID.String()),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -182,8 +182,8 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Nothing to Update. This resource only has Create, Delete actions
-	// Get State
+	// Nothing to Update. This resource only has Create, Delete actions.
+	// Get State.
 	var plan aclMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -209,7 +209,7 @@ func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequ
 		Project: types.StringValue(project.String()),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -223,7 +223,7 @@ func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequ
 }
 
 func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state aclMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -231,7 +231,7 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	team, diag := TryParseUUID(state.Team, LifecycleDelete, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -244,7 +244,7 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting Project ACL Mapping", map[string]any{
 		"id":      state.ID.ValueString(),
 		"team":    team.String(),

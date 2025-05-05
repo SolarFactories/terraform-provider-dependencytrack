@@ -9,7 +9,7 @@ func TestAccConfigPropertyResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_config_property" "testbool" {
@@ -55,7 +55,7 @@ resource "dependencytrack_config_property" "testencrypted" {
 					),
 				),
 			},
-			// ImportState testing
+			// ImportState testing.
 			{
 				ResourceName:      "dependencytrack_config_property.testbool",
 				ImportState:       true,
@@ -72,7 +72,7 @@ resource "dependencytrack_config_property" "testencrypted" {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"value"},
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_config_property" "testbool" {

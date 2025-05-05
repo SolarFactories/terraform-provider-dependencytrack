@@ -74,7 +74,7 @@ func (r *teamAPIKeyResource) Schema(_ context.Context, _ resource.SchemaRequest,
 			"comment": schema.StringAttribute{
 				Description: "The comment to assign to the API Key.",
 				Optional:    true,
-				// Defaults to ""
+				// Defaults to "".
 				Computed: true,
 			},
 			"masked": schema.StringAttribute{
@@ -170,7 +170,7 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state teamAPIKeyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -179,7 +179,7 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	key := state.Key.ValueString()
-	publicId := state.PublicId.ValueString() // V4.13+
+	publicId := state.PublicId.ValueString() // DT API v4.13+.
 	team, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -216,10 +216,10 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	state = teamAPIKeyResourceModel{
-		// Due to construction of ID varying for legacy, copy across
+		// Due to construction of ID varying for legacy, copy across.
 		ID:     types.StringValue(state.ID.ValueString()),
 		TeamID: types.StringValue(team.String()),
-		// Key value not returned in API 4.13+, since it changed to ENCRYPTEDSTRING, so retain current state value
+		// Key value not returned in API 4.13+, since it changed to ENCRYPTEDSTRING, so retain current state value.
 		Key:      types.StringValue(state.Key.ValueString()),
 		Comment:  types.StringValue(apiKey.Comment),
 		Masked:   types.StringValue(apiKey.MaskedKey),
@@ -227,7 +227,7 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 		Legacy:   types.BoolValue(apiKey.Legacy),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -241,7 +241,7 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan teamAPIKeyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -268,7 +268,7 @@ func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	plan.Comment = types.StringValue(commentOut)
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -282,7 +282,7 @@ func (r *teamAPIKeyResource) Update(ctx context.Context, req resource.UpdateRequ
 }
 
 func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state teamAPIKeyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -290,14 +290,14 @@ func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	publicIdOrKey := r.getPublicIdOrKey(state)
 	team, diag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting API Key", map[string]any{
 		"team":    team.String(),
 		"masked":  state.Masked.ValueString(),

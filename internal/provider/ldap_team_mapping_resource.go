@@ -102,7 +102,7 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 	plan = ldapTeamMappingResourceModel{
 		ID:                types.StringValue(mappingRes.UUID.String()),
 		DistinguishedName: types.StringValue(mappingRes.DistinguishedName),
-		// Response does not include Team UUID
+		// Response does not include Team UUID.
 		Team: types.StringValue(team.String()),
 	}
 
@@ -119,7 +119,7 @@ func (r *ldapTeamMappingResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state ldapTeamMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -132,7 +132,7 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 		"distinguished_name": state.DistinguishedName.ValueString(),
 	})
 
-	// Refresh
+	// Refresh.
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -174,7 +174,7 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 		DistinguishedName: types.StringValue(mappingInfo.DistinguishedName),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -188,8 +188,8 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Nothing to Update. This resource only has Create, Delete actions
-	// Get State
+	// Nothing to Update. This resource only has Create, Delete actions.
+	// Get State.
 	var plan ldapTeamMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -222,7 +222,7 @@ func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.Updat
 		DistinguishedName: types.StringValue(distingushedName),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -236,7 +236,7 @@ func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.Updat
 }
 
 func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state ldapTeamMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -244,14 +244,14 @@ func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting LDAP Team Mapping", map[string]any{
 		"id":                 id.String(),
 		"team":               state.Team.ValueString(),

@@ -9,7 +9,7 @@ func TestAccTeamApiKeyResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {
@@ -28,19 +28,20 @@ resource "dependencytrack_team_apikey" "test" {
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", ""),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "masked"),
+					// TODO: Re-enable once able to conditionally check these for API Versions
 					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "public_id"),
-					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "legacy"),
+					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "legacy"),.
 				),
 			},
-			// ImportState testing
+			// ImportState testing.
 			{
 				ResourceName:      "dependencytrack_team_apikey.test",
 				ImportState:       true,
 				ImportStateVerify: true,
-				// TODO: Ignore in only 4.13+ API versions
+				// TODO: Ignore in only 4.13+ API versions.
 				ImportStateVerifyIgnore: []string{"key"},
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {
@@ -61,8 +62,9 @@ resource "dependencytrack_team_apikey" "test" {
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample comment"),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "masked"),
+					// TODO: Re-enable once able to conditionally check these for API Versions
 					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "public_id"),
-					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "legacy"),
+					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "legacy"),.
 				),
 			},
 		},
@@ -74,7 +76,7 @@ func TestAccAPIKeyResourceCommentRegression72(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {
@@ -89,15 +91,15 @@ resource "dependencytrack_team_apikey" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample Creation Comment"),
 				),
 			},
-			// ImportState testing
+			// ImportState testing.
 			{
 				ResourceName:      "dependencytrack_team_apikey.test",
 				ImportState:       true,
 				ImportStateVerify: true,
-				// TODO: Ignore in only 4.13+ API versions
+				// TODO: Ignore in only 4.13+ API versions.
 				ImportStateVerifyIgnore: []string{"key"},
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {

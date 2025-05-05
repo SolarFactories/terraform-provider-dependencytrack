@@ -114,7 +114,7 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state teamPermissionsResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -122,7 +122,7 @@ func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	teamId, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -148,7 +148,7 @@ func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadReq
 		}),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -161,7 +161,7 @@ func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 func (r *teamPermissionsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan teamPermissionsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -209,7 +209,7 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 		}),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -222,7 +222,7 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 }
 
 func (r *teamPermissionsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state teamPermissionsResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -230,7 +230,7 @@ func (r *teamPermissionsResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	team, diag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -291,7 +291,7 @@ func (r *teamPermissionsResource) updatePermissions(
 	ctx context.Context, diags *diag.Diagnostics,
 	team dtrack.Team, addPermissions, removePermissions []string,
 ) []dtrack.Permission {
-	// Ensure that only permissions assigned and understood by DT end up in state, rather than user input
+	// Ensure that only permissions assigned and understood by DT end up in state, rather than user input.
 	finalPermissions := team.Permissions
 	for _, permissionName := range addPermissions {
 		permission := dtrack.Permission{Name: permissionName}

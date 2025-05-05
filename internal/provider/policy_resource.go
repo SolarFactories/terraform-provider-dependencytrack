@@ -114,7 +114,7 @@ func (r *policyResource) Create(ctx context.Context, req resource.CreateRequest,
 }
 
 func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state policyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -122,7 +122,7 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -150,7 +150,7 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 		Violation: types.StringValue(string(policy.ViolationState)),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -165,7 +165,7 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan policyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -173,7 +173,7 @@ func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -185,7 +185,7 @@ func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Operator:       dtrack.PolicyOperator(plan.Operator.ValueString()),
 		ViolationState: dtrack.PolicyViolationState(plan.Violation.ValueString()),
 	}
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Updating Policy", map[string]any{
 		"id":        policyReq.UUID.String(),
 		"name":      policyReq.Name,
@@ -201,7 +201,7 @@ func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	// Map SDK to TF
+	// Map SDK to TF.
 	plan = policyResourceModel{
 		ID:        types.StringValue(policyRes.UUID.String()),
 		Name:      types.StringValue(policyRes.Name),
@@ -209,7 +209,7 @@ func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Violation: types.StringValue(string(policyRes.ViolationState)),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -224,7 +224,7 @@ func (r *policyResource) Update(ctx context.Context, req resource.UpdateRequest,
 }
 
 func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state policyResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -232,14 +232,14 @@ func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting Policy", map[string]any{
 		"id":        id.String(),
 		"name":      state.Name.ValueString(),

@@ -317,7 +317,7 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		"type":        state.Type.ValueString(),
 		"description": state.Description.ValueString(),
 	})
-	// NOTE: Has a patch applied in `http_client.go`
+	// NOTE: Has a patch applied in `http_client.go`.
 	err := r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
 	if err != nil {
 		resp.Diagnostics.AddError(

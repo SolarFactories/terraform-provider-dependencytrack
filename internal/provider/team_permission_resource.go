@@ -103,7 +103,7 @@ func (r *teamPermissionResource) Create(ctx context.Context, req resource.Create
 }
 
 func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state teamPermissionResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -111,7 +111,7 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	teamId, diag := TryParseUUID(state.TeamID, LifecycleRead, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -142,7 +142,7 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 	state.TeamID = types.StringValue(team.UUID.String())
 	state.Permission = types.StringValue(permission.Name)
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -155,8 +155,8 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 }
 
 func (r *teamPermissionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Nothing to Update. This resource only has Create, Delete actions
-	// Get State
+	// Nothing to Update. This resource only has Create, Delete actions.
+	// Get State.
 	var plan teamPermissionResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -164,7 +164,7 @@ func (r *teamPermissionResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -177,7 +177,7 @@ func (r *teamPermissionResource) Update(ctx context.Context, req resource.Update
 }
 
 func (r *teamPermissionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state teamPermissionResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -185,7 +185,7 @@ func (r *teamPermissionResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	team, diag := TryParseUUID(state.TeamID, LifecycleDelete, path.Root("team"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -195,7 +195,7 @@ func (r *teamPermissionResource) Delete(ctx context.Context, req resource.Delete
 		Name: state.Permission.ValueString(),
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting Team Permission", map[string]any{
 		"team":       team.String(),
 		"permission": permission.Name,

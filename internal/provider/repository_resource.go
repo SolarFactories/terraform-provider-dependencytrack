@@ -149,7 +149,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 		Enabled:    types.BoolValue(repositoryRes.Enabled),
 		Internal:   types.BoolValue(repositoryRes.Internal),
 		Username:   types.StringValue(repositoryRes.Username),
-		// API Response does not include Password
+		// API Response does not include Password.
 		Password: plan.Password,
 	}
 
@@ -171,7 +171,7 @@ func (r *repositoryResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state repositoryResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -179,7 +179,7 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	repoType := state.Type.ValueString()
 
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
@@ -218,11 +218,11 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 		Enabled:    types.BoolValue(repository.Enabled),
 		Internal:   types.BoolValue(repository.Internal),
 		Username:   types.StringValue(repository.Username),
-		// API Response does not include Password
+		// API Response does not include Password.
 		Password: state.Password,
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -241,7 +241,7 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan repositoryResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -249,7 +249,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -268,7 +268,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		AuthenticationRequired: plan.Password.ValueString() != "" || plan.Username.ValueString() != "",
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Updating Repository", map[string]any{
 		"id":         repositoryReq.UUID.String(),
 		"type":       string(repositoryReq.Type),
@@ -288,7 +288,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Map SDK to TF
+	// Map SDK to TF.
 	plan = repositoryResourceModel{
 		ID:         types.StringValue(repositoryRes.UUID.String()),
 		Type:       types.StringValue(string(repositoryRes.Type)),
@@ -298,11 +298,11 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 		Enabled:    types.BoolValue(repositoryRes.Enabled),
 		Internal:   types.BoolValue(repositoryRes.Internal),
 		Username:   types.StringValue(repositoryRes.Username),
-		// API Response does not include Password
+		// API Response does not include Password.
 		Password: plan.Password,
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -321,7 +321,7 @@ func (r *repositoryResource) Update(ctx context.Context, req resource.UpdateRequ
 }
 
 func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state repositoryResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -329,14 +329,14 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting Repository", map[string]any{
 		"id": id.String(),
 	})

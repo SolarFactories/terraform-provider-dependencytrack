@@ -312,7 +312,7 @@ func (r *configPropertyResource) ImportState(ctx context.Context, req resource.I
 		ID:    types.StringValue(fmt.Sprintf("%s/%s", property.GroupName, property.Name)),
 		Group: types.StringValue(property.GroupName),
 		Name:  types.StringValue(property.Name),
-		// If Type == "ENCRYPTEDSTRING", then Value will be placeholder text
+		// If Type == "ENCRYPTEDSTRING", then Value will be placeholder text.
 		Value:       types.StringValue(property.Value),
 		Type:        types.StringValue(property.Type),
 		Description: types.StringValue(property.Description),

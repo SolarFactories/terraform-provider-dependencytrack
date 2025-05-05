@@ -9,7 +9,7 @@ func TestAccConfigPropertiesResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_config_properties" "test" {
@@ -58,7 +58,7 @@ resource "dependencytrack_config_properties" "test" {
 					),
 				),
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_config_properties" "test" {

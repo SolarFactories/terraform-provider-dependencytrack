@@ -103,7 +103,7 @@ func (r *policyTagResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state policyTagResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -111,7 +111,7 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	policyId, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -146,7 +146,7 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 		Tag:      types.StringValue(tag.Name),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -160,7 +160,7 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Resource has nothing to update, as it bridges by it's existence. Existence check is done within `Read`.
-	// Get State
+	// Get State.
 	var plan policyTagResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -183,7 +183,7 @@ func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateReque
 		Tag:      types.StringValue(tagName),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -196,7 +196,7 @@ func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateReque
 }
 
 func (r *policyTagResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state policyTagResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)

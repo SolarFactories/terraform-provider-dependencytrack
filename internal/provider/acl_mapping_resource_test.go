@@ -9,7 +9,7 @@ func TestAccAclMappingResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
@@ -35,13 +35,13 @@ resource "dependencytrack_acl_mapping" "test" {
 					),
 				),
 			},
-			// ImportState testing
+			// ImportState testing.
 			{
 				ResourceName:      "dependencytrack_acl_mapping.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {

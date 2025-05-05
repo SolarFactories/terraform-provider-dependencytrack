@@ -210,7 +210,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state projectResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -218,7 +218,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -264,7 +264,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		state.Parent = types.StringNull()
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -286,7 +286,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 }
 
 func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan projectResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -294,7 +294,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -341,7 +341,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		project.ParentRef = nil
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Updating Project", map[string]any{
 		"id":          project.UUID.String(),
 		"name":        project.Name,
@@ -364,7 +364,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	// Map SDK to TF
+	// Map SDK to TF.
 	plan = projectResourceModel{
 		ID:          types.StringValue(projectRes.UUID.String()),
 		Name:        types.StringValue(projectRes.Name),
@@ -383,7 +383,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		plan.Parent = types.StringNull()
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -405,7 +405,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 }
 
 func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state projectResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -413,14 +413,14 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting Project", map[string]any{
 		"id":          id.String(),
 		"name":        state.Name.ValueString(),

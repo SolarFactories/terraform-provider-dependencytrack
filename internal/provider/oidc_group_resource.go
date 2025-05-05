@@ -93,7 +93,7 @@ func (r *oidcGroupResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state oidcGroupResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -101,7 +101,7 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	tflog.Debug(ctx, "Reading OIDC Group", map[string]any{
 		"id":   state.ID.ValueString(),
 		"name": state.Name.ValueString(),
@@ -131,7 +131,7 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 		Name: types.StringValue(oidcGroup.Name),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -144,7 +144,7 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan oidcGroupResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -152,7 +152,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -163,7 +163,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		Name: plan.Name.ValueString(),
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Updating OIDC Group", map[string]any{
 		"id":   oidcGroupReq.UUID.String(),
 		"name": oidcGroupReq.Name,
@@ -177,13 +177,13 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	// Map SDK to TF
+	// Map SDK to TF.
 	plan = oidcGroupResourceModel{
 		ID:   types.StringValue(oidcGroupRes.UUID.String()),
 		Name: types.StringValue(oidcGroupRes.Name),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -196,7 +196,7 @@ func (r *oidcGroupResource) Update(ctx context.Context, req resource.UpdateReque
 }
 
 func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state oidcGroupResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -204,14 +204,14 @@ func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting OIDC Group", map[string]any{
 		"id":   id.String(),
 		"name": state.Name.ValueString(),

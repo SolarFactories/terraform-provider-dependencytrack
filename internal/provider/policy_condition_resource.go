@@ -134,7 +134,7 @@ func (r *policyConditionResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state policyConditionResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -142,7 +142,7 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	tflog.Debug(ctx, "Reading Policy Condition", map[string]any{
 		"id":       state.ID.ValueString(),
 		"policy":   state.PolicyID.ValueString(),
@@ -174,7 +174,7 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 		Value:    types.StringValue(condition.Value),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -190,7 +190,7 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 }
 
 func (r *policyConditionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan policyConditionResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -198,7 +198,7 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -218,7 +218,7 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 		Value:    plan.Value.ValueString(),
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Updating Policy Condition", map[string]any{
 		"id":       conditionReq.UUID.String(),
 		"policy":   plan.PolicyID.ValueString(),
@@ -236,7 +236,7 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	// Map SDK to TF
+	// Map SDK to TF.
 	plan = policyConditionResourceModel{
 		ID:       types.StringValue(conditionRes.UUID.String()),
 		PolicyID: types.StringValue(policyId.String()),
@@ -245,7 +245,7 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 		Value:    types.StringValue(conditionRes.Value),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -261,7 +261,7 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 }
 
 func (r *policyConditionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state policyConditionResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -269,14 +269,14 @@ func (r *policyConditionResource) Delete(ctx context.Context, req resource.Delet
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting Policy Condition", map[string]any{
 		"id":       id.String(),
 		"policy":   state.PolicyID.ValueString(),

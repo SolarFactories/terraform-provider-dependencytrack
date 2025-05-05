@@ -143,7 +143,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		)
 		return
 	}
-	// Transform data into model
+	// Transform data into model.
 	projectState := projectDataSourceModel{
 		Name:       types.StringValue(project.Name),
 		Version:    types.StringValue(project.Version),
@@ -176,7 +176,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 			"description": property.Description,
 		})
 	}
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &projectState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

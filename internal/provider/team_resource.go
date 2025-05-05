@@ -94,7 +94,7 @@ func (r *teamResource) Create(ctx context.Context, req resource.CreateRequest, r
 }
 
 func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state teamResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -102,7 +102,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	// Refresh
+	// Refresh.
 	teamId, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -123,7 +123,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	state.ID = types.StringValue(team.UUID.String())
 	state.Name = types.StringValue(team.Name)
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -136,7 +136,7 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 }
 
 func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan teamResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -144,7 +144,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -155,7 +155,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		Name: plan.Name.ValueString(),
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Updating Team", map[string]any{
 		"id":   teamReq.UUID.String(),
 		"name": teamReq.Name,
@@ -169,11 +169,11 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	// Map SDK to TF
+	// Map SDK to TF.
 	plan.ID = types.StringValue(teamRes.UUID.String())
 	plan.Name = types.StringValue(teamRes.Name)
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -186,7 +186,7 @@ func (r *teamResource) Update(ctx context.Context, req resource.UpdateRequest, r
 }
 
 func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state teamResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -194,7 +194,7 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -204,7 +204,7 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		UUID: id,
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting Team", map[string]any{
 		"id": team.UUID.String(),
 	})

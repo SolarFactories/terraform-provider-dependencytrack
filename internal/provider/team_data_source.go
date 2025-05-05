@@ -100,7 +100,7 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		)
 		return
 	}
-	// Transform data into model
+	// Transform data into model.
 	teamState := teamDataSourceModel{
 		Name:        types.StringValue(team.Name),
 		ID:          types.StringValue(team.UUID.String()),
@@ -117,7 +117,7 @@ func (d *teamDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 			"description": permission.Description,
 		})
 	}
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &teamState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

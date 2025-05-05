@@ -107,7 +107,7 @@ func (r *policyProjectResource) Create(ctx context.Context, req resource.CreateR
 }
 
 func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state policyProjectResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -120,7 +120,7 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 		"project": state.ProjectID.ValueString(),
 	})
 
-	// Refresh
+	// Refresh.
 	policyId, diag := TryParseUUID(state.PolicyID, LifecycleRead, path.Root("policy"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -156,7 +156,7 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 		ProjectID: types.StringValue(project.UUID.String()),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -170,7 +170,7 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 
 func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Resource has nothing to update, as it bridges by it's existence. Existence check is done within `Read`.
-	// Get State
+	// Get State.
 	var plan policyProjectResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -200,7 +200,7 @@ func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateR
 		ProjectID: types.StringValue(projectId.String()),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -213,7 +213,7 @@ func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateR
 }
 
 func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state policyProjectResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)

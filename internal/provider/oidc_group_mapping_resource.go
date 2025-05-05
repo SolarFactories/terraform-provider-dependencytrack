@@ -107,7 +107,7 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 	plan = oidcGroupMappingResourceModel{
 		ID:    types.StringValue(mappingRes.UUID.String()),
 		Group: types.StringValue(mappingRes.Group.UUID.String()),
-		// Response does not include Team UUID
+		// Response does not include Team UUID.
 		Team: types.StringValue(team.String()),
 	}
 
@@ -124,7 +124,7 @@ func (r *oidcGroupMappingResource) Create(ctx context.Context, req resource.Crea
 }
 
 func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// Fetch state
+	// Fetch state.
 	var state oidcGroupMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -137,7 +137,7 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 		"group": state.Group.ValueString(),
 	})
 
-	// Refresh
+	// Refresh.
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
@@ -163,7 +163,7 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 		Group: types.StringValue(mappingInfo.Group.String()),
 	}
 
-	// Update state
+	// Update state.
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -177,7 +177,7 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Get State
+	// Get State.
 	var plan oidcGroupMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -217,7 +217,7 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 		Group: types.StringValue(mappingInfo.Group.String()),
 	}
 
-	// Update State
+	// Update State.
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -231,7 +231,7 @@ func (r *oidcGroupMappingResource) Update(ctx context.Context, req resource.Upda
 }
 
 func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// Load state
+	// Load state.
 	var state oidcGroupMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -239,14 +239,14 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
-	// Map TF to SDK
+	// Map TF to SDK.
 	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
 
-	// Execute
+	// Execute.
 	tflog.Debug(ctx, "Deleting OIDC Group Mapping", map[string]any{
 		"id":    id.String(),
 		"team":  state.Team.ValueString(),

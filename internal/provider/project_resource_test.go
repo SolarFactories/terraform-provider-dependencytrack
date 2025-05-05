@@ -9,7 +9,7 @@ func TestAccProjectResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
@@ -27,13 +27,13 @@ resource "dependencytrack_project" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "classifier", "APPLICATION"),
 				),
 			},
-			// ImportState testing
+			// ImportState testing.
 			{
 				ResourceName:      "dependencytrack_project.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
@@ -58,7 +58,7 @@ func TestAccProjectNestedResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read
+			// Create and Read.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "parent" {
@@ -74,13 +74,13 @@ resource "dependencytrack_project" "child" {
 					"dependencytrack_project.child", "parent",
 				),
 			},
-			// ImportState
+			// ImportState.
 			{
 				ResourceName:      "dependencytrack_project.child",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Update and Read
+			// Update and Read.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "parent" {
@@ -104,7 +104,7 @@ func TestAccProjectIdentity(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read
+			// Create and Read.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
@@ -122,13 +122,13 @@ resource "dependencytrack_project" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "swid", "Test_SWID"),
 				),
 			},
-			// ImportState
+			// ImportState.
 			{
 				ResourceName:      "dependencytrack_project.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
-			// Update and Read
+			// Update and Read.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
@@ -153,7 +153,7 @@ func TestAccProjectVersion(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read
+			// Create and Read.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {

@@ -456,7 +456,6 @@ linters:
           - ireturn
           - grouper
           - govet
-          - godot
           - gocritic
           - goconst
           - funlen

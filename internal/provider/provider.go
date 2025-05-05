@@ -22,7 +22,7 @@ var (
 )
 
 type dependencyTrackProvider struct {
-	// version is set to the provider version on release, "dev" when the
+	// Version is set to the provider version on release, "dev" when the
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
@@ -128,7 +128,7 @@ func loadHeaders(modelHeaders []dependencyTrackProviderHeadersModel, diagnostics
 }
 
 func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	// Get provider data from config
+	// Get provider data from config.
 	var config dependencyTrackProviderModel
 	diags := req.Config.Get(ctx, &config)
 	resp.Diagnostics.Append(diags...)
@@ -148,7 +148,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"Host for DependencyTrack was provided, but it was empty.",
 		)
 	}
-	// If key is the magic value 'OS_ENV', load from environment variable
+	// If key is the magic value 'OS_ENV', load from environment variable.
 	if key == "OS_ENV" {
 		key = os.Getenv("DEPENDENCYTRACK_API_KEY")
 	}
@@ -159,9 +159,9 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 			"API Key for DependencyTrack was provided, but it was empty.",
 		)
 	}
-	// Headers
+	// Headers.
 	headers := loadHeaders(config.Headers, &resp.Diagnostics)
-	// mTLS
+	// Set mTLS variables from State.
 	if config.MTLS != nil {
 		clientCertFile = config.MTLS.CertPath.ValueString()
 		clientKeyFile = config.MTLS.KeyPath.ValueString()

@@ -9,7 +9,7 @@ func TestAccPolicyProjectResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create and Read testing
+			// Create and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "project" {
@@ -36,7 +36,7 @@ resource "dependencytrack_policy_project" "test" {
 					),
 				),
 			},
-			// Update and Read testing
+			// Update and Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "project" {
