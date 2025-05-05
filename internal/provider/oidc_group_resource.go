@@ -36,11 +36,11 @@ type (
 	}
 )
 
-func (r *oidcGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*oidcGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oidc_group"
 }
 
-func (r *oidcGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*oidcGroupResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a OIDC Group.",
 		Attributes: map[string]schema.Attribute{
@@ -232,7 +232,7 @@ func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	})
 }
 
-func (r *oidcGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*oidcGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Debug(ctx, "Importing OIDC Group", map[string]any{
 		"id": req.ID,
 	})

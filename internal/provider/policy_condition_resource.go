@@ -39,11 +39,11 @@ type (
 	}
 )
 
-func (r *policyConditionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*policyConditionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_policy_condition"
 }
 
-func (r *policyConditionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*policyConditionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a Policy Condition.",
 		Attributes: map[string]schema.Attribute{
@@ -305,7 +305,7 @@ func (r *policyConditionResource) Delete(ctx context.Context, req resource.Delet
 	})
 }
 
-func (r *policyConditionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*policyConditionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Debug(ctx, "Importing Policy Condition", map[string]any{
 		"id": req.ID,
 	})

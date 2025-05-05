@@ -38,11 +38,11 @@ type (
 	}
 )
 
-func (r *aclMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*aclMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_acl_mapping"
 }
 
-func (r *aclMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*aclMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an ACL mapping to grant a Team access to a Project",
 		Attributes: map[string]schema.Attribute{
@@ -183,7 +183,7 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 	})
 }
 
-func (r *aclMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (*aclMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Nothing to Update. This resource only has Create, Delete actions.
 	// Get State.
 	var plan aclMappingResourceModel
@@ -267,7 +267,7 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 	})
 }
 
-func (r *aclMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*aclMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	idParts := strings.Split(req.ID, "/")
 	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
 		resp.Diagnostics.AddError(

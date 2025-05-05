@@ -35,11 +35,11 @@ type (
 	}
 )
 
-func (r *policyProjectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*policyProjectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_policy_project"
 }
 
-func (r *policyProjectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*policyProjectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an application of a Policy to a Project.",
 		Attributes: map[string]schema.Attribute{
@@ -170,7 +170,7 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 	})
 }
 
-func (r *policyProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (*policyProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Resource has nothing to update, as it bridges by it's existence. Existence check is done within `Read`.
 	// Get State.
 	var plan policyProjectResourceModel

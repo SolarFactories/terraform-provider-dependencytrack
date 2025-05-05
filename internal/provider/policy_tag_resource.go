@@ -36,11 +36,11 @@ type (
 )
 
 // TODO: Once have `dependencytrack_tag` resource to create tags, add testing.
-func (r *policyTagResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*policyTagResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_policy_tag"
 }
 
-func (r *policyTagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*policyTagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages an application of a Policy to a Tag.",
 		Attributes: map[string]schema.Attribute{
@@ -160,7 +160,7 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 	})
 }
 
-func (r *policyTagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (*policyTagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Resource has nothing to update, as it bridges by it's existence. Existence check is done within `Read`.
 	// Get State.
 	var plan policyTagResourceModel

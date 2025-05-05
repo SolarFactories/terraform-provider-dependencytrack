@@ -36,11 +36,11 @@ type (
 	}
 )
 
-func (r *ldapTeamMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*ldapTeamMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_ldap_team_mapping"
 }
 
-func (r *ldapTeamMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*ldapTeamMappingResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a mapping from LDAP Distinguished Name to Team.",
 		Attributes: map[string]schema.Attribute{
@@ -189,7 +189,7 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	})
 }
 
-func (r *ldapTeamMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (*ldapTeamMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Nothing to Update. This resource only has Create, Delete actions.
 	// Get State.
 	var plan ldapTeamMappingResourceModel

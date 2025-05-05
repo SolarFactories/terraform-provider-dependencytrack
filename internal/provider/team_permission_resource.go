@@ -35,11 +35,11 @@ type (
 	}
 )
 
-func (r *teamPermissionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*teamPermissionResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_permission"
 }
 
-func (r *teamPermissionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*teamPermissionResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages the attachment of a Permission to a Team. Conflicts with `dependencytrack_team_permissions`.",
 		Attributes: map[string]schema.Attribute{
@@ -156,7 +156,7 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 	})
 }
 
-func (r *teamPermissionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (*teamPermissionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Nothing to Update. This resource only has Create, Delete actions.
 	// Get State.
 	var plan teamPermissionResourceModel

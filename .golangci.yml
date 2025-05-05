@@ -303,13 +303,7 @@ linters:
           disabled: true
         - name: import-shadowing
           disabled: true
-        - name: error-strings
-          disabled: true
         - name: exported
-          disabled: true
-        - name: unused-receiver
-          disabled: true
-        - name: var-naming
           disabled: true
         - name: comment-spacings
           disabled: true

@@ -59,7 +59,7 @@ func (p *dependencyTrackProvider) Metadata(_ context.Context, _ provider.Metadat
 	resp.Version = p.version
 }
 
-func (p *dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
+func (*dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Interact with DependencyTrack.",
 		Attributes: map[string]schema.Attribute{
@@ -130,7 +130,7 @@ func loadHeaders(modelHeaders []dependencyTrackProviderHeadersModel, diagnostics
 	return headers
 }
 
-func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	// Get provider data from config.
 	var config dependencyTrackProviderModel
 	diags := req.Config.Get(ctx, &config)
@@ -218,7 +218,7 @@ func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.Co
 	})
 }
 
-func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource.Resource {
+func (*dependencyTrackProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewProjectResource,
 		NewProjectPropertyResource,
@@ -240,7 +240,7 @@ func (p *dependencyTrackProvider) Resources(_ context.Context) []func() resource
 	}
 }
 
-func (p *dependencyTrackProvider) DataSources(_ context.Context) []func() datasource.DataSource {
+func (*dependencyTrackProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewProjectDataSource,
 		NewProjectPropertyDataSource,

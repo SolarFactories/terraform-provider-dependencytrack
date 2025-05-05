@@ -36,11 +36,11 @@ type (
 	}
 )
 
-func (r *teamPermissionsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (*teamPermissionsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_team_permissions"
 }
 
-func (r *teamPermissionsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*teamPermissionsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages the attachment of Permissions to a Team. Conflicts with `dependencytrack_team_permission`.",
 		Attributes: map[string]schema.Attribute{
