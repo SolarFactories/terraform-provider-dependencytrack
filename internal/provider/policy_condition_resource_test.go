@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestAccPolicyConditionyResource(t *testing.T) {
+func TestAccPolicyConditionResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
