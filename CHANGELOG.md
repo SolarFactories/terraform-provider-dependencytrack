@@ -1,3 +1,14 @@
+## 1.12.3
+
+#### FEATURES
+- Add explicit support and testing for DependencyTrack `4.13.2`.
+
+#### DEPENDENCIES
+- `actions/setup-go` `5.4.0` -> `5.5.0`
+- `github.com/DependencyTrack/client-go` `main` -> `0.17.0`
+- `github.com/hashicorp/terraform-plugin-framework` `1.14.1` -> `1.15.0`
+- `github.com/hashicorp/terraform-plugin-testing` `1.12.0` -> `1.13.0`
+
 ## 1.12.2
 
 #### FEATURES
