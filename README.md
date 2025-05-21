@@ -49,4 +49,4 @@ The latest patch version within a minor release is supported, even if it might n
 The list of API Versions will grow as functionality adapts to allow tests to pass, which at present is only a small subset.
 The latest 3 patches within the latest minor version will be tested, and supported to allow for continued support while migrating.
 - Terraform: `1.0` -> `1.11`
-- DependencyTrack: `4.11.7`, `4.12.7`, `4.13.0`, `4.13.1`. `4.13.2`
+- DependencyTrack: `4.11.7`, `4.12.7`, `4.13.0`, `4.13.1`, `4.13.2`
