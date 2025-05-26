@@ -1,8 +1,5 @@
-# Terraform Provider testing workflow.
 name: Tests
 
-# This GitHub action runs your tests for each pull request and push.
-# Optionally, you can turn it on using a schedule for regular testing.
 on:
   pull_request:
     paths-ignore:
@@ -89,31 +86,17 @@ jobs:
       fail-fast: false
       matrix:
         api:
-# TODO: Adjust logic according to versions to allow supporting older API versions.
-#          - "4.0.1"
-#          - "4.1.0"
-#          - "4.2.2"
-#          - "4.3.6"
-#          - "4.4.2"
-#          - "4.5.0"
-#          - "4.6.3"
-#          - "4.7.1"
-#          - "4.8.2"
-#          - "4.9.1"
-#          - "4.10.1"
+# TODO: Adjust logic according to versions to allow supporting older API versions, as required.
           - "4.11.7"
           - "4.12.7"
           - "4.13.0"
           - "4.13.1"
           - "4.13.2"
-#          - "latest"
-#          - "snapshot"
         provider:
           - "default"
           - "rootCA"
           - "mtls"
           - "rootCA+mtls"
-        # list whatever Terraform versions here you would like to support
         terraform:
           - '1.0.*'
           - '1.1.*'
@@ -139,24 +122,8 @@ jobs:
           set -eu
           export API_KEY="$(go run ./scripts/bootstrap_pipeline.go)"
           echo "DEPENDENCYTRACK_API_KEY=${API_KEY}" >> $GITHUB_ENV
-#        run: |
-#          set -euo pipefail
-#          ./scripts/change-password.sh
-#          export TOKEN="$(./scripts/login.sh)"
-#          ./scripts/disable-settings.sh
-#          export TEAM_UUID="$(./scripts/create-team.sh | jq -r '.uuid')"
-#          PERMISSIONS="$(./scripts/get-valid-permissions.sh | jq -r '.[].name')"
-#          for perm in ${PERMISSIONS}; do
-#            PERMISSION="${perm}" ./scripts/assign-permission.sh
-#          done
-#          export PROJECT_UUID="$(./scripts/create-project.sh | jq -r '.uuid')"
-#          GROUP_NAME="Group1" PROPERTY_NAME="Name1" PROPERTY_VALUE="Value1" PROPERTY_TYPE="STRING" DESCRIPTION="Description1" ./scripts/create-project-property.sh
-#          GROUP_NAME="Group2" PROPERTY_NAME="Name2" PROPERTY_VALUE="2" PROPERTY_TYPE="INTEGER" DESCRIPTION="Description2" ./scripts/create-project-property.sh
-#          export API_KEY="$(./scripts/create-token.sh | jq -r '.key')"
-#          echo "DEPENDENCYTRACK_API_KEY=${API_KEY}" >> $GITHUB_ENV
-
         env:
-          HOST: "localhost:8081"
+          HOST: "http://localhost:8081"
           USERNAME: "admin"
           CURRENT_PASSWORD: "admin"
           NEW_PASSWORD: "pipeline"
