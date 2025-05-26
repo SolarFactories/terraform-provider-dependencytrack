@@ -129,23 +129,31 @@ jobs:
           - '1.11.*'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
       - name: Bootstrap authentication
         shell: bash
         run: |
-          set -euo pipefail
-          ./scripts/change-password.sh
-          export TOKEN="$(./scripts/login.sh)"
-          ./scripts/disable-settings.sh
-          export TEAM_UUID="$(./scripts/create-team.sh | jq -r '.uuid')"
-          PERMISSIONS="$(./scripts/get-valid-permissions.sh | jq -r '.[].name')"
-          for perm in ${PERMISSIONS}; do
-            PERMISSION="${perm}" ./scripts/assign-permission.sh
-          done
-          export PROJECT_UUID="$(./scripts/create-project.sh | jq -r '.uuid')"
-          GROUP_NAME="Group1" PROPERTY_NAME="Name1" PROPERTY_VALUE="Value1" PROPERTY_TYPE="STRING" DESCRIPTION="Description1" ./scripts/create-project-property.sh
-          GROUP_NAME="Group2" PROPERTY_NAME="Name2" PROPERTY_VALUE="2" PROPERTY_TYPE="INTEGER" DESCRIPTION="Description2" ./scripts/create-project-property.sh
-          export API_KEY="$(./scripts/create-token.sh | jq -r '.key')"
+          set -eu
+          export API_KEY="$(go run ./scripts/bootstrap_pipeline.go)"
           echo "DEPENDENCYTRACK_API_KEY=${API_KEY}" >> $GITHUB_ENV
+#        run: |
+#          set -euo pipefail
+#          ./scripts/change-password.sh
+#          export TOKEN="$(./scripts/login.sh)"
+#          ./scripts/disable-settings.sh
+#          export TEAM_UUID="$(./scripts/create-team.sh | jq -r '.uuid')"
+#          PERMISSIONS="$(./scripts/get-valid-permissions.sh | jq -r '.[].name')"
+#          for perm in ${PERMISSIONS}; do
+#            PERMISSION="${perm}" ./scripts/assign-permission.sh
+#          done
+#          export PROJECT_UUID="$(./scripts/create-project.sh | jq -r '.uuid')"
+#          GROUP_NAME="Group1" PROPERTY_NAME="Name1" PROPERTY_VALUE="Value1" PROPERTY_TYPE="STRING" DESCRIPTION="Description1" ./scripts/create-project-property.sh
+#          GROUP_NAME="Group2" PROPERTY_NAME="Name2" PROPERTY_VALUE="2" PROPERTY_TYPE="INTEGER" DESCRIPTION="Description2" ./scripts/create-project-property.sh
+#          export API_KEY="$(./scripts/create-token.sh | jq -r '.key')"
+#          echo "DEPENDENCYTRACK_API_KEY=${API_KEY}" >> $GITHUB_ENV
 
         env:
           HOST: "localhost:8081"
@@ -168,10 +176,6 @@ jobs:
           sudo cp nginx.conf /etc/nginx/
           sudo nginx
 
-      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
-        with:
-          go-version-file: 'go.mod'
-          cache: true
       - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
         with:
           terraform_version: ${{ matrix.terraform }}

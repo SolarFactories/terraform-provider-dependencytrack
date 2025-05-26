@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	projectPropertyURLRegex *regexp.Regexp = regexp.MustCompile("^/api/v1/project/" + uuidRegex + "/property$")
+	projectPropertyURLRegex = regexp.MustCompile("^/api/v1/project/" + uuidRegex + "/property$")
 )
 
 type (
