@@ -1,3 +1,18 @@
+## 1.12.4
+
+#### FEATURES
+- Add explicit support and testing for Terraform `1.12.x`.
+
+#### MISC
+- Replaced pipeline bootstrapping shell scripts with `scripts/bootstrap_pipeline.go` to use `client-go` SDK.
+- Move Terraform Acceptance Test GitHub workflow out of `test.yml`, into a composite action.
+- Split TF Acceptance tests to bypass limit of 256 jobs per matrix.
+- Trimmed down commented out DependencyTrack API versions within workflow.
+
+#### DEPENDENCIES
+- `github.com/hashicorp/terraform-plugin-testing` `1.13.0` -> `1.13.1`
+- `github.com/hashicorp/terraform-plugin-go` `0.27.0` -> `0.28.0`
+
 ## 1.12.3
 
 #### FEATURES

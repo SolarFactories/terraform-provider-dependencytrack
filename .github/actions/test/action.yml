@@ -1,0 +1,56 @@
+name: "Parametrised Terraform Acceptance Test"
+description: "Relies on existing service containers for DependencyTrack API, and actions/checkout having run"
+
+inputs:
+  terraform_version:
+    description: "Version of Terraform to be used to run tests."
+    required: true
+  provider_config_key:
+    description: "Config key to determine which provider config to use, as defined within provider_test.go."
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      with:
+        go-version-file: 'go.mod'
+        cache: true
+    - name: Bootstrap authentication
+      shell: bash
+      run: |
+        set -eu
+        export API_KEY="$(go run ./scripts/bootstrap_pipeline.go)"
+        echo "DEPENDENCYTRACK_API_KEY=${API_KEY}" >> $GITHUB_ENV
+      env:
+        HOST: "http://localhost:8081"
+        USERNAME: "admin"
+        CURRENT_PASSWORD: "admin"
+        PASSWORD: "pipeline"
+        TEAM_NAME: "Pipeline ${{ inputs.terraform }}"
+        PROJECT_NAME: "Project_Data_Test"
+        PROJECT_VERSION: "1"
+
+    - name: Setup Nginx
+      shell: bash
+      run: |
+        set -eu
+        openssl req -newkey rsa:4096 -noenc -keyout /opt/server_key.pem -x509 -days 1 -out /opt/server_cert.pem -subj '/OU=DT_API /CN=localhost' -addext "subjectAltName=DNS:localhost"
+        openssl req -newkey rsa:4096 -noenc -keyout /opt/client_key.pem -x509 -days 1 -out /opt/client_cert.pem -subj '/OU=DT_Provider'
+        sudo apt-get install nginx
+        sudo mkdir -p /etc/nginx
+        sudo cp nginx.conf /etc/nginx/
+        sudo nginx
+
+    - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      with:
+        terraform_version: ${{ inputs.terraform }}
+        terraform_wrapper: false
+    - run: go mod download
+      shell: bash
+    - run: go test -v -cover ./internal/provider/
+      shell: bash
+      env:
+        TF_ACC: "1"
+        DEPENDENCYTRACK_TEST_PROVIDER: ${{ inputs.provider_config_key }}
+        #TF_LOG: "info"

@@ -1,8 +1,5 @@
-# Terraform Provider testing workflow.
 name: Tests
 
-# This GitHub action runs your tests for each pull request and push.
-# Optionally, you can turn it on using a schedule for regular testing.
 on:
   pull_request:
     paths-ignore:
@@ -89,31 +86,15 @@ jobs:
       fail-fast: false
       matrix:
         api:
-# TODO: Adjust logic according to versions to allow supporting older API versions.
-#          - "4.0.1"
-#          - "4.1.0"
-#          - "4.2.2"
-#          - "4.3.6"
-#          - "4.4.2"
-#          - "4.5.0"
-#          - "4.6.3"
-#          - "4.7.1"
-#          - "4.8.2"
-#          - "4.9.1"
-#          - "4.10.1"
+# TODO: Adjust logic according to versions to allow supporting older API versions, as required.
           - "4.11.7"
           - "4.12.7"
           - "4.13.0"
           - "4.13.1"
           - "4.13.2"
-#          - "latest"
-#          - "snapshot"
         provider:
           - "default"
           - "rootCA"
-          - "mtls"
-          - "rootCA+mtls"
-        # list whatever Terraform versions here you would like to support
         terraform:
           - '1.0.*'
           - '1.1.*'
@@ -127,59 +108,55 @@ jobs:
           - '1.9.*'
           - '1.10.*'
           - '1.11.*'
+          - '1.12.*'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Bootstrap authentication
-        shell: bash
-        run: |
-          set -euo pipefail
-          ./scripts/change-password.sh
-          export TOKEN="$(./scripts/login.sh)"
-          ./scripts/disable-settings.sh
-          export TEAM_UUID="$(./scripts/create-team.sh | jq -r '.uuid')"
-          PERMISSIONS="$(./scripts/get-valid-permissions.sh | jq -r '.[].name')"
-          for perm in ${PERMISSIONS}; do
-            PERMISSION="${perm}" ./scripts/assign-permission.sh
-          done
-          export PROJECT_UUID="$(./scripts/create-project.sh | jq -r '.uuid')"
-          GROUP_NAME="Group1" PROPERTY_NAME="Name1" PROPERTY_VALUE="Value1" PROPERTY_TYPE="STRING" DESCRIPTION="Description1" ./scripts/create-project-property.sh
-          GROUP_NAME="Group2" PROPERTY_NAME="Name2" PROPERTY_VALUE="2" PROPERTY_TYPE="INTEGER" DESCRIPTION="Description2" ./scripts/create-project-property.sh
-          export API_KEY="$(./scripts/create-token.sh | jq -r '.key')"
-          echo "DEPENDENCYTRACK_API_KEY=${API_KEY}" >> $GITHUB_ENV
-
-        env:
-          HOST: "localhost:8081"
-          USERNAME: "admin"
-          CURRENT_PASSWORD: "admin"
-          NEW_PASSWORD: "pipeline"
-          PASSWORD: "pipeline"
-          TEAM_NAME: "Pipeline ${{ matrix.terraform }}"
-          PROJECT_NAME: "Project_Data_Test"
-          PROJECT_VERSION: "1"
-
-      - name: Setup Nginx
-        shell: bash
-        run: |
-          set -eu
-          openssl req -newkey rsa:4096 -noenc -keyout /opt/server_key.pem -x509 -days 1 -out /opt/server_cert.pem -subj '/OU=DT_API /CN=localhost' -addext "subjectAltName=DNS:localhost"
-          openssl req -newkey rsa:4096 -noenc -keyout /opt/client_key.pem -x509 -days 1 -out /opt/client_cert.pem -subj '/OU=DT_Provider'
-          sudo apt-get install nginx
-          sudo mkdir -p /etc/nginx
-          sudo cp nginx.conf /etc/nginx/
-          sudo nginx
-
-      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
-        with:
-          go-version-file: 'go.mod'
-          cache: true
-      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}
-          terraform_wrapper: false
-      - run: go mod download
-      - env:
-          TF_ACC: "1"
-          DEPENDENCYTRACK_TEST_PROVIDER: ${{ matrix.provider }}
-          #TF_LOG: "info"
-        run: go test -v -cover ./internal/provider/
-        timeout-minutes: 10
+          provider_config_key: ${{ matrix.provider }}
+
+  test_mtls:
+    name: Terraform Provider Acceptance Tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      api:
+        image: dependencytrack/apiserver:${{ matrix.api }}
+        env:
+          TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
+        ports:
+          - 8081:8080
+    strategy:
+      fail-fast: false
+      matrix:
+        api:
+          - "4.11.7"
+          - "4.12.7"
+          - "4.13.0"
+          - "4.13.1"
+          - "4.13.2"
+        provider:
+          - "mtls"
+          - "rootCA+mtls"
+        terraform:
+          - '1.0.*'
+          - '1.1.*'
+          - '1.2.*'
+          - '1.3.*'
+          - '1.4.*'
+          - '1.5.*'
+          - '1.6.*'
+          - '1.7.*'
+          - '1.8.*'
+          - '1.9.*'
+          - '1.10.*'
+          - '1.11.*'
+          - '1.12.*'
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: ./.github/actions/test
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          provider_config_key: ${{ matrix.provider }}
