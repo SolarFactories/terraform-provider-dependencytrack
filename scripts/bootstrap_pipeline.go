@@ -18,7 +18,7 @@ var (
 	NewPassword     = os.Getenv("NEW_PASSWORD")
 	Password        = os.Getenv("PASSWORD")
 	TeamName        = os.Getenv("TEAM_NAME")
-	ProjectName     = os.Getenv("Project_Data_Test")
+	ProjectName     = os.Getenv("PROJECT_NAME")
 	ProjectVersion  = os.Getenv("PROJECT_VERSION")
 )
 
@@ -87,7 +87,7 @@ func createProject(ctx context.Context, client *dtrack.Client) error {
 		Description: "Description1",
 	})
 	if err != nil {
-		return errors.New("Unable to create project property, from: " + err.Error())
+		return errors.New("Unable to create project property 1, from: " + err.Error())
 	}
 
 	_, err = client.ProjectProperty.Create(ctx, project.UUID, dtrack.ProjectProperty{
@@ -98,7 +98,7 @@ func createProject(ctx context.Context, client *dtrack.Client) error {
 		Description: "Description2",
 	})
 	if err != nil {
-		return errors.New("Unable to create project property, from: " + err.Error())
+		return errors.New("Unable to create project property 2, from: " + err.Error())
 	}
 
 	return nil
