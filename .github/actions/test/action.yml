@@ -47,9 +47,10 @@ runs:
         terraform_version: ${{ inputs.terraform }}
         terraform_wrapper: false
     - run: go mod download
-    - env:
+      shell: bash
+    - run: go test -v -cover ./internal/provider/
+      shell: bash
+      env:
         TF_ACC: "1"
         DEPENDENCYTRACK_TEST_PROVIDER: ${{ inputs.provider_config_key }}
         #TF_LOG: "info"
-      run: go test -v -cover ./internal/provider/
-      timeout-minutes: 10
