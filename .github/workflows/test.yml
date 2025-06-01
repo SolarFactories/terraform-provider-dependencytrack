@@ -125,6 +125,7 @@ jobs:
       api:
         image: dependencytrack/apiserver:${{ matrix.api }}
         env:
+          TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
         ports:
           - 8081:8080
     strategy:
