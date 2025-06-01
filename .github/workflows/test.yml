@@ -126,7 +126,6 @@ jobs:
           HOST: "http://localhost:8081"
           USERNAME: "admin"
           CURRENT_PASSWORD: "admin"
-          NEW_PASSWORD: "pipeline"
           PASSWORD: "pipeline"
           TEAM_NAME: "Pipeline ${{ matrix.terraform }}"
           PROJECT_NAME: "Project_Data_Test"

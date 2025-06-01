@@ -15,7 +15,6 @@ var (
 	Host            = os.Getenv("HOST")
 	Username        = os.Getenv("USERNAME")
 	CurrentPassword = os.Getenv("CURRENT_PASSWORD")
-	NewPassword     = os.Getenv("NEW_PASSWORD")
 	Password        = os.Getenv("PASSWORD")
 	TeamName        = os.Getenv("TEAM_NAME")
 	ProjectName     = os.Getenv("PROJECT_NAME")
@@ -28,12 +27,12 @@ func getToken(ctx context.Context) (string, error) {
 		return "", errors.New("Unable to create client, from: " + err.Error())
 	}
 
-	err = client.User.ForceChangePassword(ctx, Username, Password, NewPassword)
+	err = client.User.ForceChangePassword(ctx, Username, CurrentPassword, Password)
 	if err != nil {
 		return "", errors.New("Unable to change password, from: " + err.Error())
 	}
 
-	token, err := client.User.Login(ctx, Username, NewPassword)
+	token, err := client.User.Login(ctx, Username, Password)
 	if err != nil {
 		return "", errors.New("Unable to login as user, from: " + err.Error())
 	}
