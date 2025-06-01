@@ -112,44 +112,7 @@ jobs:
           - '1.11.*'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
-        with:
-          go-version-file: 'go.mod'
-          cache: true
-      - name: Bootstrap authentication
-        shell: bash
-        run: |
-          set -eu
-          export API_KEY="$(go run ./scripts/bootstrap_pipeline.go)"
-          echo "DEPENDENCYTRACK_API_KEY=${API_KEY}" >> $GITHUB_ENV
-        env:
-          HOST: "http://localhost:8081"
-          USERNAME: "admin"
-          CURRENT_PASSWORD: "admin"
-          PASSWORD: "pipeline"
-          TEAM_NAME: "Pipeline ${{ matrix.terraform }}"
-          PROJECT_NAME: "Project_Data_Test"
-          PROJECT_VERSION: "1"
-
-      - name: Setup Nginx
-        shell: bash
-        run: |
-          set -eu
-          openssl req -newkey rsa:4096 -noenc -keyout /opt/server_key.pem -x509 -days 1 -out /opt/server_cert.pem -subj '/OU=DT_API /CN=localhost' -addext "subjectAltName=DNS:localhost"
-          openssl req -newkey rsa:4096 -noenc -keyout /opt/client_key.pem -x509 -days 1 -out /opt/client_cert.pem -subj '/OU=DT_Provider'
-          sudo apt-get install nginx
-          sudo mkdir -p /etc/nginx
-          sudo cp nginx.conf /etc/nginx/
-          sudo nginx
-
-      - uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3.1.2
+      - uses: ./.github/actions/action-test.yml
         with:
           terraform_version: ${{ matrix.terraform }}
-          terraform_wrapper: false
-      - run: go mod download
-      - env:
-          TF_ACC: "1"
-          DEPENDENCYTRACK_TEST_PROVIDER: ${{ matrix.provider }}
-          #TF_LOG: "info"
-        run: go test -v -cover ./internal/provider/
-        timeout-minutes: 10
+          provider_config_key: ${{ matrix.provider }}
