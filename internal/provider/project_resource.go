@@ -175,6 +175,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Description: types.StringValue(projectRes.Description),
 		Active:      types.BoolValue(projectRes.Active),
 		Version:     types.StringValue(projectRes.Version),
+		Parent:      types.StringNull(), // Updated below.
 		Classifier:  types.StringValue(projectRes.Classifier),
 		Group:       types.StringValue(projectRes.Group),
 		PURL:        types.StringValue(projectRes.PURL),
@@ -254,6 +255,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		Description: types.StringValue(project.Description),
 		Active:      types.BoolValue(project.Active),
 		Version:     types.StringValue(project.Version),
+		Parent:      types.StringNull(), // Updated below.
 		Classifier:  types.StringValue(project.Classifier),
 		Group:       types.StringValue(project.Group),
 		PURL:        types.StringValue(project.PURL),
@@ -373,6 +375,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		Description: types.StringValue(projectRes.Description),
 		Active:      types.BoolValue(projectRes.Active),
 		Version:     types.StringValue(projectRes.Version),
+		Parent:      types.StringNull(), // Updated below.
 		Classifier:  types.StringValue(projectRes.Classifier),
 		Group:       types.StringValue(projectRes.Group),
 		PURL:        types.StringValue(projectRes.PURL),

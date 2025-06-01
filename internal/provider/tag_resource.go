@@ -42,7 +42,7 @@ func (*tagResource) Metadata(_ context.Context, req resource.MetadataRequest, re
 
 func (*tagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages a Tag.",
+		Description: "Manages a Tag. Requires API version >= 4.13 to be created, but may be imported in earlier versions.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Name of the Tag.",
@@ -108,22 +108,21 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	// Refresh.
-	tagId := state.ID.ValueString()
+	tagID := state.ID.ValueString()
 	tflog.Debug(ctx, "Reading Tag", map[string]any{
 		"id":   state.ID.ValueString(),
 		"name": state.Name.ValueString(),
 	})
 
-	//tags, err := r.client.Tag.GetAll(ctx, id)
 	tag, err := FindPaged(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TagListResponseItem], error) {
-		return r.client.Tag.GetAll(ctx, po)
+		return r.client.Tag.GetAll(ctx, po, dtrack.SortOptions{})
 	}, func(tag dtrack.TagListResponseItem) bool {
-		return tag.Name == tagId
+		return tag.Name == tagID
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated tag",
-			"Error with reading tag: "+tagId+", from: "+err.Error(),
+			"Error with reading tag: "+tagID+", from: "+err.Error(),
 		)
 		return
 	}
@@ -144,7 +143,7 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	})
 }
 
-func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (*tagResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Resource has no Update action, as any changes require replacement
 	// Get State.
 	var plan tagResourceModel
@@ -155,16 +154,16 @@ func (r *tagResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 
 	// Map TF to SDK.
-	tagId := plan.ID.ValueString()
+	tagID := plan.ID.ValueString()
 	// Execute.
 	tflog.Debug(ctx, "Updating Tag", map[string]any{
-		"id":   tagId,
-		"name": tagId,
+		"id":   tagID,
+		"name": tagID,
 	})
 	// Map SDK to TF.
 	plan = tagResourceModel{
-		ID:   types.StringValue(tagId),
-		Name: types.StringValue(tagId),
+		ID:   types.StringValue(tagID),
+		Name: types.StringValue(tagID),
 	}
 
 	// Update State.
@@ -189,18 +188,18 @@ func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 
 	// Map TF to SDK.
-	tagId := state.ID.ValueString()
+	tagID := state.ID.ValueString()
 
 	// Execute.
 	tflog.Debug(ctx, "Deleting Tag", map[string]any{
 		"id":   state.ID.ValueString(),
 		"name": state.Name.ValueString(),
 	})
-	err := r.client.Tag.Delete(ctx, tagId)
+	err := r.client.Tag.Delete(ctx, []string{tagID})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete tag",
-			"Unexpected error when trying to delete tag: "+tagId+", from error: "+err.Error(),
+			"Unexpected error when trying to delete tag: "+tagID+", from error: "+err.Error(),
 		)
 		return
 	}

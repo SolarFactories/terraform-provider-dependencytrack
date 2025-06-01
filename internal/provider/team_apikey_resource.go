@@ -146,6 +146,7 @@ func (r *teamAPIKeyResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	plan = teamAPIKeyResourceModel{
+		ID:       types.StringNull(), // Set below.
 		TeamID:   types.StringValue(teamID.String()),
 		Key:      types.StringValue(key.Key),
 		Comment:  types.StringValue(comment),
