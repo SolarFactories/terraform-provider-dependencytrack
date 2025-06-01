@@ -464,6 +464,13 @@ linters:
     warn-unused: true # Default false
     presets: [] # Default []
     rules:
+      - path: scripts/bootstrap_pipeline.go
+        linters:
+          - err113
+          - cyclop
+          - gochecknoglobals
+          - exhaustruct
+          - forbidigo
       - path: internal/provider/
         linters:
           - wsl
