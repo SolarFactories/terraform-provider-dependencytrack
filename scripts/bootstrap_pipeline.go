@@ -120,7 +120,7 @@ func main() {
 		GroupName:   "vuln-source",
 		Name:        "nvd.enabled",
 		Value:       "false",
-		Type:        "",
+		Type:        "BOOLEAN",
 		Description: "",
 	})
 	if err != nil {
