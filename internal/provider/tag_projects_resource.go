@@ -54,7 +54,7 @@ func (*tagProjectsResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"tag": schema.StringAttribute{
-				Description: "Name of the Tag.",
+				Description: "Name of the Tag. Must be lowercase.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -107,20 +107,20 @@ func (r *tagProjectsResource) Create(ctx context.Context, req resource.CreateReq
 	})
 
 	addProjects, removeProjects := ListDeltasUUID(currentProjects, desiredProjects)
-	if len(removeProjects) > 0 {
-		err = r.client.Tag.UntagProjects(ctx, tagName, removeProjects)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Within Create, unable to remove projects from tag list for tag: "+tagName,
-				"Error from: "+err.Error(),
-			)
-		}
-	}
 	if len(addProjects) > 0 {
 		err = r.client.Tag.TagProjects(ctx, tagName, addProjects)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Within Create, unable to add projects from tag list for tag: "+tagName,
+				"Error from: "+err.Error(),
+			)
+		}
+	}
+	if len(removeProjects) > 0 {
+		err = r.client.Tag.UntagProjects(ctx, tagName, removeProjects)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Within Create, unable to remove projects from tag list for tag: "+tagName,
 				"Error from: "+err.Error(),
 			)
 		}
@@ -235,20 +235,20 @@ func (r *tagProjectsResource) Update(ctx context.Context, req resource.UpdateReq
 	})
 
 	addProjects, removeProjects := ListDeltasUUID(currentProjects, desiredProjects)
-	if len(removeProjects) > 0 {
-		err = r.client.Tag.UntagProjects(ctx, tagName, removeProjects)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Within Update, unable to remove projects from tag list for tag: "+tagName,
-				"Error from: "+err.Error(),
-			)
-		}
-	}
 	if len(addProjects) > 0 {
 		err = r.client.Tag.TagProjects(ctx, tagName, addProjects)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Within Update, unable to add projects from tag list for tag: "+tagName,
+				"Error from: "+err.Error(),
+			)
+		}
+	}
+	if len(removeProjects) > 0 {
+		err = r.client.Tag.UntagProjects(ctx, tagName, removeProjects)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Within Update, unable to remove projects from tag list for tag: "+tagName,
 				"Error from: "+err.Error(),
 			)
 		}

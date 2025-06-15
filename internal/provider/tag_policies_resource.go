@@ -107,20 +107,20 @@ func (r *tagPoliciesResource) Create(ctx context.Context, req resource.CreateReq
 	})
 
 	addPolicies, removePolicies := ListDeltasUUID(currentPolicies, desiredPolicies)
-	if len(removePolicies) > 0 {
-		err = r.client.Tag.UntagPolicies(ctx, tagName, removePolicies)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Within Create, unable to remove policies from tag list for tag: "+tagName,
-				"Error from: "+err.Error(),
-			)
-		}
-	}
 	if len(addPolicies) > 0 {
 		err = r.client.Tag.TagPolicies(ctx, tagName, addPolicies)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Within Create, unable to add policies from tag list for tag: "+tagName,
+				"Error from: "+err.Error(),
+			)
+		}
+	}
+	if len(removePolicies) > 0 {
+		err = r.client.Tag.UntagPolicies(ctx, tagName, removePolicies)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Within Create, unable to remove policies from tag list for tag: "+tagName,
 				"Error from: "+err.Error(),
 			)
 		}
@@ -235,20 +235,20 @@ func (r *tagPoliciesResource) Update(ctx context.Context, req resource.UpdateReq
 	})
 
 	addPolicies, removePolicies := ListDeltasUUID(currentPolicies, desiredPolicies)
-	if len(removePolicies) > 0 {
-		err = r.client.Tag.UntagPolicies(ctx, tagName, removePolicies)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Within Update, unable to remove policies from tag list for tag: "+tagName,
-				"Error from: "+err.Error(),
-			)
-		}
-	}
 	if len(addPolicies) > 0 {
 		err = r.client.Tag.TagPolicies(ctx, tagName, addPolicies)
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Within Update, unable to add policies from tag list for tag: "+tagName,
+				"Error from: "+err.Error(),
+			)
+		}
+	}
+	if len(removePolicies) > 0 {
+		err = r.client.Tag.UntagPolicies(ctx, tagName, removePolicies)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"Within Update, unable to remove policies from tag list for tag: "+tagName,
 				"Error from: "+err.Error(),
 			)
 		}
