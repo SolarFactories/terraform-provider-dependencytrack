@@ -17,7 +17,7 @@ Applies a tag to multiple policies. Requires API version >= 4.12.
 
 ### Required
 
-- `policies` (List of String) Policy UUIDs to which to apply tag.
+- `policies` (List of String) Policy UUIDs to which to apply tag. Will present a delta, unless sorted by policy name.
 - `tag` (String) Name of the Tag.
 
 ### Read-Only

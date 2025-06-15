@@ -61,7 +61,7 @@ func (*tagProjectsResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"projects": schema.ListAttribute{
-				Description: "Project UUIDs to which to apply tag.",
+				Description: "Project UUIDs to which to apply tag. Will present delta, unless sorted by project name.",
 				Required:    true,
 				ElementType: types.StringType,
 			},

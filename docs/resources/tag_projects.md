@@ -17,8 +17,8 @@ Applies a tag to multiple projects. Requires API version >= 4.12.
 
 ### Required
 
-- `projects` (List of String) Project UUIDs to which to apply tag.
-- `tag` (String) Name of the Tag.
+- `projects` (List of String) Project UUIDs to which to apply tag. Will present delta, unless sorted by project name.
+- `tag` (String) Name of the Tag. Must be lowercase.
 
 ### Read-Only
 

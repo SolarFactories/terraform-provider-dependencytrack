@@ -61,7 +61,7 @@ func (*tagPoliciesResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"policies": schema.ListAttribute{
-				Description: "Policy UUIDs to which to apply tag.",
+				Description: "Policy UUIDs to which to apply tag. Will present a delta, unless sorted by policy name.",
 				Required:    true,
 				ElementType: types.StringType,
 			},
