@@ -576,6 +576,12 @@ linters:
       - path: internal/provider/team_apikey_resource_test.go
         linters:
           - godox
+      - path: internal/provider/tag_projects_resource.go
+        linters:
+          - gocognit
+      - path: internal/provider/tag_policies_resource.go
+        linters:
+          - gocognit
 
 formatters:
   enable:

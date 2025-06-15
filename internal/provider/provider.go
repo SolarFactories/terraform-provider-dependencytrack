@@ -238,6 +238,8 @@ func (*dependencyTrackProvider) Resources(_ context.Context) []func() resource.R
 		NewACLMappingResource,
 		NewLDAPTeamMappingResource,
 		NewTagResource,
+		NewTagProjectsResource,
+		NewTagPoliciesResource,
 	}
 }
 

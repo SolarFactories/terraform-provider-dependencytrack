@@ -202,6 +202,15 @@ func ListDeltas[T cmp.Ordered](current []T, desired []T) (add []T, remove []T) {
 	return add, remove
 }
 
+func ListDeltasUUID(current []uuid.UUID, desired []uuid.UUID) (add []uuid.UUID, remove []uuid.UUID) {
+	currentStr := Map(current, func(cur uuid.UUID) string { return cur.String() })
+	desiredStr := Map(desired, func(des uuid.UUID) string { return des.String() })
+	addStr, removeStr := ListDeltas(currentStr, desiredStr)
+	add = Map(addStr, func(s string) uuid.UUID { return uuid.MustParse(s) })
+	remove = Map(removeStr, func(s string) uuid.UUID { return uuid.MustParse(s) })
+	return add, remove
+}
+
 func Map[T, U any](items []T, actor func(T) U) []U {
 	result := make([]U, 0, len(items))
 	for _, t := range items {
@@ -209,6 +218,18 @@ func Map[T, U any](items []T, actor func(T) U) []U {
 		result = append(result, u)
 	}
 	return result
+}
+
+func TryMap[T, U any](items []T, actor func(T) (U, error)) ([]U, error) {
+	result := make([]U, 0, len(items))
+	for _, t := range items {
+		u, err := actor(t)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, u)
+	}
+	return result, nil
 }
 
 func TryParseUUID(value types.String, action LifecycleAction, tfPath path.Path) (uuid.UUID, diag.Diagnostic) {

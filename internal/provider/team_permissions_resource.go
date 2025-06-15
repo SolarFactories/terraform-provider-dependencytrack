@@ -255,7 +255,7 @@ func (r *teamPermissionsResource) Delete(ctx context.Context, req resource.Delet
 		_, err = r.client.Permission.RemovePermissionFromTeam(ctx, permission, team)
 		if err != nil {
 			resp.Diagnostics.AddError(
-				"Error removing team permission: "+permission.Name+"for team: "+team.String(),
+				"Within Delete, error removing team permission: "+permission.Name+"for team: "+team.String(),
 				"Error from: "+err.Error(),
 			)
 			continue

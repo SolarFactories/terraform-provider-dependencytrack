@@ -42,7 +42,7 @@ func (*tagResource) Metadata(_ context.Context, req resource.MetadataRequest, re
 
 func (*tagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages a Tag. Requires API version >= 4.13 to be created, but may be imported in earlier versions.",
+		Description: "Manages a Tag. Requires API version >= 4.13 to be created, but may be imported in API version >= 4.12.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Name of the Tag.",
