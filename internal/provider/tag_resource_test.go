@@ -14,7 +14,7 @@ func TestAccTagResource(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_tag" "test" {
-	name = "tag_tags_tag"
+	name = "test_tags_tag"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -33,7 +33,7 @@ resource "dependencytrack_tag" "test" {
 				Config: providerConfig + `
 
 resource "dependencytrack_tag" "test" {
-	name = "tag_tags_tag_with_change"
+	name = "test_tags_tag_with_change"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
