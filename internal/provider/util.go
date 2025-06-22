@@ -268,7 +268,7 @@ func GetStringList(ctx context.Context, diags *diag.Diagnostics, list types.List
 	if diags.HasError() {
 		return nil, errors.New("type mismatch. Expected []types.String")
 	}
-	strings, err := TryMap(tagStrings, func(item types.String) (string, error) {
+	stringList, err := TryMap(tagStrings, func(item types.String) (string, error) {
 		if item.IsUnknown() {
 			return "", errors.New("received unknown value for tag")
 		}
@@ -277,5 +277,5 @@ func GetStringList(ctx context.Context, diags *diag.Diagnostics, list types.List
 		}
 		return item.ValueString(), nil
 	})
-	return strings, err
+	return stringList, err
 }

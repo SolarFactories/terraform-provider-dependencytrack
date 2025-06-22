@@ -40,6 +40,7 @@ data "dependencytrack_project" "example" {
 - `properties` (Attributes List) Existing properties within the Project. (see [below for nested schema](#nestedatt--properties))
 - `purl` (String) Package URL of the Project. Follows standardised format.
 - `swid` (String) SWID Tag ID. ISO/IEC 19770-2:2015
+- `tags` (List of String) Tags on the project.
 
 <a id="nestedatt--properties"></a>
 ### Nested Schema for `properties`

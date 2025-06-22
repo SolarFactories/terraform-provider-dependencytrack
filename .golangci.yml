@@ -106,6 +106,7 @@ linters:
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.NestedAttributeObject$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.Schema$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.StringAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.ListAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.ListNestedAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.NestedAttributeObject$"
         - "^github.com/hashicorp/terraform-plugin-framework/providerserver\\.ServeOpts$"

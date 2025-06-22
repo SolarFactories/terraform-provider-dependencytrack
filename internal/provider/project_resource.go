@@ -392,7 +392,8 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		project.ParentRef = nil
 	}
 	if !plan.Tags.IsUnknown() && !plan.Tags.IsNull() {
-		strings, err := GetStringList(ctx, &resp.Diagnostics, plan.Tags)
+		var stringList []string
+		stringList, err = GetStringList(ctx, &resp.Diagnostics, plan.Tags)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -404,7 +405,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 			)
 			return
 		}
-		project.Tags = Map(strings, func(item string) dtrack.Tag { return dtrack.Tag{Name: item} })
+		project.Tags = Map(stringList, func(item string) dtrack.Tag { return dtrack.Tag{Name: item} })
 	}
 
 	// Execute.
