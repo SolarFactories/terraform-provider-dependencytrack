@@ -61,7 +61,7 @@ func (*tagPoliciesResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"policies": schema.ListAttribute{
-				Description: "Policy UUIDs to which to apply tag. Will present a delta, unless sorted by policy name.",
+				Description: "Policy UUIDs to which to apply tag. Sorted by policy name.",
 				Required:    true,
 				ElementType: types.StringType,
 			},
@@ -143,8 +143,9 @@ func (r *tagPoliciesResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 	tflog.Debug(ctx, "Created Tag Policies", map[string]any{
+		"id":       plan.ID.ValueString(),
 		"tag":      plan.Tag.ValueString(),
-		"policies": desiredPolicies,
+		"policies": Map(plan.Policies, func(item types.String) string { return item.ValueString() }),
 	})
 }
 
@@ -160,6 +161,7 @@ func (r *tagPoliciesResource) Read(ctx context.Context, req resource.ReadRequest
 	tflog.Debug(ctx, "Reading Tag Policies", map[string]any{
 		"tag":        tagName,
 		"policies.#": len(state.Policies),
+		"policies":   Map(state.Policies, func(item types.String) string { return item.ValueString() }),
 	})
 
 	taggedPoliciesInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedPolicyListResponseItem], error) {
@@ -187,6 +189,7 @@ func (r *tagPoliciesResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 	tflog.Debug(ctx, "Read Tag Policies", map[string]any{
+		"id":       state.ID.ValueString(),
 		"tag":      state.Tag.ValueString(),
 		"policies": Map(state.Policies, func(v types.String) string { return v.ValueString() }),
 	})
@@ -202,8 +205,10 @@ func (r *tagPoliciesResource) Update(ctx context.Context, req resource.UpdateReq
 
 	tagName := plan.Tag.ValueString()
 	tflog.Debug(ctx, "Updating Tag Policies", map[string]any{
+		"id":         plan.ID.ValueString(),
 		"tag":        tagName,
 		"policies.#": len(plan.Policies),
+		"policies":   Map(plan.Policies, func(item types.String) string { return item.ValueString() }),
 	})
 
 	currentPoliciesInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedPolicyListResponseItem], error) {
@@ -229,6 +234,7 @@ func (r *tagPoliciesResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	tflog.Debug(ctx, "Updating Tag Policies", map[string]any{
+		"id":      plan.ID.ValueString(),
 		"tag":     tagName,
 		"current": currentPolicies,
 		"desired": desiredPolicies,
@@ -271,6 +277,7 @@ func (r *tagPoliciesResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 	tflog.Debug(ctx, "Updated Tag Policies", map[string]any{
+		"id":       plan.ID.ValueString(),
 		"tag":      plan.Tag.ValueString(),
 		"policies": Map(plan.Policies, func(t types.String) string { return t.ValueString() }),
 	})
@@ -286,8 +293,10 @@ func (r *tagPoliciesResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	tagName := state.Tag.ValueString()
 	tflog.Debug(ctx, "Deleting Tag Policies", map[string]any{
+		"id":         state.ID.ValueString(),
 		"tag":        tagName,
 		"policies.#": len(state.Policies),
+		"policies":   Map(state.Policies, func(item types.String) string { return item.ValueString() }),
 	})
 
 	currentPoliciesInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedPolicyListResponseItem], error) {
@@ -301,7 +310,9 @@ func (r *tagPoliciesResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 	currentPolicies := Map(currentPoliciesInfo, func(current dtrack.TaggedPolicyListResponseItem) uuid.UUID { return current.UUID })
-	err = r.client.Tag.UntagPolicies(ctx, tagName, currentPolicies)
+	if len(currentPolicies) > 0 {
+		err = r.client.Tag.UntagPolicies(ctx, tagName, currentPolicies)
+	}
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Delete, err removing Tag Policy, for tag: "+tagName,
@@ -310,10 +321,9 @@ func (r *tagPoliciesResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 	tflog.Debug(ctx, "Deleted Tag Policies", map[string]any{
-		"tag": tagName,
-		"policies": Map(state.Policies, func(policy types.String) string {
-			return policy.ValueString()
-		}),
+		"id":       state.ID.ValueString(),
+		"tag":      tagName,
+		"policies": Map(state.Policies, func(policy types.String) string { return policy.ValueString() }),
 	})
 }
 

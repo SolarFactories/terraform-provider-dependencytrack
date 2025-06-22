@@ -44,7 +44,7 @@ if [ -z "${PROJECT_VERSION}" ]; then
 	fi
 fi
 
-DATA="{\"name\":\"${PROJECT_NAME}\",\"version\":\"${PROJECT_VERSION}\",\"accessTeams\":[],\"active\":true,\"isLatest\":true,\"parent\":null,\"tags\":[]}"
+DATA="{\"name\":\"${PROJECT_NAME}\",\"version\":\"${PROJECT_VERSION}\",\"accessTeams\":[],\"active\":true,\"isLatest\":true,\"parent\":null,\"tags\":[{\"Name\":\"project_data_test_tag\"}]}"
 # TODO: The "isLatest" key is introduced in API v4.12. For compatibility, this is removed, though still mentioned for reference.
 DATA=$(echo $DATA | jq 'del(.isLatest)')
 curl --fail-with-body --request PUT "${HOST}/api/v1/project" --header "Authorization: Bearer ${TOKEN}" --header "Content-Type: application/json" --data "${DATA}"

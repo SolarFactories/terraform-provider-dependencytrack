@@ -77,7 +77,7 @@ func (r *tagResource) Create(ctx context.Context, req resource.CreateRequest, re
 	err := r.client.Tag.Create(ctx, []string{tagName})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating Tag",
+			"Within Create, unable to create Tag with name: "+tagName,
 			"Error from: "+err.Error(),
 		)
 		return
@@ -121,7 +121,7 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to get updated tag",
+			"Within Read, unable to get updated tag",
 			"Error with reading tag: "+tagID+", from: "+err.Error(),
 		)
 		return

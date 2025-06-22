@@ -111,7 +111,9 @@ func (*projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Computed:    true,
 			},
 			"tags": schema.ListAttribute{
-				Description: "Tags to assign to a project. If unset, retains setting. If set, conflicts with `dependencytrack_tag_projects` resource.",
+				Description: "Tags to assign to a project. " +
+					"If unset, retains existing tags on project. " +
+					"If set, and `dependencytrack_tag_projects` is used with any of the tags, it MUST include this project's `id`.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,
@@ -159,7 +161,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("tags"),
-				"Within Create, unable to obtain tags for project: "+projectReq.Name,
+				"Within Create, unable to convert `tags` list into slice of string, in project: "+projectReq.Name,
 				"Error from: "+err.Error(),
 			)
 			return
@@ -400,7 +402,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		if err != nil {
 			resp.Diagnostics.AddAttributeError(
 				path.Root("tags"),
-				"Within Update, unable to convert `tags` list into array of string.",
+				"Within Create, unable to convert `tags` list into slice of string, in project: "+project.UUID.String(),
 				"Error from: "+err.Error(),
 			)
 			return

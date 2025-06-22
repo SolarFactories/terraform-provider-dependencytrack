@@ -61,7 +61,7 @@ func (*tagProjectsResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"projects": schema.ListAttribute{
-				Description: "Project UUIDs to which to apply tag. Will present delta, unless sorted by project name.",
+				Description: "Project UUIDs to which to apply tag. Sorted by project name.",
 				Required:    true,
 				ElementType: types.StringType,
 			},
@@ -143,8 +143,9 @@ func (r *tagProjectsResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 	tflog.Debug(ctx, "Created Tag Projects", map[string]any{
+		"id":       plan.ID.ValueString(),
 		"tag":      plan.Tag.ValueString(),
-		"projects": desiredProjects,
+		"projects": Map(plan.Projects, func(item types.String) string { return item.ValueString() }),
 	})
 }
 
@@ -158,8 +159,10 @@ func (r *tagProjectsResource) Read(ctx context.Context, req resource.ReadRequest
 
 	tagName := state.ID.ValueString()
 	tflog.Debug(ctx, "Reading Tag Projects", map[string]any{
+		"id":         state.ID.ValueString(),
 		"tag":        tagName,
 		"projects.#": len(state.Projects),
+		"projects":   Map(state.Projects, func(item types.String) string { return item.ValueString() }),
 	})
 
 	taggedProjectsInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedProjectListResponseItem], error) {
@@ -187,6 +190,7 @@ func (r *tagProjectsResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 	tflog.Debug(ctx, "Read Tag Projects", map[string]any{
+		"id":       state.ID.ValueString(),
 		"tag":      state.Tag.ValueString(),
 		"projects": Map(state.Projects, func(v types.String) string { return v.ValueString() }),
 	})
@@ -202,8 +206,10 @@ func (r *tagProjectsResource) Update(ctx context.Context, req resource.UpdateReq
 
 	tagName := plan.Tag.ValueString()
 	tflog.Debug(ctx, "Updating Tag Projects", map[string]any{
+		"id":         plan.ID.ValueString(),
 		"tag":        tagName,
 		"projects.#": len(plan.Projects),
+		"projects":   Map(plan.Projects, func(item types.String) string { return item.ValueString() }),
 	})
 
 	currentProjectsInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedProjectListResponseItem], error) {
@@ -229,6 +235,7 @@ func (r *tagProjectsResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	tflog.Debug(ctx, "Updating Tag Projects", map[string]any{
+		"id":      plan.ID.ValueString(),
 		"tag":     tagName,
 		"current": currentProjects,
 		"desired": desiredProjects,
@@ -271,6 +278,7 @@ func (r *tagProjectsResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 	tflog.Debug(ctx, "Updated Tag Projects", map[string]any{
+		"id":       plan.ID.ValueString(),
 		"tag":      plan.Tag.ValueString(),
 		"projects": Map(plan.Projects, func(t types.String) string { return t.ValueString() }),
 	})
@@ -286,8 +294,10 @@ func (r *tagProjectsResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	tagName := state.Tag.ValueString()
 	tflog.Debug(ctx, "Deleting Tag Projects", map[string]any{
+		"id":         state.ID.ValueString(),
 		"tag":        tagName,
 		"projects.#": len(state.Projects),
+		"projects":   Map(state.Projects, func(t types.String) string { return t.ValueString() }),
 	})
 
 	currentProjectsInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedProjectListResponseItem], error) {
@@ -301,7 +311,9 @@ func (r *tagProjectsResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 	currentProjects := Map(currentProjectsInfo, func(current dtrack.TaggedProjectListResponseItem) uuid.UUID { return current.UUID })
-	err = r.client.Tag.UntagProjects(ctx, tagName, currentProjects)
+	if len(currentProjects) > 0 {
+		err = r.client.Tag.UntagProjects(ctx, tagName, currentProjects)
+	}
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Delete, err removing Tag Projects, for tag: "+tagName,
@@ -310,6 +322,7 @@ func (r *tagProjectsResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 	tflog.Debug(ctx, "Deleted Tag Projects", map[string]any{
+		"id":  state.ID.ValueString(),
 		"tag": tagName,
 		"projects": Map(state.Projects, func(project types.String) string {
 			return project.ValueString()

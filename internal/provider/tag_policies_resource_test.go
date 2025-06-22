@@ -13,6 +13,10 @@ func TestAccTagPoliciesResource(t *testing.T) {
 			// Create and Read testing.
 			{
 				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Tag_Polcies_Resource_Project"
+	tags = ["test_tag_policies_tag"]
+}
 resource "dependencytrack_policy" "test" {
 	name = "A_TagPoliciesPolicy"
 	operator = "ANY"
@@ -24,7 +28,7 @@ resource "dependencytrack_policy" "test2" {
 	violation = "FAIL"
 }
 resource "dependencytrack_tag_policies" "test" {
-	tag = "testtag"
+	tag = "test_tag_policies_tag"
 	policies = [
 		dependencytrack_policy.test.id,
 		dependencytrack_policy.test2.id,
@@ -41,7 +45,7 @@ resource "dependencytrack_tag_policies" "test" {
 						"dependencytrack_tag_policies.test", "policies.1",
 						"dependencytrack_policy.test2", "id",
 					),
-					resource.TestCheckResourceAttr("dependencytrack_tag_policies.test", "tag", "testtag"),
+					resource.TestCheckResourceAttr("dependencytrack_tag_policies.test", "tag", "test_tag_policies_tag"),
 				),
 			},
 			// ImportState testing.
@@ -53,6 +57,10 @@ resource "dependencytrack_tag_policies" "test" {
 			// Update and Read testing.
 			{
 				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Tag_Polcies_Resource_Project"
+	tags = ["test_tag_policies_tag"]
+}
 resource "dependencytrack_policy" "test" {
 	name = "A_TagPoliciesPolicy"
 	operator = "ANY"
@@ -64,7 +72,7 @@ resource "dependencytrack_policy" "test2" {
 	violation = "FAIL"
 }
 resource "dependencytrack_tag_policies" "test" {
-	tag = "testtag"
+	tag = "test_tag_policies_tag"
 	policies = [
 		dependencytrack_policy.test.id,
 		dependencytrack_policy.test2.id,
@@ -81,7 +89,7 @@ resource "dependencytrack_tag_policies" "test" {
 						"dependencytrack_tag_policies.test", "policies.1",
 						"dependencytrack_policy.test2", "id",
 					),
-					resource.TestCheckResourceAttr("dependencytrack_tag_policies.test", "tag", "testtag"),
+					resource.TestCheckResourceAttr("dependencytrack_tag_policies.test", "tag", "test_tag_policies_tag"),
 				),
 			},
 		},
