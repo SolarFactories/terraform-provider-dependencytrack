@@ -33,6 +33,7 @@ resource "dependencytrack_tag_policies" "test" {
 		dependencytrack_policy.test.id,
 		dependencytrack_policy.test2.id,
 	]
+	depends_on = [dependencytrack_project.test]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -77,6 +78,7 @@ resource "dependencytrack_tag_policies" "test" {
 		dependencytrack_policy.test.id,
 		dependencytrack_policy.test2.id,
 	]
+	depends_on = [dependencytrack_project.test]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(

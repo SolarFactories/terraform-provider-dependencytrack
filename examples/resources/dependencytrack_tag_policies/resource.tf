@@ -16,4 +16,5 @@ resource "dependencytrack_tag_policies" "example" {
   policies = [
     dependencytrack_policy.example.id,
   ]
+  depends_on = [dependencytrack_project.example]
 }
