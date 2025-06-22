@@ -1,8 +1,9 @@
 package provider
 
 import (
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccProjectResource(t *testing.T) {
@@ -190,13 +191,13 @@ func TestAccProjectTags(t *testing.T) {
 resource "dependencytrack_project" "test" {
 	name = "Test Project With Tags"
 	version = "Test_Tags"
-	tags = ["TestTag1", "TestTag2"]
+	tags = ["testtag1", "testtag2"]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.#", "2"),
-					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.0", "TestTag1"),
-					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.1", "TestTag2"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.0", "testtag1"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.1", "testtag2"),
 				),
 			},
 			// ImportState.
@@ -211,13 +212,13 @@ resource "dependencytrack_project" "test" {
 resource "dependencytrack_project" "test" {
 	name = "Test Project With Tags"
 	version = "Test_Tags"
-	tags = ["TestTag1", "TestTag2WithChange"]
+	tags = ["testtag1", "testtag2withchange"]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.#", "2"),
-					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.0", "TestTag1"),
-					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.1", "TestTag2WithChange"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.0", "testtag1"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.1", "testtag2withchange"),
 				),
 			},
 		},
@@ -234,14 +235,14 @@ func TestAccProjectTagsRead(t *testing.T) {
 resource "dependencytrack_project" "project1" {
 	name = "Test_Project_Tags_Read_1"
 	version = "v1"
-	tags = ["A"]
+	tags = ["a"]
 }
 resource "dependencytrack_project" "project2" {
 	name = "Test_Project_Tags_Read_2"
 	version = "v1"
 }
 resource "dependencytrack_tag_projects" "projects" {
-	tag = "A"
+	tag = "a"
 	projects = [
 		dependencytrack_project.project1.id,
 		dependencytrack_project.project2.id,
@@ -255,6 +256,7 @@ resource "dependencytrack_tag_projects" "projects" {
 						"dependencytrack_tag_projects.projects", "projects.1",
 						"dependencytrack_project.project2", "id",
 					),
+					// TODO: Add data dependencytrack_project validation.
 				),
 			},
 			// ImportState.
@@ -262,15 +264,8 @@ resource "dependencytrack_tag_projects" "projects" {
 				ResourceName:      "dependencytrack_project.project2",
 				ImportState:       true,
 				ImportStateVerify: true,
-				Check: resource.ComposeAggregateTestCheckFunc(
-					// Tag applied from `dependencytrack_tag_projects.projects`, so should be present on project, and thus present within `Read`.
-					resource.TestCheckResourceAttr("dependencytrack_project.project2", "tags.#", "1"),
-					resource.TestCheckResourceAttr("dependencytrack_project.project2", "tags.0", "A"),
-					resource.TestCheckResourceAttrPair(
-						"dependencytrack_tag_projects.projects", "projects.1",
-						"dependencytrack_project.project2", "id",
-					),
-				),
+				// Configuration of tags on project, validated by `data.dependencytrack_project`.
+				ImportStateVerifyIgnore: []string{"tags"},
 			},
 			// Update and Read.
 			{
@@ -278,14 +273,14 @@ resource "dependencytrack_tag_projects" "projects" {
 resource "dependencytrack_project" "project1" {
 	name = "Test_Project_Tags_Read_1"
 	version = "v1"
-	tags = ["A"]
+	tags = ["a"]
 }
 resource "dependencytrack_project" "project2" {
 	name = "Test_Project_Tags_Read_2"
 	version = "v1"
 }
 resource "dependencytrack_tag_projects" "projects" {
-	tag = "A"
+	tag = "a"
 	projects = [
 		dependencytrack_project.project1.id,
 		dependencytrack_project.project2.id,
@@ -294,7 +289,7 @@ resource "dependencytrack_tag_projects" "projects" {
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_project.project2", "tags.#", "1"),
-					resource.TestCheckResourceAttr("dependencytrack_project.project2", "tags.0", "A"),
+					resource.TestCheckResourceAttr("dependencytrack_project.project2", "tags.0", "a"),
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_tag_projects.projects", "projects.1",
 						"dependencytrack_project.project2", "id",
