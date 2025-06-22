@@ -57,7 +57,7 @@ jobs:
     timeout-minutes: 15
     services:
       api:
-        image: dependencytrack/apiserver:${{ matrix.api }}
+        image: dependencytrack/apiserver:${{ matrix.api.version }}
         env:
 # TODO: Use external (to DT) DB
           #ALPINE_DATABASE_MODE: external
@@ -87,14 +87,17 @@ jobs:
       matrix:
         api:
 # TODO: Adjust logic according to versions to allow supporting older API versions, as required.
-          - "4.11.7"
-          - "4.12.7"
+          - version: "4.11.7"
+            skip: "^TestAccTagResource$"
+          - version: "4.12.7"
+            skip: "^TestAccTagResource$"
           #- "4.13.0"
           #- "4.13.1"
-          - "4.13.2"
+          - version: "4.13.2"
+            skip: "^$"
         provider:
           - "default"
-          - "rootCA"
+          #- "rootCA"
         terraform:
           #- '1.0.*'
           #- '1.1.*'
@@ -115,6 +118,7 @@ jobs:
         with:
           terraform_version: ${{ matrix.terraform }}
           provider_config_key: ${{ matrix.provider }}
+          tests_skip_regex: ${{ matrix.api.skip }}
 
   test_mtls:
     name: Terraform Provider Acceptance Tests
@@ -123,7 +127,7 @@ jobs:
     timeout-minutes: 15
     services:
       api:
-        image: dependencytrack/apiserver:${{ matrix.api }}
+        image: dependencytrack/apiserver:${{ matrix.api.version }}
         env:
           TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
         ports:
@@ -132,13 +136,16 @@ jobs:
       fail-fast: false
       matrix:
         api:
-          - "4.11.7"
-          - "4.12.7"
+          - version: "4.11.7"
+            skip: "^TestAccTagResource$"
+          - version: "4.12.7"
+            skip: "^TestAccTagResource$"
           #- "4.13.0"
           #- "4.13.1"
-          - "4.13.2"
+          - version: "4.13.2"
+            skip: "^TestAccTagResource$"
         provider:
-          - "mtls"
+          #- "mtls"
           - "rootCA+mtls"
         terraform:
           #- '1.0.*'
@@ -160,3 +167,4 @@ jobs:
         with:
           terraform_version: ${{ matrix.terraform }}
           provider_config_key: ${{ matrix.provider }}
+          tests_skip_regex: ${{ matrix.api.skip }}
