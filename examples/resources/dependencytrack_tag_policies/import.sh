@@ -1,0 +1,1 @@
+terraform import dependencytrack_tag_policies.example example_tag
