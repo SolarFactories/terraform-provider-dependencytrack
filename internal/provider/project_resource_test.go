@@ -248,6 +248,11 @@ resource "dependencytrack_tag_projects" "projects" {
 		dependencytrack_project.project2.id,
 	]
 }
+data "dependencytrack_project" "project2" {
+	name = dependencytrack_project.project2.name
+	version = dependencytrack_project.project2.version
+	depends_on = [dependencytrack_tag_projects.projects]
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// State obtained prior to it having the tag applied, so expect to not be aware of tags.
@@ -256,7 +261,8 @@ resource "dependencytrack_tag_projects" "projects" {
 						"dependencytrack_tag_projects.projects", "projects.1",
 						"dependencytrack_project.project2", "id",
 					),
-					// TODO: Add data dependencytrack_project validation.
+					resource.TestCheckResourceAttr("data.dependencytrack_project.project2", "tags.#", "1"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.project2", "tags.0", "a"),
 				),
 			},
 			// ImportState.
@@ -286,6 +292,11 @@ resource "dependencytrack_tag_projects" "projects" {
 		dependencytrack_project.project2.id,
 	]
 }
+data "dependencytrack_project" "project2" {
+	name = dependencytrack_project.project2.name
+	version = dependencytrack_project.project2.version
+	depends_on = [dependencytrack_tag_projects.projects]
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_project.project2", "tags.#", "1"),
@@ -294,6 +305,8 @@ resource "dependencytrack_tag_projects" "projects" {
 						"dependencytrack_tag_projects.projects", "projects.1",
 						"dependencytrack_project.project2", "id",
 					),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.project2", "tags.#", "1"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.project2", "tags.0", "a"),
 				),
 			},
 		},
