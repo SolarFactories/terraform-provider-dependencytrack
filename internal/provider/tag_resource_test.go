@@ -14,12 +14,12 @@ func TestAccTagResource(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_tag" "test" {
-	name = "TagTagsTag"
+	name = "tag_tags_tag"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("dependencytrack_tag.test", "id", "TestTagsTag"),
-					resource.TestCheckResourceAttr("dependencytrack_tag.test", "name", "TestTagsTag"),
+					resource.TestCheckResourceAttr("dependencytrack_tag.test", "id", "test_tags_tag"),
+					resource.TestCheckResourceAttr("dependencytrack_tag.test", "name", "test_tags_tag"),
 				),
 			},
 			// ImportState testing.
@@ -33,12 +33,12 @@ resource "dependencytrack_tag" "test" {
 				Config: providerConfig + `
 
 resource "dependencytrack_tag" "test" {
-	name = "TagTagsTagWithChange"
+	name = "tag_tags_tag_with_change"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("dependencytrack_tag.test", "id", "TestTagsTagWithChange"),
-					resource.TestCheckResourceAttr("dependencytrack_tag.test", "name", "TestTagsTagWithChange"),
+					resource.TestCheckResourceAttr("dependencytrack_tag.test", "id", "test_tags_tag_with_change"),
+					resource.TestCheckResourceAttr("dependencytrack_tag.test", "name", "test_tags_tag_with_change"),
 				),
 			},
 		},

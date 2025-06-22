@@ -13,33 +13,40 @@ func TestAccTagProjectsResource(t *testing.T) {
 			// Create and Read testing.
 			{
 				Config: providerConfig + `
-data "dependencytrack_project" "test" {
-	name = "Project_Data_Test"
-	version = "1"
-}
 resource "dependencytrack_project" "test" {
 	name = "TagProjectsProject"
-	version = "1.0.0"
+	tags = ["test_projects_tag"]
+}
+resource "dependencytrack_project" "test2" {
+	name = "TestProjectsProject2"
+	version = "v1"
 }
 resource "dependencytrack_tag_projects" "test" {
-	tag = "testtag"
+	tag = "test_projects_tag"
 	projects = [
-		data.dependencytrack_project.test.id,
 		dependencytrack_project.test.id,
+		dependencytrack_project.test2.id,
 	]
+}
+data "dependencytrack_project" "test2" {
+	name = dependencytrack_project.test2.name
+	version = dependencytrack_project.test2.version
+	depends_on = [dependencytrack_tag_projects.test]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_tag_projects.test", "projects.#", "2"),
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_tag_projects.test", "projects.0",
-						"data.dependencytrack_project.test", "id",
+						"dependencytrack_project.test", "id",
 					),
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_tag_projects.test", "projects.1",
-						"dependencytrack_project.test", "id",
+						"dependencytrack_project.test2", "id",
 					),
-					resource.TestCheckResourceAttr("dependencytrack_tag_projects.test", "tag", "testtag"),
+					resource.TestCheckResourceAttr("dependencytrack_tag_projects.test", "tag", "test_projects_tag"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test2", "tags.#", "1"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test2", "tags.0", "test_projects_tag"),
 				),
 			},
 			// ImportState testing.
@@ -51,33 +58,34 @@ resource "dependencytrack_tag_projects" "test" {
 			// Update and Read testing.
 			{
 				Config: providerConfig + `
-data "dependencytrack_project" "test" {
-	name = "Project_Data_Test"
-	version = "1"
-}
 resource "dependencytrack_project" "test" {
 	name = "TagProjectsProject"
-	version = "1.0.0"
+	tags = ["test_projects_tag"]
+}
+resource "dependencytrack_project" "test2" {
+	name = "TestProjectsProject2"
 }
 resource "dependencytrack_tag_projects" "test" {
-	tag = "testtag"
+	tag = "test_projects_tag"
 	projects = [
-		data.dependencytrack_project.test.id,
 		dependencytrack_project.test.id,
 	]
 }
+data "dependencytrack_project" "test2" {
+	name = dependencytrack_project.test2.name
+	version = dependencytrack_project.test2.version
+	depends_on = [dependencytrack_tag_projects.test]
+}
+
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("dependencytrack_tag_projects.test", "projects.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_tag_projects.test", "projects.#", "1"),
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_tag_projects.test", "projects.0",
-						"data.dependencytrack_project.test", "id",
-					),
-					resource.TestCheckResourceAttrPair(
-						"dependencytrack_tag_projects.test", "projects.1",
 						"dependencytrack_project.test", "id",
 					),
-					resource.TestCheckResourceAttr("dependencytrack_tag_projects.test", "tag", "testtag"),
+					resource.TestCheckResourceAttr("dependencytrack_tag_projects.test", "tag", "test_projects_tag"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test2", "tags.#", "0"),
 				),
 			},
 		},
