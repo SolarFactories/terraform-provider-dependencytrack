@@ -73,6 +73,9 @@ func createProject(ctx context.Context, client *dtrack.Client) error {
 		Name:    ProjectName,
 		Version: ProjectVersion,
 		Active:  true,
+		Tags: []dtrack.Tag{
+			{Name: "project_data_test_tag"},
+		},
 	})
 	if err != nil {
 		return errors.New("Unable to create project, from: " + err.Error())
