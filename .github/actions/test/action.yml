@@ -52,7 +52,7 @@ runs:
         terraform_wrapper: false
     - run: go mod download
       shell: bash
-    - run: go test -v -cover ./internal/provider/ -skip ${{ inputs.tests_skip_regex }}
+    - run: go test -v -cover ./internal/provider/ -skip "${{ inputs.tests_skip_regex }}"
       shell: bash
       env:
         TF_ACC: "1"
