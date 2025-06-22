@@ -2,6 +2,7 @@ package provider
 
 import (
 	"cmp"
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -259,4 +260,22 @@ func TryParseUUID(value types.String, action LifecycleAction, tfPath path.Path) 
 		return uuid.Nil, errDiag
 	}
 	return ret, nil
+}
+
+func GetStringList(ctx context.Context, diags *diag.Diagnostics, list types.List) ([]string, error) {
+	tagStrings := make([]types.String, 0, len(list.Elements()))
+	diags.Append(list.ElementsAs(ctx, &tagStrings, false)...)
+	if diags.HasError() {
+		return nil, errors.New("type mismatch. Expected []types.String")
+	}
+	strings, err := TryMap(tagStrings, func(item types.String) (string, error) {
+		if item.IsUnknown() {
+			return "", errors.New("received unknown value for tag")
+		}
+		if item.IsNull() {
+			return "", errors.New("received null tag")
+		}
+		return item.ValueString(), nil
+	})
+	return strings, err
 }
