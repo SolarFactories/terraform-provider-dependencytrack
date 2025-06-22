@@ -88,7 +88,7 @@ jobs:
         api:
 # TODO: Adjust logic according to versions to allow supporting older API versions, as required.
           - version: "4.11.7"
-            skip: "^TestAccTagResource$"
+            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)$"
           - version: "4.12.7"
             skip: "^TestAccTagResource$"
           #- "4.13.0"
@@ -137,13 +137,13 @@ jobs:
       matrix:
         api:
           - version: "4.11.7"
-            skip: "^TestAccTagResource$"
+            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)$"
           - version: "4.12.7"
             skip: "^TestAccTagResource$"
           #- "4.13.0"
           #- "4.13.1"
           - version: "4.13.2"
-            skip: "^TestAccTagResource$"
+            skip: "^$"
         provider:
           #- "mtls"
           - "rootCA+mtls"

@@ -44,6 +44,7 @@ When contributing to resources, or data sources:
 1. Examples, to show how to use the new item.
 
 ## Supported versions
+Various resources have minimum DependencyTrack API versions, which are documented within their descriptions.
 The following versions are tested and supported with any combination from options.
 Other API versions may work, with a subset of functionality, but are not guaranteed.
 The latest patch version within a minor release is supported, even if it might not be tested - PR's to update would always be welcome.
