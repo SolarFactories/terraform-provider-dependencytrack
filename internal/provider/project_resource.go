@@ -113,7 +113,7 @@ func (*projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			"tags": schema.ListAttribute{
 				Description: "Tags to assign to a project. " +
 					"If unset, retains existing tags on project. " +
-					"If set, and `dependencytrack_tag_projects` is used with any of the tags, it MUST include this project's `id`.",
+					"If set, and `dependencytrack_tag_projects` is used with any of the tags, it must include this project's `id`.",
 				Optional:    true,
 				Computed:    true,
 				ElementType: types.StringType,

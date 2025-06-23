@@ -3,12 +3,12 @@
 page_title: "dependencytrack_tag_policies Resource - dependencytrack"
 subcategory: ""
 description: |-
-  Applies a tag to multiple policies. Requires API version >= 4.12.
+  Applies an existing tag to multiple policies. Requires API version >= 4.12.
 ---
 
 # dependencytrack_tag_policies (Resource)
 
-Applies a tag to multiple policies. Requires API version >= 4.12.
+Applies an existing tag to multiple policies. Requires API version >= 4.12.
 
 ## Example Usage
 

@@ -2,7 +2,7 @@
 
 #### FEATURES
 - Add `dependencytrack_tag` resource, available with API `v4.13+`, to manage tags without associating with a project.
-- Add `dependencytrack_tag_policies` resource, available with API `v4.12+`, to apply policies to specific tagged projects.
+- Add `dependencytrack_tag_policies` resource, available with API `v4.12+`, to apply policies to specific tagged projects. Requires the tag to exist.
 - Add `dependencytrack_tag_projects` resource, available with API `v4.12+`, to apply a tag to multiple projects. Requires the tag to exist.
 - Add `tags` field to `dependencytrack_project` resource, to configure the tags on a project.
 - Add `tags` field to `dependencytrack_project` datasource, to fetch the existing tags on a project.

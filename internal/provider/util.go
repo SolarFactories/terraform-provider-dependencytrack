@@ -204,11 +204,11 @@ func ListDeltas[T cmp.Ordered](current []T, desired []T) (add []T, remove []T) {
 }
 
 func ListDeltasUUID(current []uuid.UUID, desired []uuid.UUID) (add []uuid.UUID, remove []uuid.UUID) {
-	currentStr := Map(current, func(cur uuid.UUID) string { return cur.String() })
-	desiredStr := Map(desired, func(des uuid.UUID) string { return des.String() })
+	currentStr := Map(current, uuid.UUID.String)
+	desiredStr := Map(desired, uuid.UUID.String)
 	addStr, removeStr := ListDeltas(currentStr, desiredStr)
-	add = Map(addStr, func(s string) uuid.UUID { return uuid.MustParse(s) })
-	remove = Map(removeStr, func(s string) uuid.UUID { return uuid.MustParse(s) })
+	add = Map(addStr, uuid.MustParse)
+	remove = Map(removeStr, uuid.MustParse)
 	return add, remove
 }
 

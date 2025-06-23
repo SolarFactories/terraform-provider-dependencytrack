@@ -33,7 +33,7 @@ Uses [Terraform Plugin Framework]("https://github.com/hashicorp/terraform-plugin
 	1. Create a `Project` with name `Project_Data_Test` and version `1`
 	1. Create a `ProjectProperty` on `Project_Data_Test` with `Group1`, `Name1`, `Value1`, `STRING`, `Description1`
 	1. Create a `ProjectProperty` on `Project_Data_Test` with `Group2`, `Name2`, `2`, `INTEGER`, `Description2`
-	1. Create a `Tag` on `Project_Data_Test` with `project_data_test_tag`
+	1. Create a `Tag` on `Project_Data_Test` with name `project_data_test_tag`
 
 ## Contributing
 Contributions are welcome, either as a PR, or raising an issue to request functionality.
