@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	dtrack "github.com/DependencyTrack/client-go"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -37,6 +38,7 @@ type (
 		PURL        types.String `tfsdk:"purl"`
 		CPE         types.String `tfsdk:"cpe"`
 		SWID        types.String `tfsdk:"swid"`
+		Tags        types.List   `tfsdk:"tags"`
 		Active      types.Bool   `tfsdk:"active"`
 	}
 )
@@ -108,6 +110,14 @@ func (*projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Computed:    true,
 			},
+			"tags": schema.ListAttribute{
+				Description: "Tags to assign to a project. " +
+					"If unset, retains existing tags on project. " +
+					"If set, and `dependencytrack_tag_projects` is used with any of the tags, it must include this project's `id`.",
+				Optional:    true,
+				Computed:    true,
+				ElementType: types.StringType,
+			},
 		},
 	}
 }
@@ -125,12 +135,13 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Description: plan.Description.ValueString(),
 		Active:      plan.Active.ValueBool(),
 		Version:     plan.Version.ValueString(),
-		ParentRef:   nil,
+		ParentRef:   nil, // Set Below.
 		Classifier:  plan.Classifier.ValueString(),
 		Group:       plan.Group.ValueString(),
 		PURL:        plan.PURL.ValueString(),
 		CPE:         plan.CPE.ValueString(),
 		SWIDTagID:   plan.SWID.ValueString(),
+		Tags:        []dtrack.Tag{}, // Set Below.
 	}
 	if !plan.Parent.IsNull() {
 		parentID, diag := TryParseUUID(plan.Parent, LifecycleCreate, path.Root("parent"))
@@ -141,6 +152,21 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		projectReq.ParentRef = &dtrack.ParentRef{
 			UUID: parentID,
 		}
+	}
+	if !plan.Tags.IsUnknown() && !plan.Tags.IsNull() {
+		strings, err := GetStringList(ctx, &resp.Diagnostics, plan.Tags)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("tags"),
+				"Within Create, unable to convert `tags` list into slice of string, in project: "+projectReq.Name,
+				"Error from: "+err.Error(),
+			)
+			return
+		}
+		projectReq.Tags = Map(strings, func(item string) dtrack.Tag { return dtrack.Tag{Name: item} })
 	}
 	if plan.Active.IsUnknown() {
 		projectReq.Active = true
@@ -160,6 +186,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		"purl":        projectReq.PURL,
 		"cpe":         projectReq.CPE,
 		"swid":        projectReq.SWIDTagID,
+		"tags":        projectReq.Tags,
 	})
 	projectRes, err := r.client.Project.Create(ctx, projectReq)
 	if err != nil {
@@ -169,17 +196,27 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		)
 		return
 	}
+	tagValueList := Map(projectRes.Tags, func(tag dtrack.Tag) attr.Value {
+		return types.StringValue(tag.Name)
+	})
+	tagList, diags := types.ListValue(types.StringType, tagValueList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	plan = projectResourceModel{
 		ID:          types.StringValue(projectRes.UUID.String()),
 		Name:        types.StringValue(projectRes.Name),
 		Description: types.StringValue(projectRes.Description),
 		Active:      types.BoolValue(projectRes.Active),
 		Version:     types.StringValue(projectRes.Version),
+		Parent:      types.StringNull(), // Updated below.
 		Classifier:  types.StringValue(projectRes.Classifier),
 		Group:       types.StringValue(projectRes.Group),
 		PURL:        types.StringValue(projectRes.PURL),
 		CPE:         types.StringValue(projectRes.CPE),
 		SWID:        types.StringValue(projectRes.SWIDTagID),
+		Tags:        tagList,
 	}
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
@@ -208,6 +245,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		"purl":        projectRes.PURL,
 		"cpe":         projectRes.CPE,
 		"swid":        projectRes.SWIDTagID,
+		"tags":        projectRes.Tags,
 	})
 }
 
@@ -238,6 +276,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		"purl":        state.PURL.ValueString(),
 		"cpe":         state.CPE.ValueString(),
 		"swid":        state.SWID.ValueString(),
+		"tags":        state.Tags.Elements(),
 	})
 	project, err := r.client.Project.Get(ctx, id)
 	if err != nil {
@@ -248,17 +287,28 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
+	tagValueList := Map(project.Tags, func(tag dtrack.Tag) attr.Value {
+		return types.StringValue(tag.Name)
+	})
+	tagList, diags := types.ListValue(types.StringType, tagValueList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	state = projectResourceModel{
 		ID:          types.StringValue(project.UUID.String()),
 		Name:        types.StringValue(project.Name),
 		Description: types.StringValue(project.Description),
 		Active:      types.BoolValue(project.Active),
 		Version:     types.StringValue(project.Version),
+		Parent:      types.StringNull(), // Updated below.
 		Classifier:  types.StringValue(project.Classifier),
 		Group:       types.StringValue(project.Group),
 		PURL:        types.StringValue(project.PURL),
 		CPE:         types.StringValue(project.CPE),
 		SWID:        types.StringValue(project.SWIDTagID),
+		Tags:        tagList,
 	}
 	if project.ParentRef != nil {
 		state.Parent = types.StringValue(project.ParentRef.UUID.String())
@@ -284,6 +334,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		"purl":        project.PURL,
 		"cpe":         project.CPE,
 		"swid":        project.SWIDTagID,
+		"tags":        project.Tags,
 	})
 }
 
@@ -342,6 +393,22 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	} else {
 		project.ParentRef = nil
 	}
+	if !plan.Tags.IsUnknown() && !plan.Tags.IsNull() {
+		var stringList []string
+		stringList, err = GetStringList(ctx, &resp.Diagnostics, plan.Tags)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		if err != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("tags"),
+				"Within Create, unable to convert `tags` list into slice of string, in project: "+project.UUID.String(),
+				"Error from: "+err.Error(),
+			)
+			return
+		}
+		project.Tags = Map(stringList, func(item string) dtrack.Tag { return dtrack.Tag{Name: item} })
+	}
 
 	// Execute.
 	tflog.Debug(ctx, "Updating Project", map[string]any{
@@ -356,6 +423,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		"purl":        project.PURL,
 		"cpe":         project.CPE,
 		"swid":        project.SWIDTagID,
+		"tags":        project.Tags,
 	})
 	projectRes, err := r.client.Project.Update(ctx, project)
 	if err != nil {
@@ -366,6 +434,15 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
+	tagValueList := Map(project.Tags, func(tag dtrack.Tag) attr.Value {
+		return types.StringValue(tag.Name)
+	})
+	tagList, diags := types.ListValue(types.StringType, tagValueList)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Map SDK to TF.
 	plan = projectResourceModel{
 		ID:          types.StringValue(projectRes.UUID.String()),
@@ -373,11 +450,13 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		Description: types.StringValue(projectRes.Description),
 		Active:      types.BoolValue(projectRes.Active),
 		Version:     types.StringValue(projectRes.Version),
+		Parent:      types.StringNull(), // Updated below.
 		Classifier:  types.StringValue(projectRes.Classifier),
 		Group:       types.StringValue(projectRes.Group),
 		PURL:        types.StringValue(projectRes.PURL),
 		CPE:         types.StringValue(projectRes.CPE),
 		SWID:        types.StringValue(projectRes.SWIDTagID),
+		Tags:        tagList,
 	}
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
@@ -403,6 +482,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		"purl":        projectRes.PURL,
 		"cpe":         projectRes.CPE,
 		"swid":        projectRes.SWIDTagID,
+		"tags":        projectRes.Tags,
 	})
 }
 
@@ -435,6 +515,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		"purl":        state.PURL.ValueString(),
 		"cpe":         state.CPE.ValueString(),
 		"swid":        state.SWID.ValueString(),
+		"tags":        state.Tags.Elements(),
 	})
 	err := r.client.Project.Delete(ctx, id)
 	if err != nil {
@@ -456,6 +537,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		"purl":        state.PURL.ValueString(),
 		"cpe":         state.CPE.ValueString(),
 		"swid":        state.SWID.ValueString(),
+		"tags":        state.Tags.Elements(),
 	})
 }
 

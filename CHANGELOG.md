@@ -1,3 +1,22 @@
+## 1.13
+
+#### FEATURES
+- Add `dependencytrack_tag` resource, available with API `v4.13+`, to manage tags without associating with a project.
+- Add `dependencytrack_tag_policies` resource, available with API `v4.12+`, to apply policies to specific tagged projects. Requires the tag to exist.
+- Add `dependencytrack_tag_projects` resource, available with API `v4.12+`, to apply a tag to multiple projects. Requires the tag to exist.
+- Add `tags` field to `dependencytrack_project` resource, to configure the tags on a project.
+- Add `tags` field to `dependencytrack_project` datasource, to fetch the existing tags on a project.
+
+#### MISC
+- Linting configuration to enable `exhaustruct`, with explicit types to be ignored. Minor alterations to remediate new warnings.
+- Add requirement for initial project `Projct_Data_Test` to have tag `project_data_test_tag`. Updating README, and `scripts/` files.
+- Added testname based skipping of tests in the pipeline, to account for features introduced in later API versions.
+
+#### DEPENDENCIES
+- `github.com/hashicorp/terraform-plugin-testing` `1.13.1` -> `1.13.2`
+- `github.com/cloudflare/circl` `1.6.0` -> `1.6.1`
+- `github.com/cloudflare/circl` `1.3.7` -> `1.6.1` in `/tools`
+
 ## 1.12.4
 
 #### FEATURES

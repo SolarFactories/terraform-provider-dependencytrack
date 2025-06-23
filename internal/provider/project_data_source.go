@@ -34,6 +34,7 @@ type (
 		PURL       types.String             `tfsdk:"purl"`
 		SWID       types.String             `tfsdk:"swid"`
 		Properties []projectPropertiesModel `tfsdk:"properties"`
+		Tags       []types.String           `tfsdk:"tags"`
 	}
 
 	projectPropertiesModel struct {
@@ -122,6 +123,11 @@ func (*projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 				Description: "SWID Tag ID. ISO/IEC 19770-2:2015",
 				Computed:    true,
 			},
+			"tags": schema.ListAttribute{
+				Description: "Tags on the project.",
+				Computed:    true,
+				ElementType: types.StringType,
+			},
 		},
 	}
 }
@@ -157,6 +163,9 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		PURL:       types.StringValue(project.PURL),
 		SWID:       types.StringValue(project.SWIDTagID),
 		Parent:     types.StringNull(),
+		Tags: Map(project.Tags, func(item dtrack.Tag) types.String {
+			return types.StringValue(item.Name)
+		}),
 	}
 	if project.ParentRef != nil {
 		projectState.Parent = types.StringValue(project.ParentRef.UUID.String())
@@ -195,6 +204,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		"purl":         projectState.PURL.ValueString(),
 		"swid":         projectState.SWID.ValueString(),
 		"parent":       projectState.Parent.ValueString(),
+		"tags":         Map(projectState.Tags, func(item types.String) string { return item.ValueString() }),
 	})
 }
 

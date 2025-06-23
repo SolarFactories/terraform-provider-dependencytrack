@@ -33,14 +33,32 @@ linters:
           files: # Default "$all"
             - "$all"
           allow:
-            - "$gostd"
+            - "fmt$"
+            - "context$"
+            - "log$"
+            - "flag$"
+            - "testing$"
+            - "os$"
+            - "errors$"
+            - "net/http$"
+            - "crypto/tls$"
+            - "slices$"
+            - "strconv$"
+            - "cmp$"
+            - "regexp$"
+            - "strings$"
+            - "bytes$"
+            - "crypto/x509$"
+            - "encoding/json$"
+            - "io$"
             - "github.com/hashicorp/terraform-plugin-framework/"
             - "github.com/hashicorp/terraform-plugin-testing/"
             - "github.com/hashicorp/terraform-plugin-log/tflog$"
             - "github.com/hashicorp/terraform-plugin-go/tfprotov6$"
             - "github.com/google/uuid$"
             - "github.com/DependencyTrack/client-go$"
-            - "terraform-provider-dependencytrack/internal/provider"
+            - "terraform-provider-dependencytrack/internal/provider$"
+            
     dogsled:
       max-blank-identifiers: 2 # Default 2
     dupl:
@@ -76,7 +94,41 @@ linters:
       default-case-required: false # Default false
     exhaustruct:
       include: []
-      exclude: []
+      exclude:
+        - "^github.com/hashicorp/terraform-plugin-testing/helper/resource\\.TestCase$"
+        - "^github.com/hashicorp/terraform-plugin-testing/helper/resource\\.TestStep$"
+        - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.Schema$"
+        - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.StringAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.BoolAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.Int32Attribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.ListAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.ListNestedAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.NestedAttributeObject$"
+        - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.Schema$"
+        - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.StringAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.ListAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.ListNestedAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.NestedAttributeObject$"
+        - "^github.com/hashicorp/terraform-plugin-framework/providerserver\\.ServeOpts$"
+        - "^github.com/hashicorp/terraform-plugin-framework/provider/schema\\.Schema$"
+        - "^github.com/hashicorp/terraform-plugin-framework/provider/schema\\.StringAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/provider/schema\\.SingleNestedAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/provider/schema\\.ListNestedAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/provider/schema\\.NestedAttributeObject$"
+        - "^github.com/DependencyTrack/client-go\\.Team$"
+        - "^github.com/DependencyTrack/client-go\\.Project$"
+        - "^github.com/DependencyTrack/client-go\\.Permission$"
+        - "^github.com/DependencyTrack/client-go\\.APIKey$"
+        - "^github.com/DependencyTrack/client-go\\.ConfigProperty$"
+        - "^github.com/DependencyTrack/client-go\\.PolicyCondition$"
+        - "^github.com/DependencyTrack/client-go\\.Policy$"
+        - "^github.com/DependencyTrack/client-go\\.Repository$"
+        - "^github.com/DependencyTrack/client-go\\.SortOptions$"
+        - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*Resource$"
+        - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*DataSource$"
+        - "^terraform-provider-dependencytrack/internal/provider\\.dependencyTrackProvider$"
+        - "^net/http\\.Client$"
+        - "^crypto/tls\\.Config$"
     fatcontext:
       check-struct-pointers: true # Default false
     forbidigo:
@@ -469,7 +521,6 @@ linters:
           - err113
           - cyclop
           - gochecknoglobals
-          - exhaustruct
           - forbidigo
       - path: internal/provider/
         linters:
@@ -480,12 +531,10 @@ linters:
           - gocritic
           - goconst
           - funlen
-          - exhaustruct
           - err113
           - dupl
       - path: main.go
         linters:
-          - exhaustruct
           - cyclop
       - path: go.mod
         linters:
@@ -528,6 +577,12 @@ linters:
       - path: internal/provider/team_apikey_resource_test.go
         linters:
           - godox
+      - path: internal/provider/tag_projects_resource.go
+        linters:
+          - gocognit
+      - path: internal/provider/tag_policies_resource.go
+        linters:
+          - gocognit
 
 formatters:
   enable:

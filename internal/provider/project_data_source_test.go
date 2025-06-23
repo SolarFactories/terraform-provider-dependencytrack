@@ -26,6 +26,9 @@ data "dependencytrack_project" "test" {
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "swid", ""),
 					resource.TestCheckNoResourceAttr("data.dependencytrack_project.test", "parent"),
 					//
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "tags.#", "1"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "tags.0", "project_data_test_tag"),
+					//
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.#", "2"),
 					//
 					resource.TestCheckResourceAttr("data.dependencytrack_project.test", "properties.0.group", "Group1"),

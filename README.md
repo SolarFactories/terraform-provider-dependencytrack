@@ -33,6 +33,7 @@ Uses [Terraform Plugin Framework]("https://github.com/hashicorp/terraform-plugin
 	1. Create a `Project` with name `Project_Data_Test` and version `1`
 	1. Create a `ProjectProperty` on `Project_Data_Test` with `Group1`, `Name1`, `Value1`, `STRING`, `Description1`
 	1. Create a `ProjectProperty` on `Project_Data_Test` with `Group2`, `Name2`, `2`, `INTEGER`, `Description2`
+	1. Create a `Tag` on `Project_Data_Test` with name `project_data_test_tag`
 
 ## Contributing
 Contributions are welcome, either as a PR, or raising an issue to request functionality.
@@ -43,6 +44,7 @@ When contributing to resources, or data sources:
 1. Examples, to show how to use the new item.
 
 ## Supported versions
+Various resources have minimum DependencyTrack API versions, which are documented within their descriptions.
 The following versions are tested and supported with any combination from options.
 Other API versions may work, with a subset of functionality, but are not guaranteed.
 The latest patch version within a minor release is supported, even if it might not be tested - PR's to update would always be welcome.

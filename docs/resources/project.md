@@ -36,6 +36,7 @@ resource "dependencytrack_project" "example" {
 - `parent` (String) UUID of a parent project, to allow for nesting. Available in API 4.7+.
 - `purl` (String) Package URL of the Project. MUST be in standardised format to be saved. See DependencyTrack for format.
 - `swid` (String) SWID Tag ID. ISO/IEC 19770-2:2015.
+- `tags` (List of String) Tags to assign to a project. If unset, retains existing tags on project. If set, and `dependencytrack_tag_projects` is used with any of the tags, it must include this project's `id`.
 - `version` (String) Version of the project.
 
 ### Read-Only

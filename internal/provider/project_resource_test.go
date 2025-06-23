@@ -1,8 +1,9 @@
 package provider
 
 import (
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccProjectResource(t *testing.T) {
@@ -25,6 +26,7 @@ resource "dependencytrack_project" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "version", ""),
 					resource.TestCheckNoResourceAttr("dependencytrack_project.test", "parent"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "classifier", "APPLICATION"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.#", "0"),
 				),
 			},
 			// ImportState testing.
@@ -173,6 +175,138 @@ data "dependencytrack_project" "data" {
 					),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.data", "name", "Test Project With Version"),
 					resource.TestCheckResourceAttr("data.dependencytrack_project.data", "version", "Test_Version"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccProjectTags(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test Project With Tags"
+	version = "Test_Tags"
+	tags = ["test_project_tags_tag1", "test_project_tags_tag2"]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.0", "test_project_tags_tag1"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.1", "test_project_tags_tag2"),
+				),
+			},
+			// ImportState.
+			{
+				ResourceName:      "dependencytrack_project.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test Project With Tags"
+	version = "Test_Tags"
+	tags = ["test_project_tags_tag1", "test_project_tags_tag2_with_change"]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.0", "test_project_tags_tag1"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "tags.1", "test_project_tags_tag2_with_change"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccProjectTagsRead(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "project1" {
+	name = "Test_Project_Tags_Read_1"
+	tags = ["test_project_tags_read_tag"]
+}
+resource "dependencytrack_project" "project2" {
+	name = "Test_Project_Tags_Read_2"
+	version = "v1"
+}
+resource "dependencytrack_tag_projects" "projects" {
+	tag = "test_project_tags_read_tag"
+	projects = [
+		dependencytrack_project.project1.id,
+		dependencytrack_project.project2.id,
+	]
+}
+data "dependencytrack_project" "project2" {
+	name = dependencytrack_project.project2.name
+	version = dependencytrack_project.project2.version
+	depends_on = [dependencytrack_tag_projects.projects]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// State obtained prior to it having the tag applied, so expect to not be aware of tags.
+					resource.TestCheckResourceAttr("dependencytrack_project.project2", "tags.#", "0"),
+					resource.TestCheckResourceAttr("dependencytrack_tag_projects.projects", "projects.#", "2"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_tag_projects.projects", "projects.1",
+						"dependencytrack_project.project2", "id",
+					),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.project2", "tags.#", "1"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.project2", "tags.0", "test_project_tags_read_tag"),
+				),
+			},
+			// ImportState.
+			{
+				ResourceName:      "dependencytrack_project.project2",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Configuration of tags on `project2`, validated by `data.dependencytrack_project.project2`.
+				ImportStateVerifyIgnore: []string{"tags"},
+			},
+			// Update and Read.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "project1" {
+	name = "Test_Project_Tags_Read_1"
+	tags = ["test_project_tags_read_tag"]
+}
+resource "dependencytrack_project" "project2" {
+	name = "Test_Project_Tags_Read_2"
+	version = "v1"
+}
+resource "dependencytrack_tag_projects" "projects" {
+	tag = "test_project_tags_read_tag"
+	projects = [
+		dependencytrack_project.project1.id,
+		dependencytrack_project.project2.id,
+	]
+}
+data "dependencytrack_project" "project2" {
+	name = dependencytrack_project.project2.name
+	version = dependencytrack_project.project2.version
+	depends_on = [dependencytrack_tag_projects.projects]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.project2", "tags.#", "1"),
+					resource.TestCheckResourceAttr("dependencytrack_project.project2", "tags.0", "test_project_tags_read_tag"),
+					resource.TestCheckResourceAttr("dependencytrack_tag_projects.projects", "projects.#", "2"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_tag_projects.projects", "projects.1",
+						"dependencytrack_project.project2", "id",
+					),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.project2", "tags.#", "1"),
+					resource.TestCheckResourceAttr("data.dependencytrack_project.project2", "tags.0", "test_project_tags_read_tag"),
 				),
 			},
 		},

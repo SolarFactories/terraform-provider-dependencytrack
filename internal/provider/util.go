@@ -2,6 +2,7 @@ package provider
 
 import (
 	"cmp"
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -202,6 +203,15 @@ func ListDeltas[T cmp.Ordered](current []T, desired []T) (add []T, remove []T) {
 	return add, remove
 }
 
+func ListDeltasUUID(current []uuid.UUID, desired []uuid.UUID) (add []uuid.UUID, remove []uuid.UUID) {
+	currentStr := Map(current, uuid.UUID.String)
+	desiredStr := Map(desired, uuid.UUID.String)
+	addStr, removeStr := ListDeltas(currentStr, desiredStr)
+	add = Map(addStr, uuid.MustParse)
+	remove = Map(removeStr, uuid.MustParse)
+	return add, remove
+}
+
 func Map[T, U any](items []T, actor func(T) U) []U {
 	result := make([]U, 0, len(items))
 	for _, t := range items {
@@ -209,6 +219,18 @@ func Map[T, U any](items []T, actor func(T) U) []U {
 		result = append(result, u)
 	}
 	return result
+}
+
+func TryMap[T, U any](items []T, actor func(T) (U, error)) ([]U, error) {
+	result := make([]U, 0, len(items))
+	for _, t := range items {
+		u, err := actor(t)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, u)
+	}
+	return result, nil
 }
 
 func TryParseUUID(value types.String, action LifecycleAction, tfPath path.Path) (uuid.UUID, diag.Diagnostic) {
@@ -238,4 +260,22 @@ func TryParseUUID(value types.String, action LifecycleAction, tfPath path.Path) 
 		return uuid.Nil, errDiag
 	}
 	return ret, nil
+}
+
+func GetStringList(ctx context.Context, diags *diag.Diagnostics, list types.List) ([]string, error) {
+	tagStrings := make([]types.String, 0, len(list.Elements()))
+	diags.Append(list.ElementsAs(ctx, &tagStrings, false)...)
+	if diags.HasError() {
+		return nil, errors.New("type mismatch. Expected []types.String")
+	}
+	stringList, err := TryMap(tagStrings, func(item types.String) (string, error) {
+		if item.IsUnknown() {
+			return "", errors.New("received unknown value for tag")
+		}
+		if item.IsNull() {
+			return "", errors.New("received null tag")
+		}
+		return item.ValueString(), nil
+	})
+	return stringList, err
 }
