@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	dtrack "github.com/DependencyTrack/client-go"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -218,79 +219,15 @@ func (r *componentResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	projectID, diag := TryParseUUID(plan.Project, LifecycleCreate, path.Root("project"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	componentReq := plan.ToSdk(LifecycleCreate, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
 		return
-	}
-	componentReq := dtrack.Component{
-		Author:      plan.Author.ValueString(),
-		Publisher:   plan.Author.ValueString(),
-		Group:       plan.Group.ValueString(),
-		Name:        plan.Name.ValueString(),
-		Version:     plan.Version.ValueString(),
-		Classifier:  plan.Classifier.ValueString(),
-		FileName:    plan.Filename.ValueString(),
-		Extension:   plan.Extension.ValueString(),
-		MD5:         plan.Hashes.MD5.ValueString(),
-		SHA1:        plan.Hashes.SHA1.ValueString(),
-		SHA256:      plan.Hashes.SHA256.ValueString(),
-		SHA384:      plan.Hashes.SHA384.ValueString(),
-		SHA512:      plan.Hashes.SHA512.ValueString(),
-		SHA3_256:    plan.Hashes.SHA3_256.ValueString(),
-		SHA3_384:    plan.Hashes.SHA3_384.ValueString(),
-		SHA3_512:    plan.Hashes.SHA3_512.ValueString(),
-		BLAKE2b_256: plan.Hashes.BLAKE2b_256.ValueString(),
-		BLAKE2b_384: plan.Hashes.BLAKE2b_384.ValueString(),
-		BLAKE2b_512: plan.Hashes.BLAKE2b_512.ValueString(),
-		BLAKE3:      plan.Hashes.BLAKE3.ValueString(),
-		CPE:         plan.CPE.ValueString(),
-		PURL:        plan.PURL.ValueString(),
-		SWIDTagID:   plan.SWID.ValueString(),
-		Internal:    plan.Internal.ValueBool(),
-		Description: plan.Description.ValueString(),
-		Copyright:   plan.Copyright.ValueString(),
-		License:     plan.License.ValueString(),
-		Notes:       plan.Notes.ValueString(),
-		Project: &dtrack.Project{
-			UUID: projectID,
-		},
 	}
 	if plan.Classifier.IsUnknown() {
 		componentReq.Classifier = "APPLICATION"
 	}
-	tflog.Debug(ctx, "Creating Component", map[string]any{
-		"author":      componentReq.Author,
-		"publisher":   componentReq.Publisher,
-		"group":       componentReq.Group,
-		"name":        componentReq.Name,
-		"version":     componentReq.Version,
-		"classifier":  componentReq.Classifier,
-		"filename":    componentReq.FileName,
-		"extension":   componentReq.Extension,
-		"md5":         componentReq.MD5,
-		"sha1":        componentReq.SHA1,
-		"sha256":      componentReq.SHA256,
-		"sha384":      componentReq.SHA384,
-		"sha512":      componentReq.SHA3_512,
-		"sha3_256":    componentReq.SHA3_256,
-		"sha3_384":    componentReq.SHA3_384,
-		"sha3_512":    componentReq.SHA3_512,
-		"blake2b_256": componentReq.BLAKE2b_256,
-		"blake2b_384": componentReq.BLAKE2b_384,
-		"blake2b_512": componentReq.BLAKE2b_512,
-		"blake3":      componentReq.BLAKE3,
-		"cpe":         componentReq.CPE,
-		"purl":        componentReq.PURL,
-		"swid":        componentReq.SWIDTagID,
-		"internal":    componentReq.Internal,
-		"description": componentReq.Description,
-		"copyright":   componentReq.Copyright,
-		"license":     componentReq.License,
-		"notes":       componentReq.Notes,
-		"project":     componentReq.Project.UUID.String(),
-	})
-	componentRes, err := r.client.Component.Create(ctx, projectID, componentReq)
+	tflog.Debug(ctx, "Creating Component", componentDebug(componentReq))
+	componentRes, err := r.client.Component.Create(ctx, componentReq.Project.UUID, componentReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Component.",
@@ -298,79 +235,14 @@ func (r *componentResource) Create(ctx context.Context, req resource.CreateReque
 		)
 		return
 	}
-
-	plan = componentResourceModel{
-		ID:          types.StringValue(componentRes.UUID.String()),
-		Project:     types.StringValue(componentRes.Project.UUID.String()),
-		Author:      types.StringValue(componentRes.Author),
-		Publisher:   types.StringValue(componentRes.Publisher),
-		Group:       types.StringValue(componentRes.Group),
-		Name:        types.StringValue(componentRes.Name),
-		Version:     types.StringValue(componentRes.Version),
-		Classifier:  types.StringValue(componentRes.Classifier),
-		Filename:    types.StringValue(componentRes.FileName),
-		Extension:   types.StringValue(componentRes.Extension),
-		CPE:         types.StringValue(componentRes.CPE),
-		PURL:        types.StringValue(componentRes.PURL),
-		SWID:        types.StringValue(componentRes.SWIDTagID),
-		Description: types.StringValue(componentRes.Description),
-		Copyright:   types.StringValue(componentRes.Copyright),
-		License:     types.StringValue(componentRes.License),
-		Notes:       types.StringValue(componentRes.Notes),
-		Internal:    types.BoolValue(componentRes.Internal),
-		Hashes: componentHashesResourceModel{
-			MD5:         types.StringValue(componentRes.MD5),
-			SHA1:        types.StringValue(componentRes.SHA1),
-			SHA256:      types.StringValue(componentRes.SHA256),
-			SHA384:      types.StringValue(componentRes.SHA384),
-			SHA512:      types.StringValue(componentRes.SHA512),
-			SHA3_256:    types.StringValue(componentRes.SHA3_256),
-			SHA3_384:    types.StringValue(componentRes.SHA3_384),
-			SHA3_512:    types.StringValue(componentRes.SHA3_512),
-			BLAKE2b_256: types.StringValue(componentRes.BLAKE2b_256),
-			BLAKE2b_384: types.StringValue(componentRes.BLAKE2b_384),
-			BLAKE2b_512: types.StringValue(componentRes.BLAKE2b_512),
-			BLAKE3:      types.StringValue(componentRes.BLAKE3),
-		},
-	}
+	plan = componentToModel(componentRes)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created Component", map[string]any{
-		"id":          plan.ID.ValueString(),
-		"author":      plan.Author.ValueString(),
-		"publisher":   plan.Publisher.ValueString(),
-		"group":       plan.Group.ValueString(),
-		"name":        plan.Name.ValueString(),
-		"version":     plan.Version.ValueString(),
-		"classifier":  plan.Classifier.ValueString(),
-		"filename":    plan.Filename.ValueString(),
-		"extension":   plan.Extension.ValueString(),
-		"md5":         plan.Hashes.MD5.ValueString(),
-		"sha1":        plan.Hashes.SHA1.ValueString(),
-		"sha256":      plan.Hashes.SHA256.ValueString(),
-		"sha384":      plan.Hashes.SHA384.ValueString(),
-		"sha512":      plan.Hashes.SHA3_512.ValueString(),
-		"sha3_256":    plan.Hashes.SHA3_256.ValueString(),
-		"sha3_384":    plan.Hashes.SHA3_384.ValueString(),
-		"sha3_512":    plan.Hashes.SHA3_512.ValueString(),
-		"blake2b_256": plan.Hashes.BLAKE2b_256.ValueString(),
-		"blake2b_384": plan.Hashes.BLAKE2b_384.ValueString(),
-		"blake2b_512": plan.Hashes.BLAKE2b_512.ValueString(),
-		"blake3":      plan.Hashes.BLAKE3.ValueString(),
-		"cpe":         plan.CPE.ValueString(),
-		"purl":        plan.PURL.ValueString(),
-		"swid":        plan.SWID.ValueString(),
-		"internal":    plan.Internal.ValueBool(),
-		"description": plan.Description.ValueString(),
-		"copyright":   plan.Copyright.ValueString(),
-		"license":     plan.License.ValueString(),
-		"notes":       plan.Notes.ValueString(),
-		"project":     plan.Project.ValueString(),
-	})
+	tflog.Debug(ctx, "Created Component", plan.debug())
 }
 
 func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -381,14 +253,12 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
+	id, diagnostic := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
 		return
 	}
-	tflog.Debug(ctx, "Reading Component", map[string]any{
-		// TODO.
-	})
+	tflog.Debug(ctx, "Reading Component", state.debug())
 	component, err := r.client.Component.Get(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -397,7 +267,158 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 		)
 		return
 	}
-	state = componentResourceModel{
+	state = componentToModel(component)
+
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Read Component", state.debug())
+}
+
+func (r *componentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan componentResourceModel
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	component := plan.ToSdk(LifecycleUpdate, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	tflog.Debug(ctx, "Updating Component", componentDebug(component))
+	componentRes, err := r.client.Component.Update(ctx, component)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to update Component.",
+			"Error in: "+component.UUID.String()+", from: "+err.Error(),
+		)
+		return
+	}
+
+	plan = componentToModel(componentRes)
+
+	diags = resp.State.Set(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Updated Component", plan.debug())
+}
+
+func (r *componentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state componentResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id, diagnostic := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
+	if diagnostic != nil {
+		resp.Diagnostics.Append(diagnostic)
+		return
+	}
+
+	tflog.Debug(ctx, "Deleting Component", state.debug())
+	err := r.client.Component.Delete(ctx, id)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to delete component",
+			"Unexpected error when trying to delete component with id: "+id.String()+", error: "+err.Error(),
+		)
+		return
+	}
+	tflog.Debug(ctx, "Deleted Component", state.debug())
+}
+
+func (*componentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Debug(ctx, "Importing Component", map[string]any{
+		"id": req.ID,
+	})
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Imported Component", map[string]any{
+		"id": req.ID,
+	})
+}
+
+func (r *componentResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+	clientInfoData, ok := req.ProviderData.(clientInfo)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Configure Type",
+			fmt.Sprintf("Expected provider.clientInfo, got %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+		return
+	}
+	r.client = clientInfoData.client
+	r.semver = clientInfoData.semver
+}
+
+func (model componentResourceModel) ToSdk(lifecycle LifecycleAction, d *diag.Diagnostics) dtrack.Component {
+	projectID, diagnostic := TryParseUUID(model.Project, lifecycle, path.Root("project"))
+	if diagnostic != nil {
+		d.Append(diagnostic)
+		return dtrack.Component{}
+	}
+
+	component := dtrack.Component{
+		Author:      model.Author.ValueString(),
+		Publisher:   model.Author.ValueString(),
+		Group:       model.Group.ValueString(),
+		Name:        model.Name.ValueString(),
+		Version:     model.Version.ValueString(),
+		Classifier:  model.Classifier.ValueString(),
+		FileName:    model.Filename.ValueString(),
+		Extension:   model.Extension.ValueString(),
+		MD5:         model.Hashes.MD5.ValueString(),
+		SHA1:        model.Hashes.SHA1.ValueString(),
+		SHA256:      model.Hashes.SHA256.ValueString(),
+		SHA384:      model.Hashes.SHA384.ValueString(),
+		SHA512:      model.Hashes.SHA512.ValueString(),
+		SHA3_256:    model.Hashes.SHA3_256.ValueString(),
+		SHA3_384:    model.Hashes.SHA3_384.ValueString(),
+		SHA3_512:    model.Hashes.SHA3_512.ValueString(),
+		BLAKE2b_256: model.Hashes.BLAKE2b_256.ValueString(),
+		BLAKE2b_384: model.Hashes.BLAKE2b_384.ValueString(),
+		BLAKE2b_512: model.Hashes.BLAKE2b_512.ValueString(),
+		BLAKE3:      model.Hashes.BLAKE3.ValueString(),
+		CPE:         model.CPE.ValueString(),
+		PURL:        model.PURL.ValueString(),
+		SWIDTagID:   model.SWID.ValueString(),
+		Internal:    model.Internal.ValueBool(),
+		Description: model.Description.ValueString(),
+		Copyright:   model.Copyright.ValueString(),
+		License:     model.License.ValueString(),
+		Notes:       model.Notes.ValueString(),
+		Project: &dtrack.Project{
+			UUID: projectID,
+		},
+	}
+	if lifecycle != LifecycleCreate {
+		componentID, diagnostic := TryParseUUID(model.ID, lifecycle, path.Root("id"))
+		if diagnostic != nil {
+			d.Append(diagnostic)
+			return dtrack.Component{}
+		}
+		component.UUID = componentID
+	}
+	return component
+}
+
+func componentToModel(component dtrack.Component) componentResourceModel {
+	return componentResourceModel{
 		ID:          types.StringValue(component.UUID.String()),
 		Project:     types.StringValue(component.Project.UUID.String()),
 		Author:      types.StringValue(component.Author),
@@ -431,187 +452,74 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 			BLAKE3:      types.StringValue(component.BLAKE3),
 		},
 	}
-
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	tflog.Debug(ctx, "Read Component", map[string]any{
-		// TODO.
-	})
 }
 
-func (r *componentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan componentResourceModel
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
+func componentDebug(component dtrack.Component) map[string]any {
+	return map[string]any{
+		"id":          component.UUID.String(),
+		"author":      component.Author,
+		"publisher":   component.Publisher,
+		"group":       component.Group,
+		"name":        component.Name,
+		"version":     component.Version,
+		"classifier":  component.Classifier,
+		"filename":    component.FileName,
+		"extension":   component.Extension,
+		"md5":         component.MD5,
+		"sha1":        component.SHA1,
+		"sha256":      component.SHA256,
+		"sha384":      component.SHA384,
+		"sha512":      component.SHA3_512,
+		"sha3_256":    component.SHA3_256,
+		"sha3_384":    component.SHA3_384,
+		"sha3_512":    component.SHA3_512,
+		"blake2b_256": component.BLAKE2b_256,
+		"blake2b_384": component.BLAKE2b_384,
+		"blake2b_512": component.BLAKE2b_512,
+		"blake3":      component.BLAKE3,
+		"cpe":         component.CPE,
+		"purl":        component.PURL,
+		"swid":        component.SWIDTagID,
+		"internal":    component.Internal,
+		"description": component.Description,
+		"copyright":   component.Copyright,
+		"license":     component.License,
+		"notes":       component.Notes,
+		"project":     component.Project.UUID.String(),
 	}
-
-	componentID, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
-	}
-	projectID, diag := TryParseUUID(plan.Project, LifecycleUpdate, path.Root("id"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
-	}
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	component := dtrack.Component{
-		UUID:        componentID,
-		Author:      plan.Author.ValueString(),
-		Publisher:   plan.Author.ValueString(),
-		Group:       plan.Group.ValueString(),
-		Name:        plan.Name.ValueString(),
-		Version:     plan.Version.ValueString(),
-		Classifier:  plan.Classifier.ValueString(),
-		FileName:    plan.Filename.ValueString(),
-		Extension:   plan.Extension.ValueString(),
-		MD5:         plan.Hashes.MD5.ValueString(),
-		SHA1:        plan.Hashes.SHA1.ValueString(),
-		SHA256:      plan.Hashes.SHA256.ValueString(),
-		SHA384:      plan.Hashes.SHA384.ValueString(),
-		SHA512:      plan.Hashes.SHA512.ValueString(),
-		SHA3_256:    plan.Hashes.SHA3_256.ValueString(),
-		SHA3_384:    plan.Hashes.SHA3_384.ValueString(),
-		SHA3_512:    plan.Hashes.SHA3_512.ValueString(),
-		BLAKE2b_256: plan.Hashes.BLAKE2b_256.ValueString(),
-		BLAKE2b_384: plan.Hashes.BLAKE2b_384.ValueString(),
-		BLAKE2b_512: plan.Hashes.BLAKE2b_512.ValueString(),
-		BLAKE3:      plan.Hashes.BLAKE3.ValueString(),
-		CPE:         plan.CPE.ValueString(),
-		PURL:        plan.PURL.ValueString(),
-		SWIDTagID:   plan.SWID.ValueString(),
-		Internal:    plan.Internal.ValueBool(),
-		Description: plan.Description.ValueString(),
-		Copyright:   plan.Copyright.ValueString(),
-		License:     plan.License.ValueString(),
-		Notes:       plan.Notes.ValueString(),
-		Project: &dtrack.Project{
-			UUID: projectID,
-		},
-	}
-
-	tflog.Debug(ctx, "Updating Component", map[string]any{
-		// TODO.
-	})
-	componentRes, err := r.client.Component.Update(ctx, component)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to update Component.",
-			"Error in: "+componentID.String()+", from: "+err.Error(),
-		)
-		return
-	}
-
-	plan = componentResourceModel{
-		ID:          types.StringValue(componentRes.UUID.String()),
-		Project:     types.StringValue(componentRes.Project.UUID.String()),
-		Author:      types.StringValue(componentRes.Author),
-		Publisher:   types.StringValue(componentRes.Publisher),
-		Group:       types.StringValue(componentRes.Group),
-		Name:        types.StringValue(componentRes.Name),
-		Version:     types.StringValue(componentRes.Version),
-		Classifier:  types.StringValue(componentRes.Classifier),
-		Filename:    types.StringValue(componentRes.FileName),
-		Extension:   types.StringValue(componentRes.Extension),
-		CPE:         types.StringValue(componentRes.CPE),
-		PURL:        types.StringValue(componentRes.PURL),
-		SWID:        types.StringValue(componentRes.SWIDTagID),
-		Description: types.StringValue(componentRes.Description),
-		Copyright:   types.StringValue(componentRes.Copyright),
-		License:     types.StringValue(componentRes.License),
-		Notes:       types.StringValue(componentRes.Notes),
-		Internal:    types.BoolValue(componentRes.Internal),
-		Hashes: componentHashesResourceModel{
-			MD5:         types.StringValue(componentRes.MD5),
-			SHA1:        types.StringValue(componentRes.SHA1),
-			SHA256:      types.StringValue(componentRes.SHA256),
-			SHA384:      types.StringValue(componentRes.SHA384),
-			SHA512:      types.StringValue(componentRes.SHA512),
-			SHA3_256:    types.StringValue(componentRes.SHA3_256),
-			SHA3_384:    types.StringValue(componentRes.SHA3_384),
-			SHA3_512:    types.StringValue(componentRes.SHA3_512),
-			BLAKE2b_256: types.StringValue(componentRes.BLAKE2b_256),
-			BLAKE2b_384: types.StringValue(componentRes.BLAKE2b_384),
-			BLAKE2b_512: types.StringValue(componentRes.BLAKE2b_512),
-			BLAKE3:      types.StringValue(componentRes.BLAKE3),
-		},
-	}
-
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	tflog.Debug(ctx, "Updated Component", map[string]any{
-		// TODO.
-	})
 }
 
-func (r *componentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state componentResourceModel
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
+func (model componentResourceModel) debug() map[string]any {
+	return map[string]any{
+		"id":          model.ID.ValueString(),
+		"author":      model.Author.ValueString(),
+		"publisher":   model.Publisher.ValueString(),
+		"group":       model.Group.ValueString(),
+		"name":        model.Name.ValueString(),
+		"version":     model.Version.ValueString(),
+		"classifier":  model.Classifier.ValueString(),
+		"filename":    model.Filename.ValueString(),
+		"extension":   model.Extension.ValueString(),
+		"md5":         model.Hashes.MD5.ValueString(),
+		"sha1":        model.Hashes.SHA1.ValueString(),
+		"sha256":      model.Hashes.SHA256.ValueString(),
+		"sha384":      model.Hashes.SHA384.ValueString(),
+		"sha512":      model.Hashes.SHA3_512.ValueString(),
+		"sha3_256":    model.Hashes.SHA3_256.ValueString(),
+		"sha3_384":    model.Hashes.SHA3_384.ValueString(),
+		"sha3_512":    model.Hashes.SHA3_512.ValueString(),
+		"blake2b_256": model.Hashes.BLAKE2b_256.ValueString(),
+		"blake2b_384": model.Hashes.BLAKE2b_384.ValueString(),
+		"blake2b_512": model.Hashes.BLAKE2b_512.ValueString(),
+		"blake3":      model.Hashes.BLAKE3.ValueString(),
+		"cpe":         model.CPE.ValueString(),
+		"purl":        model.PURL.ValueString(),
+		"swid":        model.SWID.ValueString(),
+		"internal":    model.Internal.ValueBool(),
+		"description": model.Description.ValueString(),
+		"copyright":   model.Copyright.ValueString(),
+		"license":     model.License.ValueString(),
+		"notes":       model.Notes.ValueString(),
+		"project":     model.Project.ValueString(),
 	}
-
-	id, diag := TryParseUUID(state.ID, LifecycleDelete, path.Root("id"))
-	if diag != nil {
-		resp.Diagnostics.Append(diag)
-		return
-	}
-
-	tflog.Debug(ctx, "Deleting Component", map[string]any{
-		"id": id.String(),
-		// TODO
-	})
-	err := r.client.Component.Delete(ctx, id)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to delete component",
-			"Unexpected error when trying to delete component with id: "+id.String()+", error: "+err.Error(),
-		)
-		return
-	}
-	tflog.Debug(ctx, "Deleted Component", map[string]any{
-		"id": state.ID.ValueString(),
-		// TODO
-	})
-}
-
-func (r *componentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tflog.Debug(ctx, "Importing Component", map[string]any{
-		"id": req.ID,
-	})
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	tflog.Debug(ctx, "Imported Component", map[string]any{
-		"id": req.ID,
-	})
-}
-
-func (r *componentResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	clientInfoData, ok := req.ProviderData.(clientInfo)
-
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Configure Type",
-			fmt.Sprintf("Expected provider.clientInfo, got %T. Please report this issue to the provider developers.", req.ProviderData),
-		)
-		return
-	}
-	r.client = clientInfoData.client
-	r.semver = clientInfoData.semver
 }
