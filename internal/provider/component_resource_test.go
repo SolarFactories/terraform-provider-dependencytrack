@@ -32,7 +32,7 @@ resource "dependencytrack_component" "test" {
 					),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "name", "Test_Component_Component"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "version", "v1.0"),
-					resource.TestCheckResourceAttr("dependencytrack_component.test", "classifier", "APPLICATION"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "classifier", "LIBRARY"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.%", "12"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.md5", "00000000000000000000000000000001"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.sha1", ""),

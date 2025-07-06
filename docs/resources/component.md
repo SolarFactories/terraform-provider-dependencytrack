@@ -39,7 +39,7 @@ resource "dependencytrack_component" "example" {
 ### Optional
 
 - `author` (String) Author of the Component.
-- `classifier` (String) Classifier of the Component. Defaults to APPLICATION. See DependencyTrack for valid options.
+- `classifier` (String) Classifier of the Component. Defaults to LIBRARY. See DependencyTrack for valid options.
 - `copyright` (String) Copyright of the Component.
 - `cpe` (String) Common Platform Enumeration of the Component. Standardised format v2.2 / v2.3 from MITRE / NIST.
 - `description` (String) Description of the Component.

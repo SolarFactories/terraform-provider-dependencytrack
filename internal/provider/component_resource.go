@@ -117,10 +117,10 @@ func (*componentResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Computed:    true,
 			},
 			"classifier": schema.StringAttribute{
-				Description: "Classifier of the Component. Defaults to APPLICATION. See DependencyTrack for valid options.",
+				Description: "Classifier of the Component. Defaults to LIBRARY. See DependencyTrack for valid options.",
 				Optional:    true,
 				Computed:    true,
-				Default:     stringdefault.StaticString("APPLICATION"),
+				Default:     stringdefault.StaticString("LIBRARY"),
 			},
 			"filename": schema.StringAttribute{
 				Description: "Filename of the Component.",
