@@ -32,7 +32,7 @@ resource "dependencytrack_component" "test" {
 					),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "name", "Test_Component_Component"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "version", "v1.0"),
-					resource.TestCheckResourceAttr("dependencytrack_component.test", "classifier", "NONE"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "classifier", "APPLICATION"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.%", "12"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.md5", "00000000000000000000000000000001"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.sha1", ""),
@@ -54,7 +54,7 @@ resource "dependencytrack_component" "test" {
 	project = dependencytrack_project.test.id
 	name = "Test_Component_Component"
 	version = "v1.0"
-	classifier = "APPLICATION"
+	classifier = "FILE"
 	hashes = {
 		md5 = ""
 	}
@@ -68,7 +68,7 @@ resource "dependencytrack_component" "test" {
 					),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "name", "Test_Component_Component"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "version", "v1.0"),
-					resource.TestCheckResourceAttr("dependencytrack_component.test", "classifier", "APPLICATION"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "classifier", "FILE"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.%", "12"),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.md5", ""),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.sha1", ""),
