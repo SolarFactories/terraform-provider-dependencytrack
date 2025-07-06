@@ -253,7 +253,7 @@ func (r *componentResource) Create(ctx context.Context, req resource.CreateReque
 		)
 		return
 	}
-	plan = componentToModel(ctx, componentRes)
+	plan = componentToModel(componentRes)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -280,7 +280,7 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
-	tflog.Info(ctx, "Reading Component", state.debug())
+	tflog.Debug(ctx, "Reading Component", state.debug())
 	component, err := r.client.Component.Get(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -289,14 +289,14 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 		)
 		return
 	}
-	state = componentToModel(ctx, component)
+	state = componentToModel(component)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Read Component", state.debug())
+	tflog.Debug(ctx, "Read Component", state.debug())
 }
 
 func (r *componentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -322,7 +322,7 @@ func (r *componentResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	plan = componentToModel(ctx, componentRes)
+	plan = componentToModel(componentRes)
 
 	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -359,14 +359,14 @@ func (r *componentResource) Delete(ctx context.Context, req resource.DeleteReque
 }
 
 func (*componentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tflog.Info(ctx, "Importing Component", map[string]any{
+	tflog.Debug(ctx, "Importing Component", map[string]any{
 		"id": req.ID,
 	})
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Imported Component", map[string]any{
+	tflog.Debug(ctx, "Imported Component", map[string]any{
 		"id": req.ID,
 	})
 }
@@ -397,7 +397,7 @@ func (model componentResourceModel) ToSdk(lifecycle LifecycleAction, d *diag.Dia
 
 	component := dtrack.Component{
 		Author:      model.Author.ValueString(),
-		Publisher:   model.Author.ValueString(),
+		Publisher:   model.Publisher.ValueString(),
 		Group:       model.Group.ValueString(),
 		Name:        model.Name.ValueString(),
 		Version:     model.Version.ValueString(),
@@ -438,7 +438,7 @@ func (model componentResourceModel) ToSdk(lifecycle LifecycleAction, d *diag.Dia
 	return &component
 }
 
-func componentToModel(ctx context.Context, component dtrack.Component) componentResourceModel {
+func componentToModel(component dtrack.Component) componentResourceModel {
 	model := componentResourceModel{
 		ID:          types.StringValue(component.UUID.String()),
 		Project:     types.StringValue(component.Project.UUID.String()),
@@ -472,7 +472,6 @@ func componentToModel(ctx context.Context, component dtrack.Component) component
 			BLAKE3:      types.StringValue(component.BLAKE3),
 		},
 	}
-	tflog.Info(ctx, "componentToModel", model.debug())
 	return model
 }
 
@@ -491,7 +490,7 @@ func componentDebug(component dtrack.Component) map[string]any {
 		"sha1":        component.SHA1,
 		"sha256":      component.SHA256,
 		"sha384":      component.SHA384,
-		"sha512":      component.SHA3_512,
+		"sha512":      component.SHA512,
 		"sha3_256":    component.SHA3_256,
 		"sha3_384":    component.SHA3_384,
 		"sha3_512":    component.SHA3_512,
@@ -525,7 +524,7 @@ func (model componentResourceModel) debug() map[string]any {
 		"sha1":        model.Hashes.SHA1.ValueString(),
 		"sha256":      model.Hashes.SHA256.ValueString(),
 		"sha384":      model.Hashes.SHA384.ValueString(),
-		"sha512":      model.Hashes.SHA3_512.ValueString(),
+		"sha512":      model.Hashes.SHA512.ValueString(),
 		"sha3_256":    model.Hashes.SHA3_256.ValueString(),
 		"sha3_384":    model.Hashes.SHA3_384.ValueString(),
 		"sha3_512":    model.Hashes.SHA3_512.ValueString(),

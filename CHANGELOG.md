@@ -1,3 +1,12 @@
+## 1.14
+
+#### FEATURES
+- Add `dependencytrack_component` resource to manage components within a project.
+- Add `dependencytrack_component_property` resource to manage properties within a component.
+
+#### DEPENDENCIES
+- Override `github.com/DependencyTrack/client-go` with `github.com/SolarFactories/client-go@components`
+
 ## 1.13
 
 #### FEATURES

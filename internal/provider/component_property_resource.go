@@ -243,7 +243,9 @@ func (r *componentPropertyResource) Read(ctx context.Context, req resource.ReadR
 }
 
 func (*componentPropertyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// DependencyTrack does not expose an API method to POST / PATCH `ComponentProperty`, as such, all attributes have been marked with `RequiresReplace`.
+	// DependencyTrack does not expose an API method to POST / PATCH `ComponentProperty` (as of v4.13.0).
+	// 	So all attributes have been marked with `RequiresReplace`.
+	//	This results in there not being any `Update` action per se, as it is a `Delete`-`Create`.
 	var plan componentPropertyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
