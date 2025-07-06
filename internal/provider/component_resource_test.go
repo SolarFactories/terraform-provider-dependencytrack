@@ -20,7 +20,6 @@ resource "dependencytrack_component" "test" {
 	name = "Test_Component_Component"
 	version = "v1.0"
 	hashes = {}
-	internal = true
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(

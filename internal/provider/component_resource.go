@@ -46,7 +46,6 @@ type (
 		License     types.String                 `tfsdk:"license"`
 		Notes       types.String                 `tfsdk:"notes"`
 		Hashes      componentHashesResourceModel `tfsdk:"hashes"`
-		Internal    types.Bool                   `tfsdk:"internal"`
 	}
 
 	componentHashesResourceModel struct {
@@ -161,11 +160,6 @@ func (*componentResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Optional:    true,
 				Computed:    true,
 			},
-			"internal": schema.BoolAttribute{
-				Description: "Whether the Component is internal, or external.",
-				Optional:    true,
-				Computed:    true,
-			},
 			"hashes": schema.SingleNestedAttribute{
 				Description: "Hashes of the Component.",
 				Required:    true,
@@ -251,7 +245,7 @@ func (r *componentResource) Create(ctx context.Context, req resource.CreateReque
 	if plan.Classifier.IsUnknown() {
 		componentReq.Classifier = "NONE"
 	}
-	tflog.Info(ctx, "Creating Component", componentDebug(*componentReq))
+	tflog.Debug(ctx, "Creating Component", componentDebug(*componentReq))
 	componentRes, err := r.client.Component.Create(ctx, componentReq.Project.UUID, *componentReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -261,15 +255,13 @@ func (r *componentResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 	plan = componentToModel(componentRes)
-	// Create SDK response does not contain Internal.
-	plan.Internal = types.BoolValue(componentReq.Internal)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Created Component", plan.debug())
+	tflog.Debug(ctx, "Created Component", plan.debug())
 }
 
 func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -285,7 +277,7 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
-	tflog.Info(ctx, "Reading Component", state.debug())
+	tflog.Debug(ctx, "Reading Component", state.debug())
 	component, err := r.client.Component.Get(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -301,7 +293,7 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "Read Component", state.debug())
+	tflog.Debug(ctx, "Read Component", state.debug())
 }
 
 func (r *componentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -424,7 +416,6 @@ func (model componentResourceModel) ToSdk(lifecycle LifecycleAction, d *diag.Dia
 		CPE:         model.CPE.ValueString(),
 		PURL:        model.PURL.ValueString(),
 		SWIDTagID:   model.SWID.ValueString(),
-		Internal:    model.Internal.ValueBool(),
 		Description: model.Description.ValueString(),
 		Copyright:   model.Copyright.ValueString(),
 		License:     model.License.ValueString(),
@@ -463,7 +454,6 @@ func componentToModel(component dtrack.Component) componentResourceModel {
 		Copyright:   types.StringValue(component.Copyright),
 		License:     types.StringValue(component.License),
 		Notes:       types.StringValue(component.Notes),
-		Internal:    types.BoolValue(component.Internal),
 		Hashes: componentHashesResourceModel{
 			MD5:         types.StringValue(component.MD5),
 			SHA1:        types.StringValue(component.SHA1),
@@ -507,7 +497,6 @@ func componentDebug(component dtrack.Component) map[string]any {
 		"cpe":         component.CPE,
 		"purl":        component.PURL,
 		"swid":        component.SWIDTagID,
-		"internal":    component.Internal,
 		"description": component.Description,
 		"copyright":   component.Copyright,
 		"license":     component.License,
@@ -542,7 +531,6 @@ func (model componentResourceModel) debug() map[string]any {
 		"cpe":         model.CPE.ValueString(),
 		"purl":        model.PURL.ValueString(),
 		"swid":        model.SWID.ValueString(),
-		"internal":    model.Internal.ValueBool(),
 		"description": model.Description.ValueString(),
 		"copyright":   model.Copyright.ValueString(),
 		"license":     model.License.ValueString(),
