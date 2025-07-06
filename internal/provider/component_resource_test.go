@@ -19,56 +19,59 @@ resource "dependencytrack_component" "test" {
 	project = dependencytrack_project.test.id
 	name = "Test_Component_Component"
 	version = "v1.0"
-	hashes = {}
+	hashes = {
+		md5 = "00000000000000000000000000000001"
+	}
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-				/*					resource.TestCheckResourceAttrSet("dependencytrack_acl_mapping.test", "id"),
-									resource.TestCheckResourceAttrPair(
-										"dependencytrack_project.test", "id",
-										"dependencytrack_acl_mapping.test", "project",
-									),
-									resource.TestCheckResourceAttrPair(
-										"dependencytrack_team.test", "id",
-										"dependencytrack_acl_mapping.test", "team",
-									),*/
+					resource.TestCheckResourceAttrSet("dependencytrack_component.test", "id"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_project.test", "id",
+						"dependencytrack_component.test", "project",
+					),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "name", "Test_Component_Component"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "version", "v1.0"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "classifier", "NONE"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.%", "12"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.md5", "00000000000000000000000000000001"),
 				),
 			},
 			// ImportState testing.
-			/*{
+			{
 				ResourceName:      "dependencytrack_component.test",
 				ImportState:       true,
 				ImportStateVerify: true,
-			},*/
+			},
 			// Update and Read testing.
-			/*		{
-									Config: providerConfig + `
-					resource "dependencytrack_project" "test" {
-						name = "Test_ACL_Project"
-					}
-					resource "dependencytrack_team" "test" {
-						name = "Test_ACL_Team"
-					}
-					resource "dependencytrack_team" "test2" {
-						name = "Test_ACL_Team_2"
-					}
-					resource "dependencytrack_acl_mapping" "test" {
-						project = dependencytrack_project.test.id
-						team = dependencytrack_team.test2.id
-					}
-					`,
-									Check: resource.ComposeAggregateTestCheckFunc(
-										resource.TestCheckResourceAttrSet("dependencytrack_acl_mapping.test", "id"),
-										resource.TestCheckResourceAttrPair(
-											"dependencytrack_project.test", "id",
-											"dependencytrack_acl_mapping.test", "project",
-										),
-										resource.TestCheckResourceAttrPair(
-											"dependencytrack_team.test2", "id",
-											"dependencytrack_acl_mapping.test", "team",
-										),
-									),
-								},*/
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_Component_Project"
+}
+resource "dependencytrack_component" "test" {
+	project = dependencytrack_project.test.id
+	name = "Test_Component_Component"
+	version = "v1.0"
+	classifier = "APPLICATION"
+	hashes = {
+		md5 = ""
+	}
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_component.test", "id"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_project.test", "id",
+						"dependencytrack_component.test", "project",
+					),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "name", "Test_Component_Component"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "version", "v1.0"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "classifier", "APPLICATION"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.%", "12"),
+					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.md5", ""),
+				),
+			},
 		},
 	})
 }

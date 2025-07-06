@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -28,24 +29,24 @@ type (
 	}
 
 	componentResourceModel struct {
-		ID          types.String                 `tfsdk:"id"`
-		Project     types.String                 `tfsdk:"project"`
-		Author      types.String                 `tfsdk:"author"`
-		Publisher   types.String                 `tfsdk:"publisher"`
-		Group       types.String                 `tfsdk:"group"`
-		Name        types.String                 `tfsdk:"name"`
-		Version     types.String                 `tfsdk:"version"`
-		Classifier  types.String                 `tfsdk:"classifier"`
-		Filename    types.String                 `tfsdk:"filename"`
-		Extension   types.String                 `tfsdk:"extension"`
-		CPE         types.String                 `tfsdk:"cpe"`
-		PURL        types.String                 `tfsdk:"purl"`
-		SWID        types.String                 `tfsdk:"swid"`
-		Description types.String                 `tfsdk:"description"`
-		Copyright   types.String                 `tfsdk:"copyright"`
-		License     types.String                 `tfsdk:"license"`
-		Notes       types.String                 `tfsdk:"notes"`
-		Hashes      componentHashesResourceModel `tfsdk:"hashes"`
+		ID          types.String                  `tfsdk:"id"`
+		Project     types.String                  `tfsdk:"project"`
+		Author      types.String                  `tfsdk:"author"`
+		Publisher   types.String                  `tfsdk:"publisher"`
+		Group       types.String                  `tfsdk:"group"`
+		Name        types.String                  `tfsdk:"name"`
+		Version     types.String                  `tfsdk:"version"`
+		Classifier  types.String                  `tfsdk:"classifier"`
+		Filename    types.String                  `tfsdk:"filename"`
+		Extension   types.String                  `tfsdk:"extension"`
+		CPE         types.String                  `tfsdk:"cpe"`
+		PURL        types.String                  `tfsdk:"purl"`
+		SWID        types.String                  `tfsdk:"swid"`
+		Description types.String                  `tfsdk:"description"`
+		Copyright   types.String                  `tfsdk:"copyright"`
+		License     types.String                  `tfsdk:"license"`
+		Notes       types.String                  `tfsdk:"notes"`
+		Hashes      *componentHashesResourceModel `tfsdk:"hashes"`
 	}
 
 	componentHashesResourceModel struct {
@@ -119,6 +120,7 @@ func (*componentResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 				Description: "Classifier of the Component. Defaults to NONE. See DependencyTrack for valid options.",
 				Optional:    true,
 				Computed:    true,
+				Default:     stringdefault.StaticString("NONE"),
 			},
 			"filename": schema.StringAttribute{
 				Description: "Filename of the Component.",
@@ -242,9 +244,6 @@ func (r *componentResource) Create(ctx context.Context, req resource.CreateReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	if plan.Classifier.IsUnknown() {
-		componentReq.Classifier = "NONE"
-	}
 	tflog.Debug(ctx, "Creating Component", componentDebug(*componentReq))
 	componentRes, err := r.client.Component.Create(ctx, componentReq.Project.UUID, *componentReq)
 	if err != nil {
@@ -254,7 +253,7 @@ func (r *componentResource) Create(ctx context.Context, req resource.CreateReque
 		)
 		return
 	}
-	plan = componentToModel(componentRes)
+	plan = componentToModel(ctx, componentRes)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -271,13 +270,17 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	if state.Hashes == nil {
+		// Account for when called from `ImportState`.
+		state.Hashes = &componentHashesResourceModel{}
+	}
 
 	id, diagnostic := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diagnostic != nil {
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
-	tflog.Debug(ctx, "Reading Component", state.debug())
+	tflog.Info(ctx, "Reading Component", state.debug())
 	component, err := r.client.Component.Get(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -286,14 +289,14 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 		)
 		return
 	}
-	state = componentToModel(component)
+	state = componentToModel(ctx, component)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Read Component", state.debug())
+	tflog.Info(ctx, "Read Component", state.debug())
 }
 
 func (r *componentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -319,9 +322,9 @@ func (r *componentResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	plan = componentToModel(componentRes)
+	plan = componentToModel(ctx, componentRes)
 
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -356,14 +359,14 @@ func (r *componentResource) Delete(ctx context.Context, req resource.DeleteReque
 }
 
 func (*componentResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tflog.Debug(ctx, "Importing Component", map[string]any{
+	tflog.Info(ctx, "Importing Component", map[string]any{
 		"id": req.ID,
 	})
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Imported Component", map[string]any{
+	tflog.Info(ctx, "Imported Component", map[string]any{
 		"id": req.ID,
 	})
 }
@@ -435,8 +438,8 @@ func (model componentResourceModel) ToSdk(lifecycle LifecycleAction, d *diag.Dia
 	return &component
 }
 
-func componentToModel(component dtrack.Component) componentResourceModel {
-	return componentResourceModel{
+func componentToModel(ctx context.Context, component dtrack.Component) componentResourceModel {
+	model := componentResourceModel{
 		ID:          types.StringValue(component.UUID.String()),
 		Project:     types.StringValue(component.Project.UUID.String()),
 		Author:      types.StringValue(component.Author),
@@ -454,7 +457,7 @@ func componentToModel(component dtrack.Component) componentResourceModel {
 		Copyright:   types.StringValue(component.Copyright),
 		License:     types.StringValue(component.License),
 		Notes:       types.StringValue(component.Notes),
-		Hashes: componentHashesResourceModel{
+		Hashes: &componentHashesResourceModel{
 			MD5:         types.StringValue(component.MD5),
 			SHA1:        types.StringValue(component.SHA1),
 			SHA256:      types.StringValue(component.SHA256),
@@ -469,6 +472,8 @@ func componentToModel(component dtrack.Component) componentResourceModel {
 			BLAKE3:      types.StringValue(component.BLAKE3),
 		},
 	}
+	tflog.Info(ctx, "componentToModel", model.debug())
+	return model
 }
 
 func componentDebug(component dtrack.Component) map[string]any {
