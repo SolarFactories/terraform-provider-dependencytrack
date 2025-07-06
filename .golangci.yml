@@ -590,6 +590,9 @@ linters:
         linters:
           - revive
           - staticcheck
+      - path: internal/provider/component_property_resource_test.go
+        linters:
+          - godox
 
 formatters:
   enable:

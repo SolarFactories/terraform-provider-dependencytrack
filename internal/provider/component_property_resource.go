@@ -120,6 +120,7 @@ func (r *componentPropertyResource) Create(ctx context.Context, req resource.Cre
 	}
 
 	propertyReq := dtrack.ComponentProperty{
+		UUID:        uuid.Nil,
 		Group:       plan.Group.ValueString(),
 		Name:        plan.Name.ValueString(),
 		Value:       plan.Value.ValueString(),
@@ -151,9 +152,6 @@ func (r *componentPropertyResource) Create(ctx context.Context, req resource.Cre
 		Value:       types.StringValue(propertyRes.Value),
 		Type:        types.StringValue(propertyRes.Type),
 		Description: types.StringValue(propertyRes.Description),
-	}
-	if propertyRes.Type == PropertyTypeEncryptedString {
-		propertyState.Value = plan.Value
 	}
 
 	diags = resp.State.Set(ctx, &propertyState)
@@ -228,9 +226,6 @@ func (r *componentPropertyResource) Read(ctx context.Context, req resource.ReadR
 		Type:        types.StringValue(componentProperty.Type),
 		Description: types.StringValue(componentProperty.Description),
 	}
-	if componentProperty.Type == PropertyTypeEncryptedString {
-		propertyState.Value = state.Value
-	}
 	diags = resp.State.Set(ctx, &propertyState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -247,7 +242,7 @@ func (r *componentPropertyResource) Read(ctx context.Context, req resource.ReadR
 	})
 }
 
-func (r *componentPropertyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (*componentPropertyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// DependencyTrack does not expose an API method to POST / PATCH `ComponentProperty`, as such, all attributes have been marked with `RequiresReplace`.
 	var plan componentPropertyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -294,9 +289,6 @@ func (r *componentPropertyResource) Update(ctx context.Context, req resource.Upd
 		Value:       types.StringValue(property.Value),
 		Type:        types.StringValue(property.Type),
 		Description: types.StringValue(property.Description),
-	}
-	if property.Type == PropertyTypeEncryptedString {
-		state.Value = plan.Value
 	}
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -408,11 +400,10 @@ func (r *componentPropertyResource) ImportState(ctx context.Context, req resourc
 		return
 	}
 	propertyState := componentPropertyResourceModel{
-		ID:        types.StringValue(componentProperty.UUID.String()),
-		Component: types.StringValue(componentID.String()),
-		Group:     types.StringValue(componentProperty.Group),
-		Name:      types.StringValue(componentProperty.Name),
-		// If Type == "ENCRYPTEDSTRING", then Value will be placeholder text.
+		ID:          types.StringValue(componentProperty.UUID.String()),
+		Component:   types.StringValue(componentID.String()),
+		Group:       types.StringValue(componentProperty.Group),
+		Name:        types.StringValue(componentProperty.Name),
 		Value:       types.StringValue(componentProperty.Value),
 		Type:        types.StringValue(componentProperty.Type),
 		Description: types.StringValue(componentProperty.Description),
