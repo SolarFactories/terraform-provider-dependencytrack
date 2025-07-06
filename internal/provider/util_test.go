@@ -73,7 +73,7 @@ func requireNoError(t *testing.T, actual error) {
 func requireError(t *testing.T, actual error, expectedRegex string) {
 	t.Helper()
 	if actual == nil {
-		t.Errorf("Expected error, received nil")
+		t.Error("Expected error, received nil")
 		return
 	}
 	match, err := regexp.MatchString(expectedRegex, actual.Error())

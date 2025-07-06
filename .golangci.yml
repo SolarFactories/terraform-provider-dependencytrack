@@ -4,6 +4,8 @@ linters:
   default: all
   disable:
     - goheader
+    - wsl
+    - wsl_v5
   settings:
     asasalint:
       exclude: []
@@ -497,23 +499,24 @@ linters:
       ignore-sig-regexps: [] # Default []
       ignore-package-globs: [] # Default []
       ignore-interface-regexps: [] # Default []
-    wsl:
-      strict-append: true # Default true
-      allow-assign-and-call: true # Default true
-      allow-assign-and-anything: false # Default false
-      allow-multiline-assign: true # Default true
-      force-case-trailing-whitespace: 1 # Default 0
-      allow-trailing-comment: false # Default false
-      allow-separated-leading-comment: false # Default false
-      allow-cuddle-declarations: true # Default false
-      allow-cuddle-with-calls: [] # Default ["Lock", "RLock"]
-      allow-cuddle-with-rhs: [] # Default ["Unlock", "RUnlock"]
-      allow-cuddle-used-in-block: false # Default false
-      force-err-cuddling: true # Default false
-      error-variable-names: # Default ["err"]
-        - err
-      force-short-decl-cuddling: false # Default false
-    custom: {}
+# TODO: Apply config for wsl_v5
+#    wsl:
+#      strict-append: true # Default true
+#      allow-assign-and-call: true # Default true
+#      allow-assign-and-anything: false # Default false
+#      allow-multiline-assign: true # Default true
+#      force-case-trailing-whitespace: 1 # Default 0
+#      allow-trailing-comment: false # Default false
+#      allow-separated-leading-comment: false # Default false
+#      allow-cuddle-declarations: true # Default false
+#      allow-cuddle-with-calls: [] # Default ["Lock", "RLock"]
+#      allow-cuddle-with-rhs: [] # Default ["Unlock", "RUnlock"]
+#      allow-cuddle-used-in-block: false # Default false
+#      force-err-cuddling: true # Default false
+#      error-variable-names: # Default ["err"]
+#        - err
+#      force-short-decl-cuddling: false # Default false
+#    custom: {}
   exclusions:
     generated: "strict" # Default "lax"
     warn-unused: true # Default false
