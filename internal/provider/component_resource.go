@@ -29,6 +29,7 @@ type (
 	}
 
 	componentResourceModel struct {
+		Hashes      *componentHashesResourceModel `tfsdk:"hashes"`
 		ID          types.String                  `tfsdk:"id"`
 		Project     types.String                  `tfsdk:"project"`
 		Author      types.String                  `tfsdk:"author"`
@@ -46,7 +47,6 @@ type (
 		Copyright   types.String                  `tfsdk:"copyright"`
 		License     types.String                  `tfsdk:"license"`
 		Notes       types.String                  `tfsdk:"notes"`
-		Hashes      *componentHashesResourceModel `tfsdk:"hashes"`
 	}
 
 	componentHashesResourceModel struct {
