@@ -240,6 +240,7 @@ func (*dependencyTrackProvider) Resources(_ context.Context) []func() resource.R
 		NewTagResource,
 		NewTagProjectsResource,
 		NewTagPoliciesResource,
+		NewComponentResource,
 	}
 }
 

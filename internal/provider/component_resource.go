@@ -57,10 +57,10 @@ type (
 		SHA512      types.String `tfsdk:"sha512"`
 		SHA3_256    types.String `tfsdk:"sha3_256"`
 		SHA3_384    types.String `tfsdk:"sha3_384"`
-		SHA3_512    types.String `tfsdk:"sha_512"`
+		SHA3_512    types.String `tfsdk:"sha3_512"`
 		BLAKE2b_256 types.String `tfsdk:"blake2b_256"`
 		BLAKE2b_384 types.String `tfsdk:"blake2b_384"`
-		BLAKE2b_512 types.String `tfsdk:"bake2b_512"`
+		BLAKE2b_512 types.String `tfsdk:"blake2b_512"`
 		BLAKE3      types.String `tfsdk:"blake3"`
 	}
 )
@@ -99,111 +99,136 @@ func (*componentResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			"description": schema.StringAttribute{
 				Description: "Description of the Component.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"author": schema.StringAttribute{
 				Description: "Author of the Component.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"publisher": schema.StringAttribute{
 				Description: "Publisher of the Component.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"group": schema.StringAttribute{
 				Description: "Group of the Component.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"classifier": schema.StringAttribute{
-				Description: "Classifier of the Component. Defaults to APPLICATION. See DependencyTrack for valid options.",
+				Description: "Classifier of the Component. Defaults to NONE. See DependencyTrack for valid options.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"filename": schema.StringAttribute{
 				Description: "Filename of the Component.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"extension": schema.StringAttribute{
 				Description: "Filename extension of the Component.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"cpe": schema.StringAttribute{
 				Description: "Common Platform Enumeration of the Component. Standardised format v2.2 / v2.3 from MITRE / NIST.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"purl": schema.StringAttribute{
 				Description: "Package URL of the Component. MUST be in standardised format to be saved. See DependencyTrack for format.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"swid": schema.StringAttribute{
 				Description: "SWID Tag ID. ISO/IEC 19770-2:2015.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"copyright": schema.StringAttribute{
 				Description: "Copyright of the Component.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"license": schema.StringAttribute{
 				Description: "License of the Component. See DependencyTrack for valid options.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"notes": schema.StringAttribute{
 				Description: "Notes to associate with the Component.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"internal": schema.BoolAttribute{
 				Description: "Whether the Component is internal, or external.",
 				Optional:    true,
+				Computed:    true,
 			},
 			"hashes": schema.SingleNestedAttribute{
 				Description: "Hashes of the Component.",
-				Optional:    true,
+				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"md5": schema.StringAttribute{
 						Description: "MD5 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"sha1": schema.StringAttribute{
 						Description: "SHA1 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"sha256": schema.StringAttribute{
 						Description: "SHA256 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"sha384": schema.StringAttribute{
 						Description: "SHA384 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"sha512": schema.StringAttribute{
 						Description: "SHA512 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"sha3_256": schema.StringAttribute{
 						Description: "SHA3-256 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"sha3_384": schema.StringAttribute{
 						Description: "SHA3-384 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"sha3_512": schema.StringAttribute{
 						Description: "SHA3-512 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"blake2b_256": schema.StringAttribute{
 						Description: "BLAKE2b-256 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"blake2b_384": schema.StringAttribute{
 						Description: "BLAKE2b-384 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"blake2b_512": schema.StringAttribute{
 						Description: "BLAKE2b-512 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 					"blake3": schema.StringAttribute{
 						Description: "BLAKE3 hash of the Component.",
 						Optional:    true,
+						Computed:    true,
 					},
 				},
 			},
@@ -224,10 +249,10 @@ func (r *componentResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 	if plan.Classifier.IsUnknown() {
-		componentReq.Classifier = "APPLICATION"
+		componentReq.Classifier = "NONE"
 	}
-	tflog.Debug(ctx, "Creating Component", componentDebug(componentReq))
-	componentRes, err := r.client.Component.Create(ctx, componentReq.Project.UUID, componentReq)
+	tflog.Info(ctx, "Creating Component", componentDebug(*componentReq))
+	componentRes, err := r.client.Component.Create(ctx, componentReq.Project.UUID, *componentReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Component.",
@@ -236,13 +261,15 @@ func (r *componentResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 	plan = componentToModel(componentRes)
+	// Create SDK response does not contain Internal.
+	plan.Internal = types.BoolValue(componentReq.Internal)
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created Component", plan.debug())
+	tflog.Info(ctx, "Created Component", plan.debug())
 }
 
 func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -258,7 +285,7 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.Append(diagnostic)
 		return
 	}
-	tflog.Debug(ctx, "Reading Component", state.debug())
+	tflog.Info(ctx, "Reading Component", state.debug())
 	component, err := r.client.Component.Get(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -269,12 +296,12 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 	state = componentToModel(component)
 
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Read Component", state.debug())
+	tflog.Info(ctx, "Read Component", state.debug())
 }
 
 func (r *componentResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -290,8 +317,8 @@ func (r *componentResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	tflog.Debug(ctx, "Updating Component", componentDebug(component))
-	componentRes, err := r.client.Component.Update(ctx, component)
+	tflog.Debug(ctx, "Updating Component", componentDebug(*component))
+	componentRes, err := r.client.Component.Update(ctx, *component)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to update Component.",
@@ -366,11 +393,11 @@ func (r *componentResource) Configure(_ context.Context, req resource.ConfigureR
 	r.semver = clientInfoData.semver
 }
 
-func (model componentResourceModel) ToSdk(lifecycle LifecycleAction, d *diag.Diagnostics) dtrack.Component {
+func (model componentResourceModel) ToSdk(lifecycle LifecycleAction, d *diag.Diagnostics) *dtrack.Component {
 	projectID, diagnostic := TryParseUUID(model.Project, lifecycle, path.Root("project"))
 	if diagnostic != nil {
 		d.Append(diagnostic)
-		return dtrack.Component{}
+		return nil
 	}
 
 	component := dtrack.Component{
@@ -410,11 +437,11 @@ func (model componentResourceModel) ToSdk(lifecycle LifecycleAction, d *diag.Dia
 		componentID, diagnostic := TryParseUUID(model.ID, lifecycle, path.Root("id"))
 		if diagnostic != nil {
 			d.Append(diagnostic)
-			return dtrack.Component{}
+			return nil
 		}
 		component.UUID = componentID
 	}
-	return component
+	return &component
 }
 
 func componentToModel(component dtrack.Component) componentResourceModel {
