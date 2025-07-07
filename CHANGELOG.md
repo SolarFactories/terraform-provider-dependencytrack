@@ -1,3 +1,15 @@
+## 1.14
+
+#### FEATURES
+- Add `dependencytrack_component` resource to manage components within a project.
+- Add `dependencytrack_component_property` resource to manage properties within a component.
+
+#### MISC
+- Disabled `wsl` linter, due to being deprecated. Disabled replacement `wsl_v5` linter until configured.
+
+#### DEPENDENCIES
+- Override `github.com/DependencyTrack/client-go` with `github.com/SolarFactories/client-go@components`
+
 ## 1.13
 
 #### FEATURES
