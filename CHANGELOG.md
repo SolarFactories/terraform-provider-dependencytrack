@@ -1,3 +1,9 @@
+## 1.14.1
+
+#### DEPENDENCIES
+- `github.com/x/oauth2` `0.8.0` -> `0.27.0` in `/tools`
+- `github.com/hashicorp/terraform-plugin-framework` `1.15.0` -> `1.15.1`
+
 ## 1.14
 
 #### FEATURES
