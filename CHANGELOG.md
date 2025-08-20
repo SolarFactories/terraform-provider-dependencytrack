@@ -1,3 +1,11 @@
+## 1.14.2
+
+#### DEPENDENCIES
+- `actions/download-artifact` `4.3.0` -> `5.0.0`
+- `actions/checkout` `4.2.2` -> `5.0.0`
+- `goreleaser/goreleaser-action` `6.3.0` -> `6.4.0`
+- `github.com/hashicorp/terraform-plugin-testing` `1.13.2` -> `1.13.3`
+
 ## 1.14.1
 
 #### DEPENDENCIES
