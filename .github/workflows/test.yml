@@ -97,6 +97,8 @@ jobs:
             skip: "^$"
           - version: "4.13.2"
             skip: "^$"
+          - version: "4.13.3"
+            skip: "^$"
         provider:
           - "default"
           - "rootCA"
@@ -147,6 +149,8 @@ jobs:
           - version: "4.13.1"
             skip: "^$"
           - version: "4.13.2"
+            skip: "^$"
+          - version: "4.13.3"
             skip: "^$"
         provider:
           - "mtls"

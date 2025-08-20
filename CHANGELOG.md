@@ -1,5 +1,8 @@
 ## 1.14.2
 
+#### FEATURES
+- Add explicit support and testing for DependencyTrack `4.13.3`.
+
 #### DEPENDENCIES
 - `actions/download-artifact` `4.3.0` -> `5.0.0`
 - `actions/checkout` `4.2.2` -> `5.0.0`
