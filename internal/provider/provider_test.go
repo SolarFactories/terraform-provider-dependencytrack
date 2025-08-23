@@ -25,7 +25,10 @@ var (
 		if option == "mtls" {
 			return `provider "dependencytrack" {
 				host = "http://localhost:8083"
-				key = "OS_ENV"
+				auth = {
+					type = "KEY"
+					key = "OS_ENV"
+				}
 				mtls = {
 					key_path = "/opt/client_key.pem",
 					cert_path = "/opt/client_cert.pem",
@@ -39,7 +42,10 @@ var (
 			}
 			return `provider "dependencytrack" {
 				host = "https://localhost:8084"
-				key = "OS_ENV"
+				auth = {
+					type = "KEY"
+					key = "OS_ENV"
+				}
 				root_ca = "` + strings.ReplaceAll(string(rootCa), "\n", "\\n") + `"
 				mtls = {
 					key_path = "/opt/client_key.pem",
