@@ -4,7 +4,9 @@ package provider
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"os"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -33,6 +35,7 @@ type (
 	dependencyTrackProviderModel struct {
 		Host    types.String                          `tfsdk:"host"`
 		Key     types.String                          `tfsdk:"key"`
+		Auth    *providerAuthModel                    `tfsdk:"auth"`
 		RootCA  types.String                          `tfsdk:"root_ca"`
 		MTLS    *dependencyTrackProviderMtlsModel     `tfsdk:"mtls"`
 		Headers []dependencyTrackProviderHeadersModel `tfsdk:"headers"`
@@ -46,6 +49,12 @@ type (
 	dependencyTrackProviderMtlsModel struct {
 		KeyPath  types.String `tfsdk:"key_path"`
 		CertPath types.String `tfsdk:"cert_path"`
+	}
+
+	providerAuthModel struct {
+		Type   types.String `tfsdk:"type"`
+		Key    types.String `tfsdk:"key"`
+		Bearer types.String `tfsdk:"bearer"`
 	}
 
 	clientInfo struct {
@@ -70,8 +79,9 @@ func (*dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReque
 			"key": schema.StringAttribute{
 				Description: "API Key for authentication to DependencyTrack. " +
 					"Must have permissions for all attempted actions. " +
-					"Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable.",
-				Required:  true,
+					"Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable. " +
+					"If unset, then 'auth' block must be provided.",
+				Optional:  true,
 				Sensitive: true,
 			},
 			"headers": schema.ListNestedAttribute{
@@ -87,6 +97,27 @@ func (*dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReque
 							Description: "Value of the header to specify.",
 							Required:    true,
 						},
+					},
+				},
+			},
+			"auth": schema.SingleNestedAttribute{
+				Description: "Auth credentials to use to connect to DependencyTrack API. Must be provided if root 'key' attribute is not provided.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"type": schema.StringAttribute{
+						Description: "The authentication method to use. Valid values are: 'NONE', 'KEY', 'BEARER'.",
+						Required:    true,
+					},
+					"key": schema.StringAttribute{
+						Description: "API Key for DependencyTrack. Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable. " +
+							"Must be provided if 'type' is set to 'KEY'.",
+						Optional:  true,
+						Sensitive: true,
+					},
+					"bearer": schema.StringAttribute{
+						Description: "Bearer token from DependencyTrack. Must be provided if 'type' is set to 'BEARER'.",
+						Optional:    true,
+						Sensitive:   true,
 					},
 				},
 			},
@@ -112,24 +143,6 @@ func (*dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReque
 	}
 }
 
-func loadHeaders(modelHeaders []dependencyTrackProviderHeadersModel, diagnostics *diag.Diagnostics) []Header {
-	headers := make([]Header, 0, len(modelHeaders))
-	for _, header := range modelHeaders {
-		name := header.Name.ValueString()
-		value := header.Value.ValueString()
-		if name == "" || value == "" {
-			diagnostics.AddAttributeError(
-				path.Root("headers"),
-				"Missing header attributes",
-				fmt.Sprintf("Found Header Name: %s, and Value: %s", name, value),
-			)
-			continue
-		}
-		headers = append(headers, Header{name, value})
-	}
-	return headers
-}
-
 func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	// Get provider data from config.
 	var config dependencyTrackProviderModel
@@ -138,12 +151,8 @@ func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.Conf
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	host := config.Host.ValueString()
-	key := config.Key.ValueString()
-	clientCertFile := ""
-	clientKeyFile := ""
-	rootCAs := config.RootCA.ValueString()
 
+	host := config.Host.ValueString()
 	if host == "" {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("host"),
@@ -151,37 +160,15 @@ func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.Conf
 			"Host for DependencyTrack was provided, but it was empty.",
 		)
 	}
-	// If key is the magic value 'OS_ENV', load from environment variable.
-	if key == "OS_ENV" {
-		key = os.Getenv("DEPENDENCYTRACK_API_KEY")
-	}
-	if key == "" {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("key"),
-			"Missing DependencyTrack API Key",
-			"API Key for DependencyTrack was provided, but it was empty.",
-		)
-	}
-	// Headers.
-	headers := loadHeaders(config.Headers, &resp.Diagnostics)
-	// Set mTLS variables from Config.
-	if config.MTLS != nil {
-		clientCertFile = config.MTLS.CertPath.ValueString()
-		clientKeyFile = config.MTLS.KeyPath.ValueString()
-	}
+	authClientOption := getAuthClientOption(config, &resp.Diagnostics)
+	httpClient := getHTTPClient(config, &resp.Diagnostics)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	tflog.Debug(ctx, "Creating DependencyTrack client")
-	httpClient, err := NewHTTPClient(headers, []byte(rootCAs), clientCertFile, clientKeyFile)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Create HTTP Client",
-			"An unexpected error occurred when creating the HTTP Client in error: "+err.Error(),
-		)
-		return
-	}
-	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(httpClient), dtrack.WithAPIKey(key))
+	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(httpClient), authClientOption)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to Create DependencyTrack API Client",
@@ -189,6 +176,7 @@ func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.Conf
 		)
 		return
 	}
+
 	version, err := client.About.Get(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -205,6 +193,7 @@ func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.Conf
 		)
 		return
 	}
+
 	resp.DataSourceData = clientInfo{
 		client: client,
 		semver: semver,
@@ -260,4 +249,108 @@ func New(version string) func() provider.Provider {
 			version: version,
 		}
 	}
+}
+
+func getHTTPClient(config dependencyTrackProviderModel, diagnostics *diag.Diagnostics) *http.Client {
+	headers := loadHeaders(config.Headers, diagnostics)
+	if diagnostics.HasError() {
+		return nil
+	}
+
+	// Set mTLS variables from Config.
+	clientCertFile := ""
+	clientKeyFile := ""
+	rootCAs := config.RootCA.ValueString()
+	if config.MTLS != nil {
+		clientCertFile = config.MTLS.CertPath.ValueString()
+		clientKeyFile = config.MTLS.KeyPath.ValueString()
+	}
+
+	httpClient, err := NewHTTPClient(headers, []byte(rootCAs), clientCertFile, clientKeyFile)
+	if err != nil {
+		diagnostics.AddError(
+			"Unable to Create HTTP Client",
+			"An unexpected error occurred when creating the HTTP Client in error: "+err.Error(),
+		)
+		return nil
+	}
+	return httpClient
+}
+
+func loadHeaders(modelHeaders []dependencyTrackProviderHeadersModel, diagnostics *diag.Diagnostics) []Header {
+	headers := make([]Header, 0, len(modelHeaders))
+	for _, header := range modelHeaders {
+		name := header.Name.ValueString()
+		value := header.Value.ValueString()
+		if name == "" || value == "" {
+			diagnostics.AddAttributeError(
+				path.Root("headers"),
+				"Missing header attributes",
+				fmt.Sprintf("Found Header Name: '%s', and Value: '%s'.", name, value),
+			)
+			continue
+		}
+		headers = append(headers, Header{name, value})
+	}
+	return headers
+}
+
+func getAuthClientOption(config dependencyTrackProviderModel, diagnostics *diag.Diagnostics) dtrack.ClientOption {
+	if !config.Key.IsNull() && !config.Key.IsUnknown() {
+		key := getAPIKey(config.Key, diagnostics)
+		return dtrack.WithAPIKey(key)
+	}
+	if config.Auth == nil {
+		diagnostics.AddAttributeError(
+			path.Root("auth"),
+			"Missing authentication configuration.",
+			"If 'key' is not provided, then 'auth' block is required.",
+		)
+		return nopClientOption
+	}
+	switch config.Auth.Type.ValueString() {
+	case "NONE":
+		return nopClientOption
+	case "KEY":
+		{
+			key := getAPIKey(config.Auth.Key, diagnostics)
+			return dtrack.WithAPIKey(key)
+		}
+	case "BEARER":
+		{
+			bearer := config.Auth.Bearer.ValueString()
+			bearer = strings.TrimPrefix(bearer, "Bearer ")
+			return dtrack.WithBearerToken(bearer)
+		}
+	default:
+		{
+			diagnostics.AddAttributeError(
+				path.Root("auth.type"),
+				"Invalid auth type provided.",
+				fmt.Sprintf("Unexpected value of: '%s'", config.Auth.Type.ValueString()),
+			)
+			return nopClientOption
+		}
+	}
+}
+
+func getAPIKey(value types.String, diagnostics *diag.Diagnostics) string {
+	key := value.ValueString()
+	// If key is the magic value 'OS_ENV', load from environment variable.
+	if key == "OS_ENV" {
+		key = os.Getenv("DEPENDENCYTRACK_API_KEY")
+	}
+	if key == "" {
+		diagnostics.AddAttributeError(
+			path.Root("key"),
+			"Missing DependencyTrack API Key",
+			"API Key for DependencyTrack was provided, but it was empty.",
+		)
+		return ""
+	}
+	return key
+}
+
+func nopClientOption(_ *dtrack.Client) error {
+	return nil
 }

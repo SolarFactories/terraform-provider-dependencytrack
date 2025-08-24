@@ -13,12 +13,14 @@ Interact with DependencyTrack.
 ## Example Usage
 
 ```terraform
+// Standard API Key
 provider "dependencytrack" {
   host    = "http://localhost:8081"
   key     = "OS_ENV"
   headers = [{ name = "HEADER-NAME", value = "HEADER-VALUE" }]
 }
 
+// TLS, with optional Client verification
 provider "dependencytrack" {
   host    = "https://localhost:8081"
   key     = "OS_ENV"
@@ -26,6 +28,23 @@ provider "dependencytrack" {
   mtls = {
     key_path  = "/opt/client_key.pem"
     cert_path = "/opt/client_cert.pem"
+  }
+}
+
+// Auth property, for differing authentication credentials
+provider "dependencytrack" {
+  host = "http://localhost:8081"
+  auth = {
+    type = "KEY"
+    key  = "OS_ENV"
+  }
+}
+
+provider "dependencytrack" {
+  host = "http://localhost:8081"
+  auth = {
+    type   = "BEARER"
+    bearer = "eyJ..."
   }
 }
 ```
@@ -36,13 +55,27 @@ provider "dependencytrack" {
 ### Required
 
 - `host` (String) URI for DependencyTrack API.
-- `key` (String, Sensitive) API Key for authentication to DependencyTrack. Must have permissions for all attempted actions. Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable.
 
 ### Optional
 
+- `auth` (Attributes) Auth credentials to use to connect to DependencyTrack API. Must be provided if root 'key' attribute is not provided. (see [below for nested schema](#nestedatt--auth))
 - `headers` (Attributes List) Add additional headers to client API requests. Useful for proxy authentication. (see [below for nested schema](#nestedatt--headers))
+- `key` (String, Sensitive) API Key for authentication to DependencyTrack. Must have permissions for all attempted actions. Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable. If unset, then 'auth' block must be provided.
 - `mtls` (Attributes) Client Key and Certificate paths to use for mTLS connection to DependencyTrack API. (see [below for nested schema](#nestedatt--mtls))
 - `root_ca` (String) Root CA Certificate(s) used for TLS connection to DependencyTrack API in PEM format.
+
+<a id="nestedatt--auth"></a>
+### Nested Schema for `auth`
+
+Required:
+
+- `type` (String) The authentication method to use. Valid values are: 'NONE', 'KEY', 'BEARER'.
+
+Optional:
+
+- `bearer` (String, Sensitive) Bearer token from DependencyTrack. Must be provided if 'type' is set to 'BEARER'.
+- `key` (String, Sensitive) API Key for DependencyTrack. Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable. Must be provided if 'type' is set to 'KEY'.
+
 
 <a id="nestedatt--headers"></a>
 ### Nested Schema for `headers`
