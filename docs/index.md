@@ -43,8 +43,8 @@ provider "dependencytrack" {
 provider "dependencytrack" {
   host = "http://localhost:8081"
   auth = {
-    type  = "BEARER"
-    token = "eyJ..."
+    type   = "BEARER"
+    bearer = "eyJ..."
   }
 }
 ```
