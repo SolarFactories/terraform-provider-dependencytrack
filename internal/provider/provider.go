@@ -79,7 +79,7 @@ func (*dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReque
 			"key": schema.StringAttribute{
 				Description: "API Key for authentication to DependencyTrack. " +
 					"Must have permissions for all attempted actions. " +
-					"Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable." +
+					"Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable. " +
 					"If unset, then 'auth' block must be provided.",
 				Optional:  true,
 				Sensitive: true,
@@ -105,11 +105,11 @@ func (*dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReque
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Description: "The authentication method to use. Supported values are: NONE, KEY, BEARER.",
+						Description: "The authentication method to use. Valid values are: 'NONE', 'KEY', 'BEARER'.",
 						Required:    true,
 					},
 					"key": schema.StringAttribute{
-						Description: "API Key for DependencyTrack. Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable." +
+						Description: "API Key for DependencyTrack. Set to 'OS_ENV' to read from 'DEPENDENCYTRACK_API_KEY' environment variable. " +
 							"Must be provided if 'type' is set to 'KEY'.",
 						Optional:  true,
 						Sensitive: true,
