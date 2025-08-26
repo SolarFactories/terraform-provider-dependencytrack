@@ -2,7 +2,8 @@ module terraform-provider-dependencytrack
 
 go 1.23.0
 
-toolchain go1.24.1
+// toolchain go1.24.1
+// toolchain go1.23.0
 
 require (
 	github.com/DependencyTrack/client-go v0.17.0
