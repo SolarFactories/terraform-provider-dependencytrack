@@ -112,6 +112,7 @@ linters:
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.ListAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.ListNestedAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.NestedAttributeObject$"
+        - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.SingleNestedAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/providerserver\\.ServeOpts$"
         - "^github.com/hashicorp/terraform-plugin-framework/provider/schema\\.Schema$"
         - "^github.com/hashicorp/terraform-plugin-framework/provider/schema\\.StringAttribute$"

@@ -240,6 +240,7 @@ func (*dependencyTrackProvider) DataSources(_ context.Context) []func() datasour
 		NewProjectPropertyDataSource,
 		NewTeamDataSource,
 		NewConfigPropertyDataSource,
+		NewComponentsDataSource,
 	}
 }
 
