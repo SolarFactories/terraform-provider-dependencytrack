@@ -49,14 +49,14 @@ jobs:
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'make generate' command and commit."; exit 1)
 
-  test_connect:
-    name: Terraform Provider Connection Tests
+  test_tls:
+    name: Terraform Provider TLS Tests
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
       api:
-        image: dependencytrack/apiserver:${{ matrix.api.version }}
+        image: dependencytrack/apiserver:${{ matrix.api }}
         env:
           TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
         ports:
@@ -101,7 +101,7 @@ jobs:
     name: Terraform Provider Acceptance Tests
     needs:
       - build
-      - test_connect
+      - test_tls
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
