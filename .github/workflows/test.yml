@@ -49,10 +49,62 @@ jobs:
           git diff --compact-summary --exit-code || \
             (echo; echo "Unexpected difference in directories after code generation. Run 'make generate' command and commit."; exit 1)
 
+  test_connect:
+    name: Terraform Provider Connection Tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      api:
+        image: dependencytrack/apiserver:${{ matrix.api.version }}
+        env:
+          TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
+        ports:
+          - 8081:8080
+    strategy:
+      fail-fast: false
+      matrix:
+        api:
+          - "4.11.7"
+          - "4.12.7"
+          - "4.13.0"
+          - "4.13.1"
+          - "4.13.2"
+          - "4.13.3"
+        provider:
+          - "default"
+          - "rootCA"
+          - "mtls"
+          - "rootCA+mtls"
+        terraform:
+          - "1.0.*"
+          - "1.1.*"
+          - "1.2.*"
+          - "1.3.*"
+          - "1.4.*"
+          - "1.5.*"
+          - "1.6.*"
+          - "1.7.*"
+          - "1.8.*"
+          - "1.9.*"
+          - "1.10.*"
+          - "1.11.*"
+          - "1.12.*"
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: ./.github/actions/test
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          provider_config_key: ${{ matrix.provider }}
+          tests_run_regex: "^TestAccProjectResource$"
+
+
   # Run acceptance tests in a matrix with Terraform CLI versions
   test:
     name: Terraform Provider Acceptance Tests
-    needs: build
+    needs:
+      - build
+      - test_connect
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -99,9 +151,6 @@ jobs:
 #            skip: "^$"
 #          - version: "4.13.3"
 #            skip: "^$"
-        provider:
-          - "default"
-#          - "rootCA"
         terraform:
 #          - '1.0.*'
 #          - '1.1.*'
@@ -121,59 +170,4 @@ jobs:
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}
-          provider_config_key: ${{ matrix.provider }}
-          tests_skip_regex: ${{ matrix.api.skip }}
-
-  test_mtls:
-    if: false
-    name: Terraform Provider Acceptance Tests
-    needs: build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    services:
-      api:
-        image: dependencytrack/apiserver:${{ matrix.api.version }}
-        env:
-          TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
-        ports:
-          - 8081:8080
-    strategy:
-      fail-fast: false
-      matrix:
-        api:
-          - version: "4.11.7"
-            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)$"
-          - version: "4.12.7"
-            skip: "^TestAccTagResource$"
-          - version: "4.13.0"
-            skip: "^$"
-          - version: "4.13.1"
-            skip: "^$"
-          - version: "4.13.2"
-            skip: "^$"
-          - version: "4.13.3"
-            skip: "^$"
-        provider:
-          - "mtls"
-          - "rootCA+mtls"
-        terraform:
-          - '1.0.*'
-          - '1.1.*'
-          - '1.2.*'
-          - '1.3.*'
-          - '1.4.*'
-          - '1.5.*'
-          - '1.6.*'
-          - '1.7.*'
-          - '1.8.*'
-          - '1.9.*'
-          - '1.10.*'
-          - '1.11.*'
-          - '1.12.*'
-    steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-      - uses: ./.github/actions/test
-        with:
-          terraform_version: ${{ matrix.terraform }}
-          provider_config_key: ${{ matrix.provider }}
           tests_skip_regex: ${{ matrix.api.skip }}
