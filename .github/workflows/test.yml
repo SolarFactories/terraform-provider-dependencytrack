@@ -65,11 +65,8 @@ jobs:
       fail-fast: false
       matrix:
         api:
-          - "4.11.7"
-          - "4.12.7"
-          - "4.13.0"
-          - "4.13.1"
-          - "4.13.2"
+          # TLS Connectivity is between TF and Nginx, so is independent of API version.
+          # Full API testing is handled in subsequent jobs. Therefore, this can be the latest supported API version.
           - "4.13.3"
         provider:
           - "default"
