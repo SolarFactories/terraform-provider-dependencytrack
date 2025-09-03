@@ -7,11 +7,16 @@ inputs:
     required: true
   provider_config_key:
     description: "Config key to determine which provider config to use, as defined within provider_test.go."
-    required: true
+    required: false
+    default: "default"
   tests_skip_regex:
     description: "Regular Expression of Terraform Acceptance Tests to skip."
     required: false
     default: "^$"
+  tests_run_regex:
+    description: "Regular Expression of Terraform Acceptance Tests to run."
+    required: false
+    default: "^.*$"
 
 runs:
   using: "composite"
@@ -52,7 +57,7 @@ runs:
         terraform_wrapper: false
     - run: go mod download
       shell: bash
-    - run: go test -v -cover ./internal/provider/ -skip "${{ inputs.tests_skip_regex }}"
+    - run: go test -v -cover ./internal/provider/ -skip "${{ inputs.tests_skip_regex }}" -run "${{ inputs.tests_run_regex }}"
       shell: bash
       env:
         TF_ACC: "1"
