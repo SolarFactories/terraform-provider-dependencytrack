@@ -1,3 +1,14 @@
+## 1.15
+
+#### FEATURES
+- Add explicit support and testing for DependencyTrack `4.13.4`.
+- Add options for specifying different API authentication methods within `dependencytrack` provider configuration.
+	- Now supports: API Key, Bearer, and None - for when using unauthenticated endpoint data sources.
+
+#### MISC
+- Increased efficiency of pipeline, from running the same test configuration across differing reverse proxy TLS configurations.
+	- Now runs TLS configuration tests, and then tests separately, resulting in reduction of over 50% of number of jobs.
+
 ## 1.14.2
 
 #### FEATURES
