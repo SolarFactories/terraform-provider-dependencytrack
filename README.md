@@ -52,3 +52,22 @@ The list of API Versions will grow as functionality adapts to allow tests to pas
 The latest 2 patches within the latest minor version will be tested, and supported to allow for continued support while migrating.
 - Terraform: `1.0` -> `1.13`
 - DependencyTrack: `4.11.7`, `4.12.7`, `4.13.0`, `4.13.1`, `4.13.2`, `4.13.3`, `4.13.4`
+
+## Troubleshooting
+
+#### - Fails to fetch version information: EOF
+This is likely caused by a TLS issue. The provider requires a minimum TLS version of 1.3.
+Any certificates used to verify the connection, if not within the System Certificate Trust, can be specified with `root_ca` option on the provider.
+If necessary, a local reverse proxy can be configured to accept TLS v1.3, to then forward onto the API server.
+
+#### - Unable to deserialize a timestamp value into int
+This is likely caused by running the provider from a 32-bit system, as Golang's `int` type varies.
+Millisecond timestamp values do not fit in 32 bits, after `25 Jan 1970`, as such, are only accessible from a 64-bit system.
+
+#### - Other
+Please raise an issue with relevant information, including:
+- Terraform version
+- Provider version
+- API server version
+- A minimal reproducible example
+- Redacted Terraform `DEBUG` logs
