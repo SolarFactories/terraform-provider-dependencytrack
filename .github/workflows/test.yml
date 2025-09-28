@@ -138,9 +138,9 @@ jobs:
       matrix:
         api:
           - version: "4.11.7"
-            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)$"
+            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)|(TestAccProjectCollection)$"
           - version: "4.12.7"
-            skip: "^TestAccTagResource$"
+            skip: "^(TestAccTagResource)|(TestAccProjectCollection)$"
           - version: "4.13.0"
             skip: "^$"
           - version: "4.13.1"

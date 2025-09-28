@@ -47,9 +47,12 @@ resource "dependencytrack_project" "example" {
 <a id="nestedatt--collection"></a>
 ### Nested Schema for `collection`
 
-Optional:
+Required:
 
 - `logic` (String) Logic used to collecting sub-projects. See DependencyTrack for valid values.
+
+Optional:
+
 - `tag` (String) Tag used for selecting which projects to collect, when 'logic' is 'AGGREGATE_DIRECT_CHILDREN_WITH_TAG'.
 
 ## Import
