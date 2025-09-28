@@ -542,9 +542,6 @@ linters:
       - path: main.go
         linters:
           - cyclop
-      - path: go.mod
-        linters:
-          - gomoddirectives
       - path: internal/provider/provider_test.go
         linters:
           - gochecknoglobals

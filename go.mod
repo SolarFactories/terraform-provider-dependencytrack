@@ -3,7 +3,7 @@ module terraform-provider-dependencytrack
 go 1.24.0
 
 require (
-	github.com/DependencyTrack/client-go v0.17.1-0.20250919155731-c52621d240d6
+	github.com/DependencyTrack/client-go v0.17.1-0.20250928165948-bd03e361a95f
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-framework v1.16.0
 	github.com/hashicorp/terraform-plugin-go v0.29.0
@@ -62,5 +62,3 @@ require (
 	google.golang.org/grpc v1.75.1 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
 )
-
-replace github.com/DependencyTrack/client-go => github.com/SolarFactories/client-go v0.0.0-20250928145433-6b82b94ec7f6
