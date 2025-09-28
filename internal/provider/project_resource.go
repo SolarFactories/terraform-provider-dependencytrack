@@ -197,7 +197,12 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	if hasProjectCollectionFeature(*r.semver) && plan.Collection != nil {
 		collectionLogic := dtrack.CollectionLogic(plan.Collection.Logic.ValueString())
 		projectReq.CollectionLogic = &collectionLogic
-		projectReq.CollectionTag = &dtrack.Tag{Name: plan.Collection.Tag.ValueString()}
+		tagName := plan.Collection.Tag.ValueString()
+		if tagName != "" {
+			projectReq.CollectionTag = &dtrack.Tag{Name: tagName}
+		} else {
+			projectReq.CollectionTag = nil
+		}
 	}
 
 	tflog.Debug(ctx, "Creating a Project", map[string]any{
