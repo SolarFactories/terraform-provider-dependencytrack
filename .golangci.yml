@@ -568,6 +568,7 @@ linters:
       - path: internal/provider/util.go
         linters:
           - nonamedreturns
+          - godoclint
       - path: internal/provider/util_test.go
         linters:
           - cyclop
@@ -577,6 +578,7 @@ linters:
       - path: internal/provider/policy_tag_resource.go
         linters:
           - godox
+          - godoclint
       - path: internal/provider/team_apikey_resource_test.go
         linters:
           - godox
