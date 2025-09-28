@@ -30,7 +30,7 @@ resource "dependencytrack_project" "example" {
 
 - `active` (Boolean) Whether the Project is active. Defaults to true.
 - `classifier` (String) Classifier of the Project. Defaults to APPLICATION. See DependencyTrack for valid options.
-- `collection` (Attributes) Project Collection Logic for Aggregate Projects. Available in API 4.12+. (see [below for nested schema](#nestedatt--collection))
+- `collection` (Attributes) Project Collection Logic for Aggregate Projects. Available in API 4.13+. (see [below for nested schema](#nestedatt--collection))
 - `cpe` (String) Common Platform Enumeration of the Project. Standardised format v2.2 / v2.3 from MITRE / NIST.
 - `description` (String) Description of the Project.
 - `group` (String) Namespace / group / vendor of the Project.

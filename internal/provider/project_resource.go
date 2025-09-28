@@ -125,7 +125,7 @@ func (*projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				ElementType: types.StringType,
 			},
 			"collection": schema.SingleNestedAttribute{
-				Description: "Project Collection Logic for Aggregate Projects. Available in API 4.12+.",
+				Description: "Project Collection Logic for Aggregate Projects. Available in API 4.13+.",
 				Optional:    true,
 				//				Computed:    true,
 				Attributes: map[string]schema.Attribute{
@@ -196,7 +196,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	if plan.Classifier.IsUnknown() {
 		projectReq.Classifier = "APPLICATION"
 	}
-	if plan.Collection != nil {
+	if hasCollectionFeature(*r.semver) && plan.Collection != nil {
 		projectReq.CollectionLogic = dtrack.CollectionLogic(plan.Collection.Logic.ValueString())
 		projectReq.CollectionTag = plan.Collection.Tag.ValueString()
 	}
@@ -256,12 +256,14 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	} else {
 		plan.Parent = types.StringNull()
 	}
-	if projectRes.CollectionLogic == "NONE" {
-		plan.Collection = nil
-	} else {
-		plan.Collection = &projectResourceModelCollection{
-			Logic: types.StringValue(string(projectRes.CollectionLogic)),
-			Tag:   types.StringValue(projectRes.CollectionTag),
+	if hasCollectionFeature(*r.semver) {
+		if projectRes.CollectionLogic == "NONE" {
+			plan.Collection = nil
+		} else {
+			plan.Collection = &projectResourceModelCollection{
+				Logic: types.StringValue(string(projectRes.CollectionLogic)),
+				Tag:   types.StringValue(projectRes.CollectionTag),
+			}
 		}
 	}
 
@@ -349,22 +351,20 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		SWID:        types.StringValue(project.SWIDTagID),
 		Tags:        tagList,
 		Collection:  nil, // Updated below.
-		/*Collection: &projectResourceModelCollection{
-			Logic: types.StringValue(string(project.CollectionLogic)),
-			Tag:   types.StringValue(project.CollectionTag),
-		},*/
 	}
 	if project.ParentRef != nil {
 		state.Parent = types.StringValue(project.ParentRef.UUID.String())
 	} else {
 		state.Parent = types.StringNull()
 	}
-	if project.CollectionLogic == "NONE" {
-		state.Collection = nil
-	} else {
-		state.Collection = &projectResourceModelCollection{
-			Logic: types.StringValue(string(project.CollectionLogic)),
-			Tag:   types.StringValue(project.CollectionTag),
+	if hasCollectionFeature(*r.semver) {
+		if project.CollectionLogic == "NONE" {
+			state.Collection = nil
+		} else {
+			state.Collection = &projectResourceModelCollection{
+				Logic: types.StringValue(string(project.CollectionLogic)),
+				Tag:   types.StringValue(project.CollectionTag),
+			}
 		}
 	}
 
@@ -463,7 +463,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 		project.Tags = Map(stringList, func(item string) dtrack.Tag { return dtrack.Tag{Name: item} })
 	}
-	if plan.Collection != nil {
+	if hasCollectionFeature(*r.semver) && plan.Collection != nil {
 		project.CollectionLogic = dtrack.CollectionLogic(plan.Collection.Logic.ValueString())
 		project.CollectionTag = plan.Collection.Tag.ValueString()
 	}
@@ -524,12 +524,14 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	} else {
 		plan.Parent = types.StringNull()
 	}
-	if projectRes.CollectionLogic == "NONE" {
-		plan.Collection = nil
-	} else {
-		plan.Collection = &projectResourceModelCollection{
-			Logic: types.StringValue(string(projectRes.CollectionLogic)),
-			Tag:   types.StringValue(projectRes.CollectionTag),
+	if hasCollectionFeature(*r.semver) {
+		if projectRes.CollectionLogic == "NONE" {
+			plan.Collection = nil
+		} else {
+			plan.Collection = &projectResourceModelCollection{
+				Logic: types.StringValue(string(projectRes.CollectionLogic)),
+				Tag:   types.StringValue(projectRes.CollectionTag),
+			}
 		}
 	}
 
@@ -640,4 +642,8 @@ func (r *projectResource) Configure(_ context.Context, req resource.ConfigureReq
 	}
 	r.client = clientInfoData.client
 	r.semver = clientInfoData.semver
+}
+
+func hasCollectionFeature(semver Semver) bool {
+	return semver.Major >= 4 && semver.Minor >= 13
 }
