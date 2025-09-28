@@ -62,3 +62,5 @@ require (
 	google.golang.org/grpc v1.75.1 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
 )
+
+replace github.com/DependencyTrack/client-go => github.com/SolarFactories/client-go v0.0.0-20250928145433-6b82b94ec7f6
