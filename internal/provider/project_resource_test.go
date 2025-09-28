@@ -312,3 +312,73 @@ data "dependencytrack_project" "project2" {
 		},
 	})
 }
+
+// API 4.13+.
+func TestAccProjectCollection(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test Project Collection Direct"
+	version = "Test_Collection"
+	collection = {
+		logic = "AGGREGATE_DIRECT_CHILDREN"
+	}
+}
+resource "dependencytrack_project" "test2" {
+	name = "Test Project Collection Tag"
+	version = "Test_Collection_Tag"
+	collection = {
+		logic = "AGGREGATE_DIRECT_CHILDREN_WITH_TAG",
+		tag = "some_tag",
+	}
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "collection.logic", "AGGREGATE_DIRECT_CHILDREN"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.logic", "AGGREGATE_DIRECT_CHILDREN_WITH_TAG"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.tag", "some_tag"),
+				),
+			},
+			// ImportState.
+			{
+				ResourceName:      "dependencytrack_project.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "dependencytrack_project.test2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test Project Collection Direct"
+	version = "Test_Collection"
+	collection = {
+		logic = "AGGREGATE_DIRECT_CHILDREN"
+	}
+}
+resource "dependencytrack_project" "test2" {
+	name = "Test Project Collection Tag"
+	version = "Test_Collection_Tag"
+	collection = {
+		logic = "AGGREGATE_DIRECT_CHILDREN_WITH_TAG",
+		tag = "some_tag_with_change",
+	}
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "collection.logic", "AGGREGATE_DIRECT_CHILDREN"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.logic", "AGGREGATE_DIRECT_CHILDREN_WITH_TAG"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.tag", "some_tag_with_change"),
+				),
+			},
+		},
+	})
+}
