@@ -336,11 +336,19 @@ resource "dependencytrack_project" "test2" {
 		tag = "some_tag",
 	}
 }
+resource "dependencytrack_project" "test3" {
+	name = "Test Project Collection None"
+	version = "Test_Collection_None"
+	collection = {
+		logic = "NONE"
+	}
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "collection.logic", "AGGREGATE_DIRECT_CHILDREN"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.logic", "AGGREGATE_DIRECT_CHILDREN_WITH_TAG"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.tag", "some_tag"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test3", "collection.logic", "NONE"),
 				),
 			},
 			// ImportState.
@@ -358,7 +366,7 @@ resource "dependencytrack_project" "test2" {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
-	name = "Test Project Collection Direct"
+	name = "Test Project Collection Direct With Change"
 	version = "Test_Collection"
 	collection = {
 		logic = "AGGREGATE_DIRECT_CHILDREN"
@@ -372,11 +380,19 @@ resource "dependencytrack_project" "test2" {
 		tag = "some_tag_with_change",
 	}
 }
+resource "dependencytrack_project" "test3" {
+	name = "Test Project Collection None With Change"
+	version = "Test_Collection_None"
+	collection = {
+		logic = "NONE"
+	}
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "collection.logic", "AGGREGATE_DIRECT_CHILDREN"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.logic", "AGGREGATE_DIRECT_CHILDREN_WITH_TAG"),
 					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.tag", "some_tag_with_change"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test3", "collection.logic", "NONE"),
 				),
 			},
 		},

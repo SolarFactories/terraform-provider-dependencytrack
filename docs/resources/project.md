@@ -49,7 +49,7 @@ resource "dependencytrack_project" "example" {
 
 Required:
 
-- `logic` (String) Logic used to collecting sub-projects. See DependencyTrack for valid values.
+- `logic` (String) Logic used for collecting sub-projects. See DependencyTrack for valid values.
 
 Optional:
 

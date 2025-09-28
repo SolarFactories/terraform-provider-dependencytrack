@@ -129,7 +129,7 @@ func (*projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"logic": schema.StringAttribute{
-						Description: "Logic used to collecting sub-projects. See DependencyTrack for valid values.",
+						Description: "Logic used for collecting sub-projects. See DependencyTrack for valid values.",
 						Required:    true,
 					},
 					"tag": schema.StringAttribute{
@@ -261,7 +261,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		plan.Parent = types.StringNull()
 	}
 	if hasProjectCollectionFeature(*r.semver) {
-		if projectRes.CollectionLogic == nil || *projectRes.CollectionLogic == "NONE" {
+		if projectRes.CollectionLogic == nil || (*projectRes.CollectionLogic == "NONE" && projectReq.CollectionLogic == nil) {
 			plan.Collection = nil
 		} else {
 			plan.Collection = &projectResourceModelCollection{
@@ -346,7 +346,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	state = projectResourceModel{
+	newState := projectResourceModel{
 		ID:          types.StringValue(project.UUID.String()),
 		Name:        types.StringValue(project.Name),
 		Description: types.StringValue(project.Description),
@@ -362,28 +362,28 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		Collection:  nil, // Updated below.
 	}
 	if project.ParentRef != nil {
-		state.Parent = types.StringValue(project.ParentRef.UUID.String())
+		newState.Parent = types.StringValue(project.ParentRef.UUID.String())
 	} else {
-		state.Parent = types.StringNull()
+		newState.Parent = types.StringNull()
 	}
 	if hasProjectCollectionFeature(*r.semver) {
-		if project.CollectionLogic == nil || *project.CollectionLogic == "NONE" {
-			state.Collection = nil
+		if project.CollectionLogic == nil || (*project.CollectionLogic == "NONE" && state.Collection == nil) {
+			newState.Collection = nil
 		} else {
-			state.Collection = &projectResourceModelCollection{
+			newState.Collection = &projectResourceModelCollection{
 				Logic: types.StringValue(string(*project.CollectionLogic)),
 				Tag:   types.StringNull(), // Updated below.
 			}
 			if project.CollectionTag == nil || project.CollectionTag.Name == "" {
-				state.Collection.Tag = types.StringNull()
+				newState.Collection.Tag = types.StringNull()
 			} else {
-				state.Collection.Tag = types.StringValue(project.CollectionTag.Name)
+				newState.Collection.Tag = types.StringValue(project.CollectionTag.Name)
 			}
 		}
 	}
 
 	// Update state.
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -519,7 +519,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	// Map SDK to TF.
-	plan = projectResourceModel{
+	newPlan := projectResourceModel{
 		ID:          types.StringValue(projectRes.UUID.String()),
 		Name:        types.StringValue(projectRes.Name),
 		Description: types.StringValue(projectRes.Description),
@@ -535,28 +535,28 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		Collection:  nil, // Updated below.
 	}
 	if projectRes.ParentRef != nil {
-		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
+		newPlan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
-		plan.Parent = types.StringNull()
+		newPlan.Parent = types.StringNull()
 	}
 	if hasProjectCollectionFeature(*r.semver) {
-		if *projectRes.CollectionLogic == "NONE" {
-			plan.Collection = nil
+		if *projectRes.CollectionLogic == "NONE" && plan.Collection == nil {
+			newPlan.Collection = nil
 		} else {
-			plan.Collection = &projectResourceModelCollection{
+			newPlan.Collection = &projectResourceModelCollection{
 				Logic: types.StringValue(string(*projectRes.CollectionLogic)),
 				Tag:   types.StringNull(), // Updated below.
 			}
 			if projectRes.CollectionTag == nil || projectRes.CollectionTag.Name == "" {
-				plan.Collection.Tag = types.StringNull()
+				newPlan.Collection.Tag = types.StringNull()
 			} else {
-				plan.Collection.Tag = types.StringValue(projectRes.CollectionTag.Name)
+				newPlan.Collection.Tag = types.StringValue(projectRes.CollectionTag.Name)
 			}
 		}
 	}
 
 	// Update State.
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, newPlan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
