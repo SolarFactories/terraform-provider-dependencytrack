@@ -1,3 +1,24 @@
+## 1.16
+
+#### FEATURES
+- Add `collection` attribute to `dependencytrack_project` resource, available with API `v4.13+`, to manage the project collection logic.
+- Add explicit testing and support for Terraform `1.13.x`.
+
+#### MISC
+- Update minimum go version to `1.24.0`.
+- Add troubleshooting documentation to README.md.
+
+#### DEPENDENCIES
+- `actions/setup-go` `5.5.0` -> `6.0.0`
+- `actions/setup-node` `4.4.0` -> `5.0.0`
+- `github.com/hashicorp/terraform-plugin-framework` `1.15.1` -> `1.16.0`
+- `github.com/hashicorp/terraform-plugin-go` `0.28.0` -> `0.29.0`
+- `github.com/DependencyTrack/client-go`
+
+#### ISSUES
+- Importing a `dependencytrack_project` with a `collection.logic` of `"NONE"` results in `null` being stored in the Terraform state.
+	- If importing to match a resource with a defined value of `"NONE"`, then a `terraform apply` should update the Terraform state to match the defined value.
+
 ## 1.15
 
 #### FEATURES

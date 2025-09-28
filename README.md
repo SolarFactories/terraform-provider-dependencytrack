@@ -5,7 +5,7 @@ Uses [Terraform Plugin Framework]("https://github.com/hashicorp/terraform-plugin
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
-- [Go](https://golang.org/doc/install) >= 1.22
+- [Go](https://golang.org/doc/install) >= 1.24
 - [DependencyTrack](https://dependencytrack.org)
   - A [Docker Compose](https://docs.docker.com/compose) file is provided to start a local instance with UI at `http://localhost:8080` and API at `http://localhost:8081`
 

@@ -542,9 +542,6 @@ linters:
       - path: main.go
         linters:
           - cyclop
-      - path: go.mod
-        linters:
-          - gomoddirectives
       - path: internal/provider/provider_test.go
         linters:
           - gochecknoglobals
@@ -553,6 +550,7 @@ linters:
           - gocyclo
           - cyclop
           - gocognit
+          - nestif
       - path: internal/provider/http_client.go
         linters:
           - wrapcheck
@@ -567,6 +565,7 @@ linters:
       - path: internal/provider/util.go
         linters:
           - nonamedreturns
+          - godoclint
       - path: internal/provider/util_test.go
         linters:
           - cyclop
@@ -576,6 +575,7 @@ linters:
       - path: internal/provider/policy_tag_resource.go
         linters:
           - godox
+          - godoclint
       - path: internal/provider/team_apikey_resource_test.go
         linters:
           - godox
