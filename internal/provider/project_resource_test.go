@@ -362,6 +362,13 @@ resource "dependencytrack_project" "test3" {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				ResourceName:      "dependencytrack_project.test3",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Importing when the collection is "NONE" results in a nil value being stored.
+				ImportStateVerifyIgnore: []string{"collection"},
+			},
 			// Update and Read.
 			{
 				Config: providerConfig + `
