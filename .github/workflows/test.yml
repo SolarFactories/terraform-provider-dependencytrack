@@ -69,7 +69,7 @@ jobs:
         api:
           # TLS Connectivity is between TF and Nginx, so is independent of API version.
           # Full API testing is handled in subsequent jobs. Therefore, this can be the latest supported API version.
-          - "4.13.4"
+          - "4.13.5"
         provider:
           - "default"
           - "rootCA"
@@ -152,6 +152,8 @@ jobs:
           - version: "4.13.3"
             skip: "^$"
           - version: "4.13.4"
+            skip: "^$"
+          - version: "4.13.5"
             skip: "^$"
         terraform:
           - '1.0.*'
