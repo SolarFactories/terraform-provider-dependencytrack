@@ -48,10 +48,10 @@ Various resources have minimum DependencyTrack API versions, which are documente
 The following versions are tested and supported with any combination from options.
 Other API versions may work, with a subset of functionality, but are not guaranteed.
 The latest patch version within a minor release is supported, even if it might not be tested - PR's to update would always be welcome.
-The list of API Versions will grow as functionality adapts to allow tests to pass, which at present is only a small subset.
-The latest 2 patches within the latest minor version will be tested, and supported to allow for continued support while migrating.
+The list of API Versions will grow as functionality adapts to allow further tests to pass.
+The latest 2 patches within the latest minor version, at a minimum, will be tested, and supported to allow for continued support while migrating.
 - Terraform: `1.0` -> `1.13`
-- DependencyTrack: `4.11.7`, `4.12.7`, `4.13.0`, `4.13.1`, `4.13.2`, `4.13.3`, `4.13.4`
+- DependencyTrack: `4.11.7`, `4.12.7`, `4.13.0`, `4.13.1`, `4.13.2`, `4.13.3`, `4.13.4`, `4.13.5`.
 
 ## Troubleshooting
 
