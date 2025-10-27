@@ -44,7 +44,7 @@ jobs:
       - name: Package
         working-directory: cdktf/typescript
         run: npm pack
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: cdktf-typescript
           path: "cdktf/typescript/solarfactories-cdktf-provider-dependencytrack-*.tgz"
@@ -96,7 +96,7 @@ jobs:
           source ../.venv/bin/activate
           python -m pip install --upgrade build
           python -m build
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: cdktf-python
           path: "cdktf/python/build/dist"
