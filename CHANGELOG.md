@@ -1,3 +1,16 @@
+## 1.16.1
+
+#### FEATURES
+- Add explicit support and testing for DependencyTrack `4.13.5`
+
+#### MISC
+- Remove unused `cdktf-bindings.yml` workflow.
+
+#### DEPENDENCIES
+- `github.com/hashicorp/terraform-plugin-framework` `1.16.0` -> `1.16.1`
+- `golangci/golangci-lint-action` `8.0.0` -> `9.0.0`
+- `github.com/hashicorp/terraform-plugin-log` `0.9.0` -> `0.10.0`
+
 ## 1.16
 
 #### FEATURES
