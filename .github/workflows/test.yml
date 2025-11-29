@@ -158,7 +158,7 @@ jobs:
             skip: "^$"
           - version: "4.13.6"
             skip: "^$"
-          - version: "4.13.6"
+          - version: "4.13.6-alpine"
             skip: "^$"
         terraform:
           - '1.0.*'
