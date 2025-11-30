@@ -1,3 +1,16 @@
+## 1.16.2
+
+#### FEATURES
+- Add explicit support and testing for Terraform `1.14.*`.
+- Add explicit support and testing for DependencyTrack `4.13.6`, `4.13.6-alpine`.
+
+#### DEPENDENCIES
+- `actions/checkout` `5.0.0` -> `6.0.0`
+- `actions/setup-go` `6.0.0` -> `6.1.0`
+- `golangci/golangci-lint-action` `9.0.0` -> `9.1.0`
+- `golang.org/x/crypto` `0.36.0` -> `0.45.0` in `/tools`
+- `golang.org/x/crypt` `0.41.0` -> `0.45.0`
+
 ## 1.16.1
 
 #### FEATURES
