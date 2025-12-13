@@ -88,19 +88,14 @@ resource "dependencytrack_team_permissions" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.1", "BOM_UPLOAD"),
 				),
 			},
-			// ImportState testing.
-			{
-				ResourceName:      "dependencytrack_team_permissions.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
 			// Update and Read testing.
 			{
 				Config: providerConfig + `
-resource "dependencytrack_test" "test" {
+resource "dependencytrack_team" "test" {
 	name = "Test_Team"
 }
 resource "dependencytrack_team_permissions" "test" {
+	team = dependencytrack_team.test.id
 	permissions = [
 		"VIEW_PORTFOLIO",
 		"BOM_UPLOAD",

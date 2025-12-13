@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -82,8 +84,31 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	desiredPermissions := Map(plan.Permissions, func(desired types.String) string { return desired.ValueString() })
+	desiredPermissions := Map(plan.Permissions, types.String.ValueString)
 	currentPermissions := Map(teamInfo.Permissions, func(current dtrack.Permission) string { return current.Name })
+
+	desiredPermissionMap := make(map[string]bool)
+	currentPermissionMap := make(map[string]bool)
+
+	for _, permission := range currentPermissions {
+		currentPermissionMap[permission] = true
+	}
+	for _, permission := range desiredPermissions {
+		desiredPermissionMap[permission] = true
+	}
+
+	addPermissions := []string{}
+	removePermissions := []string{}
+	for permission := range desiredPermissionMap {
+		if !currentPermissionMap[permission] {
+			addPermissions = append(addPermissions, permission)
+		}
+	}
+	for permission := range currentPermissionMap {
+		if !desiredPermissionMap[permission] {
+			removePermissions = append(removePermissions, permission)
+		}
+	}
 
 	tflog.Debug(ctx, "Creating Team Permissions", map[string]any{
 		"team":    teamID.String(),
@@ -91,17 +116,25 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 		"desired": desiredPermissions,
 	})
 
-	addPermissions, removePermissions := ListDeltas(currentPermissions, desiredPermissions)
 	finalPermissions := r.updatePermissions(ctx, &resp.Diagnostics, teamInfo, addPermissions, removePermissions)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	finalPermissionsStrings := Map(finalPermissions, func(permission dtrack.Permission) string {
+		return permission.Name
+	})
+
+	sortedDesiredPermissions := slices.SortedStableFunc(slices.Values(desiredPermissions), strings.Compare)
+	sortedFinalStringsPermissions := slices.SortedStableFunc(slices.Values(finalPermissionsStrings), strings.Compare)
+
+	var statePermissions = finalPermissionsStrings
+	if slices.Equal(sortedDesiredPermissions, sortedFinalStringsPermissions) {
+		statePermissions = desiredPermissions
+	}
 
 	plan = teamPermissionsResourceModel{
-		TeamID: types.StringValue(teamID.String()),
-		Permissions: Map(finalPermissions, func(permission dtrack.Permission) types.String {
-			return types.StringValue(permission.Name)
-		}),
+		TeamID:      types.StringValue(teamID.String()),
+		Permissions: Map(statePermissions, types.StringValue),
 	}
 
 	diags = resp.State.Set(ctx, plan)
@@ -111,7 +144,7 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 	}
 	tflog.Debug(ctx, "Created Team Permissions", map[string]any{
 		"team":        plan.TeamID.ValueString(),
-		"permissions": finalPermissions,
+		"permissions": statePermissions,
 	})
 }
 
@@ -143,11 +176,22 @@ func (r *teamPermissionsResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
+	storedPermissionStrings := Map(state.Permissions, types.String.ValueString)
+	updatedPermissionStrings := Map(team.Permissions, func(permission dtrack.Permission) string {
+		return permission.Name
+	})
+
+	sortedUpdatedPermissions := slices.SortedStableFunc(slices.Values(updatedPermissionStrings), strings.Compare)
+	sortedStoredPermissions := slices.SortedStableFunc(slices.Values(storedPermissionStrings), strings.Compare)
+
+	statePermissions := updatedPermissionStrings
+	if slices.Equal(sortedUpdatedPermissions, sortedStoredPermissions) {
+		statePermissions = storedPermissionStrings
+	}
+
 	state = teamPermissionsResourceModel{
-		TeamID: types.StringValue(teamID.String()),
-		Permissions: Map(team.Permissions, func(permission dtrack.Permission) types.String {
-			return types.StringValue(permission.Name)
-		}),
+		TeamID:      types.StringValue(teamID.String()),
+		Permissions: Map(statePermissions, types.StringValue),
 	}
 
 	// Update state.
