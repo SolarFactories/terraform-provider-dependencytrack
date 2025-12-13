@@ -88,7 +88,7 @@ resource "dependencytrack_team_permissions" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.1", "BOM_UPLOAD"),
 				),
 			},
-			// Update and Read testing.
+			// Read testing.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {
@@ -113,6 +113,32 @@ resource "dependencytrack_team_permissions" "test" {
 					},
 					PostApplyPreRefresh:  nil,
 					PostApplyPostRefresh: nil,
+				},
+			},
+			// Update testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_Team"
+}
+resource "dependencytrack_team_permissions" "test" {
+	team = dependencytrack_team.test.id
+	permissions = [
+		"VIEW_PORTFOLIO",
+		"BOM_UPLOAD",
+		"ACCESS_MANAGEMENT",
+	]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: nil,
+					PostApplyPreRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
 				},
 			},
 		},

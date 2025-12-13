@@ -236,6 +236,7 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 
 	desiredPermissions := Map(plan.Permissions, func(desired types.String) string { return desired.ValueString() })
 	currentPermissions := Map(teamInfo.Permissions, func(current dtrack.Permission) string { return current.Name })
+	sortedDesiredPermissions := slices.SortedStableFunc(slices.Values(desiredPermissions), strings.Compare)
 
 	tflog.Debug(ctx, "Updating Team Permissions", map[string]any{
 		"current": currentPermissions,
@@ -247,12 +248,17 @@ func (r *teamPermissionsResource) Update(ctx context.Context, req resource.Updat
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	finalPermissionStrings := Map(finalPermissions, func(permission dtrack.Permission) string { return permission.Name })
+	sortedFinalPermissions := slices.SortedStableFunc(slices.Values(finalPermissionStrings), strings.Compare)
+
+	statePermissions := finalPermissionStrings
+	if slices.Equal(sortedFinalPermissions, sortedDesiredPermissions) {
+		statePermissions = desiredPermissions
+	}
 
 	plan = teamPermissionsResourceModel{
-		TeamID: types.StringValue(team.String()),
-		Permissions: Map(finalPermissions, func(permission dtrack.Permission) types.String {
-			return types.StringValue(permission.Name)
-		}),
+		TeamID:      types.StringValue(team.String()),
+		Permissions: Map(statePermissions, types.StringValue),
 	}
 
 	// Update State.
