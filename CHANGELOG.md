@@ -1,3 +1,17 @@
+## 1.16.3
+
+#### FIXES
+- `permissions` in `dependencytrack_team_permissions` no longer needs to be sorted - `https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/117`
+
+#### MISC
+- Update `docker_compose` to use `latest-alpine` tag for `apiserver`, rather than defaulting to `latest`.
+
+#### DEPENDENCIES
+- `actions/checkout` `6.0.0` -> `6.0.1`
+- `golangci/golanci-lint-ction` `9.1.0` -> `9.2.0`
+- `github.com/hashicorp/terraform-plugin-testing` `1.13.3` -> `1.14.0`
+- `github.com/hashicorp/terraform-plugin-framework` `1.16.1` -> `1.17.0`
+
 ## 1.16.2
 
 #### FEATURES
