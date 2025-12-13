@@ -87,35 +87,13 @@ func (r *teamPermissionsResource) Create(ctx context.Context, req resource.Creat
 	desiredPermissions := Map(plan.Permissions, types.String.ValueString)
 	currentPermissions := Map(teamInfo.Permissions, func(current dtrack.Permission) string { return current.Name })
 
-	desiredPermissionMap := make(map[string]bool)
-	currentPermissionMap := make(map[string]bool)
-
-	for _, permission := range currentPermissions {
-		currentPermissionMap[permission] = true
-	}
-	for _, permission := range desiredPermissions {
-		desiredPermissionMap[permission] = true
-	}
-
-	addPermissions := []string{}
-	removePermissions := []string{}
-	for permission := range desiredPermissionMap {
-		if !currentPermissionMap[permission] {
-			addPermissions = append(addPermissions, permission)
-		}
-	}
-	for permission := range currentPermissionMap {
-		if !desiredPermissionMap[permission] {
-			removePermissions = append(removePermissions, permission)
-		}
-	}
-
 	tflog.Debug(ctx, "Creating Team Permissions", map[string]any{
 		"team":    teamID.String(),
 		"current": currentPermissions,
 		"desired": desiredPermissions,
 	})
 
+	addPermissions, removePermissions := ListDeltas(currentPermissions, desiredPermissions)
 	finalPermissions := r.updatePermissions(ctx, &resp.Diagnostics, teamInfo, addPermissions, removePermissions)
 	if resp.Diagnostics.HasError() {
 		return
