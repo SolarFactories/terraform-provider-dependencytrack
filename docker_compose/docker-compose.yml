@@ -4,7 +4,7 @@ volumes:
 
 services:
   dtrack-apiserver:
-    image: dependencytrack/apiserver
+    image: dependencytrack/apiserver:latest-alpine
     depends_on:
       dtrack-postgres:
         condition: service_healthy
