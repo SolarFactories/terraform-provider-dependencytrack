@@ -25,10 +25,10 @@ type (
 	}
 
 	componentsDataSourceModel struct {
-		Project      types.String `tfsdk:"project"`
-		Components   []componentResourceModel
-		OnlyDirect   types.Bool `tfsdk:"only_direct"`
-		OnlyOutdated types.Bool `tfsdk:"only_outdated"`
+		Project      types.String             `tfsdk:"project"`
+		Components   []componentResourceModel `tfsdk:"components"`
+		OnlyDirect   types.Bool               `tfsdk:"only_direct"`
+		OnlyOutdated types.Bool               `tfsdk:"only_outdated"`
 	}
 )
 
@@ -42,17 +42,17 @@ func (*componentsDataSource) Metadata(_ context.Context, req datasource.Metadata
 
 func (*componentsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Fetch a config property by group and name.",
+		Description: "Fetch components for a project.",
 		Attributes: map[string]schema.Attribute{
 			"project": schema.StringAttribute{
 				Description: "UUID of the Project for which to retrieve components.",
 				Required:    true,
 			},
-			"only_direct": schema.StringAttribute{
+			"only_direct": schema.BoolAttribute{
 				Description: "Filter for only direct components of the project.",
 				Optional:    true,
 			},
-			"only_outdated": schema.StringAttribute{
+			"only_outdated": schema.BoolAttribute{
 				Description: "Filter for only outdated components of the project.",
 				Optional:    true,
 			},
@@ -63,6 +63,10 @@ func (*componentsDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
 							Description: "UUID of the Component.",
+							Computed:    true,
+						},
+						"project": schema.StringAttribute{
+							Description: "Project of the Component.",
 							Computed:    true,
 						},
 						"author": schema.StringAttribute{
@@ -221,6 +225,7 @@ func (d *componentsDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		)
 		return
 	}
+
 	state = componentsDataSourceModel{
 		OnlyDirect:   types.BoolValue(onlyDirect),
 		OnlyOutdated: types.BoolValue(onlyOutdated),

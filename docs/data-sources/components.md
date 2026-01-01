@@ -3,12 +3,12 @@
 page_title: "dependencytrack_components Data Source - dependencytrack"
 subcategory: ""
 description: |-
-  Fetch a config property by group and name.
+  Fetch components for a project.
 ---
 
 # dependencytrack_components (Data Source)
 
-Fetch a config property by group and name.
+Fetch components for a project.
 
 
 
@@ -21,8 +21,8 @@ Fetch a config property by group and name.
 
 ### Optional
 
-- `only_direct` (String) Filter for only direct components of the project.
-- `only_outdated` (String) Filter for only outdated components of the project.
+- `only_direct` (Boolean) Filter for only direct components of the project.
+- `only_outdated` (Boolean) Filter for only outdated components of the project.
 
 ### Read-Only
 
@@ -46,6 +46,7 @@ Read-Only:
 - `license` (String) License of the Component.
 - `name` (String) Name of the Component.
 - `notes` (String) Notes of the Component.
+- `project` (String) Project of the Component.
 - `publisher` (String) Publisher of the Component.
 - `purl` (String) Package URL of the Component, in standardised form.
 - `swid` (String) SWID Tag ID. ISO/IEC 19770-2:2015.
