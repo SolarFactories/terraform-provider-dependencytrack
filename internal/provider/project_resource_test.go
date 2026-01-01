@@ -312,3 +312,96 @@ data "dependencytrack_project" "project2" {
 		},
 	})
 }
+
+// API 4.13+.
+func TestAccProjectCollection(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test Project Collection Direct"
+	version = "Test_Collection"
+	collection = {
+		logic = "AGGREGATE_DIRECT_CHILDREN"
+	}
+}
+resource "dependencytrack_project" "test2" {
+	name = "Test Project Collection Tag"
+	version = "Test_Collection_Tag"
+	collection = {
+		logic = "AGGREGATE_DIRECT_CHILDREN_WITH_TAG",
+		tag = "some_tag",
+	}
+}
+resource "dependencytrack_project" "test3" {
+	name = "Test Project Collection None"
+	version = "Test_Collection_None"
+	collection = {
+		logic = "NONE"
+	}
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "collection.logic", "AGGREGATE_DIRECT_CHILDREN"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.logic", "AGGREGATE_DIRECT_CHILDREN_WITH_TAG"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.tag", "some_tag"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test3", "collection.logic", "NONE"),
+				),
+			},
+			// ImportState.
+			{
+				ResourceName:      "dependencytrack_project.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "dependencytrack_project.test2",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				ResourceName:      "dependencytrack_project.test3",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Importing when the collection is "NONE" results in a nil value being stored.
+				ImportStateVerifyIgnore: []string{"collection"},
+			},
+			// Update and Read.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test Project Collection Direct With Change"
+	version = "Test_Collection"
+	collection = {
+		logic = "AGGREGATE_DIRECT_CHILDREN"
+	}
+}
+resource "dependencytrack_project" "test2" {
+	name = "Test Project Collection Tag"
+	version = "Test_Collection_Tag"
+	collection = {
+		logic = "AGGREGATE_DIRECT_CHILDREN_WITH_TAG",
+		tag = "some_tag_with_change",
+	}
+}
+resource "dependencytrack_project" "test3" {
+	name = "Test Project Collection None With Change"
+	version = "Test_Collection_None"
+	collection = {
+		logic = "NONE"
+	}
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "collection.logic", "AGGREGATE_DIRECT_CHILDREN"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.logic", "AGGREGATE_DIRECT_CHILDREN_WITH_TAG"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test2", "collection.tag", "some_tag_with_change"),
+					resource.TestCheckResourceAttr("dependencytrack_project.test3", "collection.logic", "NONE"),
+				),
+			},
+		},
+	})
+}

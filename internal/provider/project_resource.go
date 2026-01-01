@@ -28,18 +28,24 @@ type (
 	}
 
 	projectResourceModel struct {
-		ID          types.String `tfsdk:"id"`
-		Name        types.String `tfsdk:"name"`
-		Description types.String `tfsdk:"description"`
-		Version     types.String `tfsdk:"version"`
-		Parent      types.String `tfsdk:"parent"`
-		Classifier  types.String `tfsdk:"classifier"`
-		Group       types.String `tfsdk:"group"`
-		PURL        types.String `tfsdk:"purl"`
-		CPE         types.String `tfsdk:"cpe"`
-		SWID        types.String `tfsdk:"swid"`
-		Tags        types.List   `tfsdk:"tags"`
-		Active      types.Bool   `tfsdk:"active"`
+		Collection  *projectResourceModelCollection `tfsdk:"collection"`
+		ID          types.String                    `tfsdk:"id"`
+		Name        types.String                    `tfsdk:"name"`
+		Description types.String                    `tfsdk:"description"`
+		Version     types.String                    `tfsdk:"version"`
+		Parent      types.String                    `tfsdk:"parent"`
+		Classifier  types.String                    `tfsdk:"classifier"`
+		Group       types.String                    `tfsdk:"group"`
+		PURL        types.String                    `tfsdk:"purl"`
+		CPE         types.String                    `tfsdk:"cpe"`
+		SWID        types.String                    `tfsdk:"swid"`
+		Tags        types.List                      `tfsdk:"tags"`
+		Active      types.Bool                      `tfsdk:"active"`
+	}
+
+	projectResourceModelCollection struct {
+		Logic types.String `tfsdk:"logic"`
+		Tag   types.String `tfsdk:"tag"`
 	}
 )
 
@@ -118,6 +124,20 @@ func (*projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 				Computed:    true,
 				ElementType: types.StringType,
 			},
+			"collection": schema.SingleNestedAttribute{
+				Description: "Project Collection Logic for Aggregate Projects. Available in API 4.13+.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"logic": schema.StringAttribute{
+						Description: "Logic used for collecting sub-projects. See DependencyTrack for valid values.",
+						Required:    true,
+					},
+					"tag": schema.StringAttribute{
+						Description: "Tag used for selecting which projects to collect, when 'logic' is 'AGGREGATE_DIRECT_CHILDREN_WITH_TAG'.",
+						Optional:    true,
+					},
+				},
+			},
 		},
 	}
 }
@@ -174,19 +194,31 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	if plan.Classifier.IsUnknown() {
 		projectReq.Classifier = "APPLICATION"
 	}
+	if hasProjectCollectionFeature(*r.semver) && plan.Collection != nil {
+		collectionLogic := dtrack.CollectionLogic(plan.Collection.Logic.ValueString())
+		projectReq.CollectionLogic = &collectionLogic
+		tagName := plan.Collection.Tag.ValueString()
+		if tagName != "" {
+			projectReq.CollectionTag = &dtrack.Tag{Name: tagName}
+		} else {
+			projectReq.CollectionTag = nil
+		}
+	}
 
 	tflog.Debug(ctx, "Creating a Project", map[string]any{
-		"name":        projectReq.Name,
-		"description": projectReq.Description,
-		"active":      projectReq.Active,
-		"version":     projectReq.Version,
-		"parent":      projectReq.ParentRef,
-		"classifier":  projectReq.Classifier,
-		"group":       projectReq.Group,
-		"purl":        projectReq.PURL,
-		"cpe":         projectReq.CPE,
-		"swid":        projectReq.SWIDTagID,
-		"tags":        projectReq.Tags,
+		"name":             projectReq.Name,
+		"description":      projectReq.Description,
+		"active":           projectReq.Active,
+		"version":          projectReq.Version,
+		"parent":           projectReq.ParentRef,
+		"classifier":       projectReq.Classifier,
+		"group":            projectReq.Group,
+		"purl":             projectReq.PURL,
+		"cpe":              projectReq.CPE,
+		"swid":             projectReq.SWIDTagID,
+		"tags":             projectReq.Tags,
+		"collection.logic": projectReq.CollectionLogic,
+		"collection.tag":   projectReq.CollectionTag,
 	})
 	projectRes, err := r.client.Project.Create(ctx, projectReq)
 	if err != nil {
@@ -217,6 +249,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		CPE:         types.StringValue(projectRes.CPE),
 		SWID:        types.StringValue(projectRes.SWIDTagID),
 		Tags:        tagList,
+		Collection:  nil, // Updated below.
 	}
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
@@ -227,6 +260,21 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	} else {
 		plan.Parent = types.StringNull()
 	}
+	if hasProjectCollectionFeature(*r.semver) {
+		if projectRes.CollectionLogic == nil || (*projectRes.CollectionLogic == "NONE" && projectReq.CollectionLogic == nil) {
+			plan.Collection = nil
+		} else {
+			plan.Collection = &projectResourceModelCollection{
+				Logic: types.StringValue(string(*projectRes.CollectionLogic)),
+				Tag:   types.StringNull(), // Updated below.
+			}
+			if projectRes.CollectionTag == nil || projectRes.CollectionTag.Name == "" {
+				plan.Collection.Tag = types.StringNull()
+			} else {
+				plan.Collection.Tag = types.StringValue(projectRes.CollectionTag.Name)
+			}
+		}
+	}
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -234,18 +282,20 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 	tflog.Debug(ctx, "Created a Project", map[string]any{
-		"id":          projectRes.UUID.String(),
-		"name":        projectRes.Name,
-		"description": projectRes.Description,
-		"active":      projectRes.Active,
-		"version":     projectRes.Version,
-		"parent":      projectRes.ParentRef,
-		"classifier":  projectRes.Classifier,
-		"group":       projectRes.Group,
-		"purl":        projectRes.PURL,
-		"cpe":         projectRes.CPE,
-		"swid":        projectRes.SWIDTagID,
-		"tags":        projectRes.Tags,
+		"id":               projectRes.UUID.String(),
+		"name":             projectRes.Name,
+		"description":      projectRes.Description,
+		"active":           projectRes.Active,
+		"version":          projectRes.Version,
+		"parent":           projectRes.ParentRef,
+		"classifier":       projectRes.Classifier,
+		"group":            projectRes.Group,
+		"purl":             projectRes.PURL,
+		"cpe":              projectRes.CPE,
+		"swid":             projectRes.SWIDTagID,
+		"tags":             projectRes.Tags,
+		"collection.logic": projectRes.CollectionLogic,
+		"collection.tag":   projectRes.CollectionTag,
 	})
 }
 
@@ -296,7 +346,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	state = projectResourceModel{
+	newState := projectResourceModel{
 		ID:          types.StringValue(project.UUID.String()),
 		Name:        types.StringValue(project.Name),
 		Description: types.StringValue(project.Description),
@@ -309,32 +359,50 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		CPE:         types.StringValue(project.CPE),
 		SWID:        types.StringValue(project.SWIDTagID),
 		Tags:        tagList,
+		Collection:  nil, // Updated below.
 	}
 	if project.ParentRef != nil {
-		state.Parent = types.StringValue(project.ParentRef.UUID.String())
+		newState.Parent = types.StringValue(project.ParentRef.UUID.String())
 	} else {
-		state.Parent = types.StringNull()
+		newState.Parent = types.StringNull()
+	}
+	if hasProjectCollectionFeature(*r.semver) {
+		if project.CollectionLogic == nil || (*project.CollectionLogic == "NONE" && state.Collection == nil) {
+			newState.Collection = nil
+		} else {
+			newState.Collection = &projectResourceModelCollection{
+				Logic: types.StringValue(string(*project.CollectionLogic)),
+				Tag:   types.StringNull(), // Updated below.
+			}
+			if project.CollectionTag == nil || project.CollectionTag.Name == "" {
+				newState.Collection.Tag = types.StringNull()
+			} else {
+				newState.Collection.Tag = types.StringValue(project.CollectionTag.Name)
+			}
+		}
 	}
 
 	// Update state.
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	tflog.Debug(ctx, "Read Project", map[string]any{
-		"id":          project.UUID.String(),
-		"name":        project.Name,
-		"description": project.Description,
-		"active":      project.Active,
-		"version":     project.Version,
-		"parent":      project.ParentRef,
-		"classifier":  project.Classifier,
-		"group":       project.Group,
-		"purl":        project.PURL,
-		"cpe":         project.CPE,
-		"swid":        project.SWIDTagID,
-		"tags":        project.Tags,
+		"id":               project.UUID.String(),
+		"name":             project.Name,
+		"description":      project.Description,
+		"active":           project.Active,
+		"version":          project.Version,
+		"parent":           project.ParentRef,
+		"classifier":       project.Classifier,
+		"group":            project.Group,
+		"purl":             project.PURL,
+		"cpe":              project.CPE,
+		"swid":             project.SWIDTagID,
+		"tags":             project.Tags,
+		"collection.logic": project.CollectionLogic,
+		"collection.tag":   project.CollectionTag,
 	})
 }
 
@@ -409,21 +477,28 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		}
 		project.Tags = Map(stringList, func(item string) dtrack.Tag { return dtrack.Tag{Name: item} })
 	}
+	if hasProjectCollectionFeature(*r.semver) && plan.Collection != nil {
+		collectionLogic := dtrack.CollectionLogic(plan.Collection.Logic.ValueString())
+		project.CollectionLogic = &collectionLogic
+		project.CollectionTag = &dtrack.Tag{Name: plan.Collection.Tag.ValueString()}
+	}
 
 	// Execute.
 	tflog.Debug(ctx, "Updating Project", map[string]any{
-		"id":          project.UUID.String(),
-		"name":        project.Name,
-		"description": project.Description,
-		"active":      project.Active,
-		"version":     project.Version,
-		"parent":      project.ParentRef,
-		"classifier":  project.Classifier,
-		"group":       project.Group,
-		"purl":        project.PURL,
-		"cpe":         project.CPE,
-		"swid":        project.SWIDTagID,
-		"tags":        project.Tags,
+		"id":               project.UUID.String(),
+		"name":             project.Name,
+		"description":      project.Description,
+		"active":           project.Active,
+		"version":          project.Version,
+		"parent":           project.ParentRef,
+		"classifier":       project.Classifier,
+		"group":            project.Group,
+		"purl":             project.PURL,
+		"cpe":              project.CPE,
+		"swid":             project.SWIDTagID,
+		"tags":             project.Tags,
+		"collection.logic": project.CollectionLogic,
+		"collection.tag":   project.CollectionTag,
 	})
 	projectRes, err := r.client.Project.Update(ctx, project)
 	if err != nil {
@@ -444,7 +519,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	// Map SDK to TF.
-	plan = projectResourceModel{
+	newPlan := projectResourceModel{
 		ID:          types.StringValue(projectRes.UUID.String()),
 		Name:        types.StringValue(projectRes.Name),
 		Description: types.StringValue(projectRes.Description),
@@ -457,32 +532,50 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		CPE:         types.StringValue(projectRes.CPE),
 		SWID:        types.StringValue(projectRes.SWIDTagID),
 		Tags:        tagList,
+		Collection:  nil, // Updated below.
 	}
 	if projectRes.ParentRef != nil {
-		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
+		newPlan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
 	} else {
-		plan.Parent = types.StringNull()
+		newPlan.Parent = types.StringNull()
+	}
+	if hasProjectCollectionFeature(*r.semver) {
+		if *projectRes.CollectionLogic == "NONE" && plan.Collection == nil {
+			newPlan.Collection = nil
+		} else {
+			newPlan.Collection = &projectResourceModelCollection{
+				Logic: types.StringValue(string(*projectRes.CollectionLogic)),
+				Tag:   types.StringNull(), // Updated below.
+			}
+			if projectRes.CollectionTag == nil || projectRes.CollectionTag.Name == "" {
+				newPlan.Collection.Tag = types.StringNull()
+			} else {
+				newPlan.Collection.Tag = types.StringValue(projectRes.CollectionTag.Name)
+			}
+		}
 	}
 
 	// Update State.
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, newPlan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	tflog.Debug(ctx, "Updated Project", map[string]any{
-		"id":          projectRes.UUID.String(),
-		"name":        projectRes.Name,
-		"description": projectRes.Description,
-		"active":      projectRes.Active,
-		"version":     projectRes.Version,
-		"parent":      projectRes.ParentRef,
-		"classifier":  projectRes.Classifier,
-		"group":       projectRes.Group,
-		"purl":        projectRes.PURL,
-		"cpe":         projectRes.CPE,
-		"swid":        projectRes.SWIDTagID,
-		"tags":        projectRes.Tags,
+		"id":               projectRes.UUID.String(),
+		"name":             projectRes.Name,
+		"description":      projectRes.Description,
+		"active":           projectRes.Active,
+		"version":          projectRes.Version,
+		"parent":           projectRes.ParentRef,
+		"classifier":       projectRes.Classifier,
+		"group":            projectRes.Group,
+		"purl":             projectRes.PURL,
+		"cpe":              projectRes.CPE,
+		"swid":             projectRes.SWIDTagID,
+		"tags":             projectRes.Tags,
+		"collection.logic": projectRes.CollectionLogic,
+		"collection.tag":   projectRes.CollectionTag,
 	})
 }
 
@@ -569,4 +662,8 @@ func (r *projectResource) Configure(_ context.Context, req resource.ConfigureReq
 	}
 	r.client = clientInfoData.client
 	r.semver = clientInfoData.semver
+}
+
+func hasProjectCollectionFeature(semver Semver) bool {
+	return semver.Major >= 4 && semver.Minor >= 13
 }

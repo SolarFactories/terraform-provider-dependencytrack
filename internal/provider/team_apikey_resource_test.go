@@ -1,8 +1,9 @@
 package provider
 
 import (
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
 func TestAccTeamApiKeyResource(t *testing.T) {
@@ -109,7 +110,6 @@ resource "dependencytrack_team_apikey" "test" {
 	team = dependencytrack_team.test.id
 	comment = "Sample Update Comment"
 }
-
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample Update Comment"),

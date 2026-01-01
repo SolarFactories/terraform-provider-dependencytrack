@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccTeamPermissionsResource(t *testing.T) {
@@ -57,6 +58,88 @@ resource "dependencytrack_team_permissions" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.0", "ACCESS_MANAGEMENT"),
 					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.1", "SYSTEM_CONFIGURATION"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccTeamPermissionsResourceRegression117(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/117
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_Team"
+}
+resource "dependencytrack_team_permissions" "test" {
+	team = dependencytrack_team.test.id
+	permissions = [
+		"VIEW_PORTFOLIO",
+		"BOM_UPLOAD",
+	]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.0", "VIEW_PORTFOLIO"),
+					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.1", "BOM_UPLOAD"),
+				),
+			},
+			// Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_Team"
+}
+resource "dependencytrack_team_permissions" "test" {
+	team = dependencytrack_team.test.id
+	permissions = [
+		"VIEW_PORTFOLIO",
+		"BOM_UPLOAD",
+	]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.0", "VIEW_PORTFOLIO"),
+					resource.TestCheckResourceAttr("dependencytrack_team_permissions.test", "permissions.1", "BOM_UPLOAD"),
+				),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+					PostApplyPreRefresh:  nil,
+					PostApplyPostRefresh: nil,
+				},
+			},
+			// Update testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_Team"
+}
+resource "dependencytrack_team_permissions" "test" {
+	team = dependencytrack_team.test.id
+	permissions = [
+		"VIEW_PORTFOLIO",
+		"BOM_UPLOAD",
+		"ACCESS_MANAGEMENT",
+	]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: nil,
+					PostApplyPreRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectEmptyPlan(),
+					},
+				},
 			},
 		},
 	})

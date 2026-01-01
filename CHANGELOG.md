@@ -1,3 +1,75 @@
+## 1.16.3
+
+#### FIXES
+- `permissions` in `dependencytrack_team_permissions` no longer needs to be sorted - `https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/117`
+
+#### MISC
+- Update `docker_compose` to use `latest-alpine` tag for `apiserver`, rather than defaulting to `latest`.
+
+#### DEPENDENCIES
+- `actions/checkout` `6.0.0` -> `6.0.1`
+- `golangci/golanci-lint-ction` `9.1.0` -> `9.2.0`
+- `github.com/hashicorp/terraform-plugin-testing` `1.13.3` -> `1.14.0`
+- `github.com/hashicorp/terraform-plugin-framework` `1.16.1` -> `1.17.0`
+
+## 1.16.2
+
+#### FEATURES
+- Add explicit support and testing for Terraform `1.14.*`.
+- Add explicit support and testing for DependencyTrack `4.13.6`, `4.13.6-alpine`.
+
+#### DEPENDENCIES
+- `actions/checkout` `5.0.0` -> `6.0.0`
+- `actions/setup-go` `6.0.0` -> `6.1.0`
+- `golangci/golangci-lint-action` `9.0.0` -> `9.1.0`
+- `golang.org/x/crypto` `0.36.0` -> `0.45.0` in `/tools`
+- `golang.org/x/crypt` `0.41.0` -> `0.45.0`
+
+## 1.16.1
+
+#### FEATURES
+- Add explicit support and testing for DependencyTrack `4.13.5`
+
+#### MISC
+- Remove unused `cdktf-bindings.yml` workflow.
+
+#### DEPENDENCIES
+- `github.com/hashicorp/terraform-plugin-framework` `1.16.0` -> `1.16.1`
+- `golangci/golangci-lint-action` `8.0.0` -> `9.0.0`
+- `github.com/hashicorp/terraform-plugin-log` `0.9.0` -> `0.10.0`
+
+## 1.16
+
+#### FEATURES
+- Add `collection` attribute to `dependencytrack_project` resource, available with API `v4.13+`, to manage the project collection logic.
+- Add explicit testing and support for Terraform `1.13.x`.
+
+#### MISC
+- Update minimum go version to `1.24.0`.
+- Add troubleshooting documentation to README.md.
+
+#### DEPENDENCIES
+- `actions/setup-go` `5.5.0` -> `6.0.0`
+- `actions/setup-node` `4.4.0` -> `5.0.0`
+- `github.com/hashicorp/terraform-plugin-framework` `1.15.1` -> `1.16.0`
+- `github.com/hashicorp/terraform-plugin-go` `0.28.0` -> `0.29.0`
+- `github.com/DependencyTrack/client-go`
+
+#### ISSUES
+- Importing a `dependencytrack_project` with a `collection.logic` of `"NONE"` results in `null` being stored in the Terraform state.
+	- If importing to match a resource with a defined value of `"NONE"`, then a `terraform apply` should update the Terraform state to match the defined value.
+
+## 1.15
+
+#### FEATURES
+- Add explicit support and testing for DependencyTrack `4.13.4`.
+- Add options for specifying different API authentication methods within `dependencytrack` provider configuration.
+	- Now supports: API Key, Bearer, and None - for when using unauthenticated endpoint data sources.
+
+#### MISC
+- Increased efficiency of pipeline, from running the same test configuration across differing reverse proxy TLS configurations.
+	- Now runs TLS configuration tests, and then tests separately, resulting in reduction of over 50% of number of jobs.
+
 ## 1.14.2
 
 #### FEATURES

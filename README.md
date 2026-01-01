@@ -5,7 +5,7 @@ Uses [Terraform Plugin Framework]("https://github.com/hashicorp/terraform-plugin
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
-- [Go](https://golang.org/doc/install) >= 1.22
+- [Go](https://golang.org/doc/install) >= 1.24
 - [DependencyTrack](https://dependencytrack.org)
   - A [Docker Compose](https://docs.docker.com/compose) file is provided to start a local instance with UI at `http://localhost:8080` and API at `http://localhost:8081`
 
@@ -48,7 +48,26 @@ Various resources have minimum DependencyTrack API versions, which are documente
 The following versions are tested and supported with any combination from options.
 Other API versions may work, with a subset of functionality, but are not guaranteed.
 The latest patch version within a minor release is supported, even if it might not be tested - PR's to update would always be welcome.
-The list of API Versions will grow as functionality adapts to allow tests to pass, which at present is only a small subset.
-The latest 2 patches within the latest minor version will be tested, and supported to allow for continued support while migrating.
-- Terraform: `1.0` -> `1.12`
-- DependencyTrack: `4.11.7`, `4.12.7`, `4.13.0`, `4.13.1`, `4.13.2`, `4.13.3`
+The list of API Versions will grow as functionality adapts to allow further tests to pass.
+The latest 2 patches within the latest minor version, at a minimum, will be tested, and supported to allow for continued support while migrating.
+- Terraform: `1.0` -> `1.14`
+- DependencyTrack: `4.11.7`, `4.12.7`, `4.13.0`, `4.13.1`, `4.13.2`, `4.13.3`, `4.13.4`, `4.13.5`, `4.13.6`, `4.13.6-alpine`.
+
+## Troubleshooting
+
+#### - Fails to fetch version information: EOF
+This is likely caused by a TLS issue. The provider requires a minimum TLS version of 1.3.
+Any certificates used to verify the connection, if not within the System Certificate Trust, can be specified with `root_ca` option on the provider.
+If necessary, a local reverse proxy can be configured to accept TLS v1.3, to then forward onto the API server.
+
+#### - Unable to deserialize a timestamp value into int
+This is likely caused by running the provider from a 32-bit system, as Golang's `int` type varies.
+Millisecond timestamp values do not fit in 32 bits, after `25 Jan 1970`, as such, are only accessible from a 64-bit system.
+
+#### - Other
+Please raise an issue with relevant information, including:
+- Terraform version
+- Provider version
+- API server version
+- A minimal reproducible example
+- Redacted Terraform `DEBUG` logs
