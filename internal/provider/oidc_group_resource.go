@@ -113,14 +113,7 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	oidcGroup, err := FindPaged(
-		func(po dtrack.PageOptions) (dtrack.Page[dtrack.OIDCGroup], error) {
-			return r.client.OIDC.GetAllGroups(ctx, po)
-		},
-		func(group dtrack.OIDCGroup) bool {
-			return group.UUID == id
-		},
-	)
+	oidcGroups, err := r.client.OIDC.GetAllGroups(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated oidc group",
@@ -128,6 +121,15 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 		)
 		return
 	}
+	oidcGroup, err := Find(oidcGroups, func(group dtrack.OIDCGroup) bool { return group.UUID == id })
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to locate updated oidc group",
+			"Error with locating oidc group: "+id.String()+", in original error: "+err.Error(),
+		)
+		return
+	}
+
 	state = oidcGroupResourceModel{
 		ID:   types.StringValue(oidcGroup.UUID.String()),
 		Name: types.StringValue(oidcGroup.Name),
