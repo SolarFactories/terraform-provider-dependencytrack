@@ -231,6 +231,7 @@ func (*dependencyTrackProvider) Resources(_ context.Context) []func() resource.R
 		NewTagPoliciesResource,
 		NewComponentResource,
 		NewComponentPropertyResource,
+		NewManagedUserResource,
 	}
 }
 

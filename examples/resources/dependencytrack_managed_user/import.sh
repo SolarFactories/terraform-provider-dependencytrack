@@ -1,0 +1,1 @@
+terraform import dependencytrack_managed_user.example Example
