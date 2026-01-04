@@ -51,7 +51,7 @@ func (*teamPermissionResource) Schema(_ context.Context, _ resource.SchemaReques
 				},
 			},
 			"permission": schema.StringAttribute{
-				Description: "Permission name to attach / detach from the Team.",
+				Description: "Permission name to attach to the Team.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

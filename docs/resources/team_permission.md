@@ -28,5 +28,5 @@ resource "dependencytrack_team_permission" "example" {
 
 ### Required
 
-- `permission` (String) Permission name to attach / detach from the Team.
+- `permission` (String) Permission name to attach to the Team.
 - `team` (String) UUID for the Team for which to manage the permission.
