@@ -15,18 +15,18 @@ import (
 )
 
 var (
-	_ resource.Resource                = &managedUserResource{}
-	_ resource.ResourceWithConfigure   = &managedUserResource{}
-	_ resource.ResourceWithImportState = &managedUserResource{}
+	_ resource.Resource                = &userResource{}
+	_ resource.ResourceWithConfigure   = &userResource{}
+	_ resource.ResourceWithImportState = &userResource{}
 )
 
 type (
-	managedUserResource struct {
+	userResource struct {
 		client *dtrack.Client
 		semver *Semver
 	}
 
-	managedUserResourceModel struct {
+	userResourceModel struct {
 		ID                  types.String `tfsdk:"id"`
 		Username            types.String `tfsdk:"username"`
 		Fullname            types.String `tfsdk:"fullname"`
@@ -38,15 +38,15 @@ type (
 	}
 )
 
-func NewManagedUserResource() resource.Resource {
-	return &managedUserResource{}
+func NewUserResource() resource.Resource {
+	return &userResource{}
 }
 
-func (*managedUserResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_managed_user"
+func (*userResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_user"
 }
 
-func (*managedUserResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (*userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a Managed User.",
 		Attributes: map[string]schema.Attribute{
@@ -100,8 +100,8 @@ func (*managedUserResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 	}
 }
 
-func (r *managedUserResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan managedUserResourceModel
+func (r *userResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan userResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -146,7 +146,7 @@ func (r *managedUserResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	plan = managedUserResourceModel{
+	plan = userResourceModel{
 		ID:                  types.StringValue(userRes.Username),
 		Username:            types.StringValue(userRes.Username),
 		Fullname:            types.StringValue(userRes.Fullname),
@@ -174,8 +174,8 @@ func (r *managedUserResource) Create(ctx context.Context, req resource.CreateReq
 	})
 }
 
-func (r *managedUserResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state managedUserResourceModel
+func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state userResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -207,7 +207,7 @@ func (r *managedUserResource) Read(ctx context.Context, req resource.ReadRequest
 		)
 		return
 	}
-	newState := managedUserResourceModel{
+	newState := userResourceModel{
 		ID:                  types.StringValue(user.Username),
 		Username:            types.StringValue(user.Username),
 		Fullname:            types.StringValue(user.Fullname),
@@ -236,10 +236,10 @@ func (r *managedUserResource) Read(ctx context.Context, req resource.ReadRequest
 	})
 }
 
-func (r *managedUserResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *userResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Get State.
-	var plan managedUserResourceModel
-	var state managedUserResourceModel
+	var plan userResourceModel
+	var state userResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	diags = req.State.Get(ctx, &state)
@@ -277,7 +277,7 @@ func (r *managedUserResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Map SDK to TF.
-	state = managedUserResourceModel{
+	state = userResourceModel{
 		ID:                  types.StringValue(userRes.Username),
 		Username:            types.StringValue(userRes.Username),
 		Fullname:            types.StringValue(userRes.Fullname),
@@ -306,9 +306,9 @@ func (r *managedUserResource) Update(ctx context.Context, req resource.UpdateReq
 	})
 }
 
-func (r *managedUserResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Load State.
-	var state managedUserResourceModel
+	var state userResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -337,7 +337,7 @@ func (r *managedUserResource) Delete(ctx context.Context, req resource.DeleteReq
 	})
 }
 
-func (*managedUserResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (*userResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	tflog.Debug(ctx, "Importing Managed User", map[string]any{
 		"id": req.ID,
 	})
@@ -350,7 +350,7 @@ func (*managedUserResource) ImportState(ctx context.Context, req resource.Import
 	})
 }
 
-func (r *managedUserResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *userResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}

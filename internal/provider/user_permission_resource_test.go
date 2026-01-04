@@ -13,21 +13,21 @@ func TestAccUserPermissionResource(t *testing.T) {
 			// Create and Read testing.
 			{
 				Config: providerConfig + `
-resource "dependencytrack_managed_user" "test" {
+resource "dependencytrack_user" "test" {
 	username = "Test_User"
 	fullname = "Test User"
 	email = "test_user@example.com"
 	password = "Test_Password"
 }
 resource "dependencytrack_user_permission" "test" {
-	username = dependencytrack_managed_user.test.username
+	username = dependencytrack_user.test.username
 	permission = "SYSTEM_CONFIGURATION"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_user_permission.test", "username",
-						"dependencytrack_managed_user.test", "username",
+						"dependencytrack_user.test", "username",
 					),
 					resource.TestCheckResourceAttr("dependencytrack_user_permission.test", "permission", "SYSTEM_CONFIGURATION"),
 				),
@@ -35,21 +35,21 @@ resource "dependencytrack_user_permission" "test" {
 			// Update and Read testing.
 			{
 				Config: providerConfig + `
-resource "dependencytrack_managed_user" "test" {
+resource "dependencytrack_user" "test" {
 	username = "Test_User"
 	fullname = "Test User"
 	email = "test_user@example.com"
 	password = "Test_Password"
 }
 resource "dependencytrack_user_permission" "test" {
-	username = dependencytrack_managed_user.test.username
+	username = dependencytrack_user.test.username
 	permission = "SYSTEM_CONFIGURATION"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_user_permission.test", "username",
-						"dependencytrack_managed_user.test", "username",
+						"dependencytrack_user.test", "username",
 					),
 					resource.TestCheckResourceAttr("dependencytrack_user_permission.test", "permission", "SYSTEM_CONFIGURATION"),
 				),

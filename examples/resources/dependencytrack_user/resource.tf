@@ -1,4 +1,4 @@
-resource "dependencytrack_managed_user" "example" {
+resource "dependencytrack_user" "example" {
   username = "Example"
   fullname = "Example User"
   email    = "Example_User@example.com"
