@@ -51,7 +51,7 @@ func (*userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *r
 		Description: "Manages a Managed User.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "User's username.",
+				Description: "Username of the User.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -88,7 +88,7 @@ func (*userResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *r
 				Computed:    true,
 			},
 			"password": schema.StringAttribute{
-				Description: "Updated password to set for the user.",
+				Description: "Updated password to set for the User.",
 				Sensitive:   true,
 				Computed:    true,
 				Optional:    true,
@@ -200,13 +200,6 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		)
 		return
 	}
-	if user == nil {
-		resp.Diagnostics.AddError(
-			"Unable to locate managed user",
-			"Could not find managed user with username: "+username,
-		)
-		return
-	}
 	newState := userResourceModel{
 		ID:                  types.StringValue(user.Username),
 		Username:            types.StringValue(user.Username),
@@ -219,14 +212,14 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	// Update state.
-	diags = resp.State.Set(ctx, &newState)
+	diags = resp.State.Set(ctx, newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	tflog.Debug(ctx, "Read Managed User", map[string]any{
 		"id":                    state.ID.ValueString(),
-		"username":              state.ID.ValueString(),
+		"username":              state.Username.ValueString(),
 		"fullname":              state.Fullname.ValueString(),
 		"email":                 state.Email.ValueString(),
 		"password":              state.Password.ValueString(),
@@ -322,7 +315,14 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	// Execute.
 	tflog.Debug(ctx, "Deleting Managed User", map[string]any{
-		"id": user.Username,
+		"id":                    user.Username,
+		"username":              state.Username.ValueString(),
+		"fullname":              state.Fullname.ValueString(),
+		"email":                 state.Email.ValueString(),
+		"password":              state.Password.ValueString(),
+		"suspended":             state.Suspended.ValueBool(),
+		"force_password_change": state.ForcePasswordChange.ValueBool(),
+		"password_expires":      state.PasswordExpires.ValueBool(),
 	})
 	err := r.client.User.DeleteManaged(ctx, user)
 	if err != nil {
@@ -333,7 +333,14 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 	tflog.Debug(ctx, "Deleted Managed User", map[string]any{
-		"id": state.ID.ValueString(),
+		"id":                    state.ID.ValueString(),
+		"username":              state.Username.ValueString(),
+		"fullname":              state.Fullname.ValueString(),
+		"email":                 state.Email.ValueString(),
+		"password":              state.Password.ValueString(),
+		"suspended":             state.Suspended.ValueBool(),
+		"force_password_change": state.ForcePasswordChange.ValueBool(),
+		"password_expires":      state.PasswordExpires.ValueBool(),
 	})
 }
 

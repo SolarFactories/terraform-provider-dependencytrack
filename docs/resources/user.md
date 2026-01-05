@@ -33,13 +33,13 @@ resource "dependencytrack_user" "example" {
 ### Optional
 
 - `force_password_change` (Boolean) Whether the User Must change their password on next login.
-- `password` (String, Sensitive) Updated password to set for the user.
+- `password` (String, Sensitive) Updated password to set for the User.
 - `password_expires` (Boolean) Whether the User's password expires. Interval set by DependencyTrack.
 - `suspended` (Boolean) Whether the User Account is Suspended.
 
 ### Read-Only
 
-- `id` (String) User's username.
+- `id` (String) Username of the User.
 
 ## Import
 

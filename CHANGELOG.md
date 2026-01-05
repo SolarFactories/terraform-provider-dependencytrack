@@ -1,7 +1,19 @@
+## 1.17
+
+#### FEATURES
+- Add `dependencytrack_user` resource to manage a Managed User.
+- Add `dependencytrack_user_team` resource to manage team membership for a managed user.
+- Add `dependencytrack_user_permission` resource to manage permissions for a managed user.
+- Add `dependencytrack_components` datasource to retrieve the components within a project.
+
+#### DEPENDENCIES
+- `github.com/DependencyTrack/client-go` `v0.17.1-0.20250928165948-bd03e361a95f` -> `0.18.0`
+
 ## 1.16.3
 
 #### FIXES
-- `permissions` in `dependencytrack_team_permissions` no longer needs to be sorted - `https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/117`
+- `permissions` in `dependencytrack_team_permissions` no longer needs to be sorted
+  - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/117
 
 #### MISC
 - Update `docker_compose` to use `latest-alpine` tag for `apiserver`, rather than defaulting to `latest`.

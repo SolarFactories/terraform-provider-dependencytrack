@@ -117,7 +117,7 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated oidc group",
-			"Error with reading oidc group: "+id.String()+", in original error: "+err.Error(),
+			"Error with reading oidc groups, with original error: "+err.Error(),
 		)
 		return
 	}

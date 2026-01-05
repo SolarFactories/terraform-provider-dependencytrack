@@ -21,7 +21,7 @@ resource "dependencytrack_user" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("dependencytrack_user.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_user.test", "id", "Test_Username"),
 					resource.TestCheckResourceAttr("dependencytrack_user.test", "username", "Test_Username"),
 					resource.TestCheckResourceAttr("dependencytrack_user.test", "fullname", "Test_Fullname"),
 					resource.TestCheckResourceAttr("dependencytrack_user.test", "email", "Test_Email@example.com"),
@@ -49,7 +49,7 @@ resource "dependencytrack_user" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("dependencytrack_user.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_user.test", "id", "Test_Username"),
 					resource.TestCheckResourceAttr("dependencytrack_user.test", "username", "Test_Username"),
 					resource.TestCheckResourceAttr("dependencytrack_user.test", "fullname", "Test_Fullname_With_Change"),
 					resource.TestCheckResourceAttr("dependencytrack_user.test", "email", "Test_Email@example.com"),

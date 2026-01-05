@@ -22,14 +22,12 @@ resource "dependencytrack_component" "test" {
 	classifier = "FILE"
 	hashes = {}
 }
-
 data "dependencytrack_components" "test" {
 	project = dependencytrack_project.test.id
 	depends_on = [
 		dependencytrack_component.test
 	]
 }
-
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.dependencytrack_components.test", "components.#", "1"),
