@@ -16,6 +16,7 @@ Manages a team membership for a user.
 resource "dependencytrack_team" "example" {
   name = "Example"
 }
+
 resource "dependencytrack_user" "example" {
   username = "Example"
   fullname = "Example User"

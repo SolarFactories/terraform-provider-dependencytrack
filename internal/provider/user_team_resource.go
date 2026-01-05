@@ -93,7 +93,7 @@ func (r *userTeamResource) Create(ctx context.Context, req resource.CreateReques
 		Username: types.StringValue(user.Username),
 		TeamID:   types.StringValue(team.String()),
 	}
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -137,9 +137,7 @@ func (r *userTeamResource) Read(ctx context.Context, req resource.ReadRequest, r
 		)
 		return
 	}
-	team, err := Find(user.Teams, func(team dtrack.Team) bool {
-		return team.UUID == teamID
-	})
+	team, err := Find(user.Teams, func(team dtrack.Team) bool { return team.UUID == teamID })
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Read, unable to identify user team membership",
@@ -152,7 +150,7 @@ func (r *userTeamResource) Read(ctx context.Context, req resource.ReadRequest, r
 		Username: types.StringValue(user.Username),
 		TeamID:   types.StringValue(team.UUID.String()),
 	}
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -166,7 +164,6 @@ func (r *userTeamResource) Read(ctx context.Context, req resource.ReadRequest, r
 func (*userTeamResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Nothing to Update. This resource only has Create, Delete actions.
 	// Verifies that stored state is conformant to model.
-
 	var plan userTeamResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)

@@ -25,7 +25,8 @@ resource "dependencytrack_user" "test" {
 resource "dependencytrack_user_team" "test" {
 	username = dependencytrack_user.test.username
 	team = dependencytrack_team.test.id
-}`,
+}
+`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_user_team.test", "username",
@@ -52,7 +53,8 @@ resource "dependencytrack_user" "test" {
 resource "dependencytrack_user_team" "test" {
 	username = dependencytrack_user.test.username
 	team = dependencytrack_team.test.id
-}`,
+}
+`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_user_team.test", "username",

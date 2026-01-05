@@ -75,20 +75,20 @@ func (r *userPermissionResource) Create(ctx context.Context, req resource.Create
 		"username":   username,
 		"permission": permission.Name,
 	})
-	user, err := r.client.Permission.AddPermissionToUser(ctx, permission, username)
 
+	user, err := r.client.Permission.AddPermissionToUser(ctx, permission, username)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating user permission",
-			"Unexpected error: "+err.Error(),
+			"Error from: "+err.Error(),
 		)
 		return
 	}
+
 	state := userPermissionResourceModel{
 		Username:   types.StringValue(user.Username),
 		Permission: types.StringValue(permission.Name),
 	}
-
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -140,13 +140,13 @@ func (r *userPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 		)
 		return
 	}
+
+	// Update state.
 	state = userPermissionResourceModel{
 		Username:   types.StringValue(user.Username),
 		Permission: types.StringValue(permission.Name),
 	}
-
-	// Update state.
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
