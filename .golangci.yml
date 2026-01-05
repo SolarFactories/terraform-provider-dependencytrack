@@ -130,6 +130,7 @@ linters:
         - "^github.com/DependencyTrack/client-go\\.Repository$"
         - "^github.com/DependencyTrack/client-go\\.SortOptions$"
         - "^github.com/DependencyTrack/client-go\\.Component$"
+        - "^github.com/DependencyTrack/client-go\\.ManagedUser$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*Resource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*DataSource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.dependencyTrackProvider$"

@@ -51,7 +51,7 @@ func (*teamPermissionResource) Schema(_ context.Context, _ resource.SchemaReques
 				},
 			},
 			"permission": schema.StringAttribute{
-				Description: "Permission name to attach / detach from the Team.",
+				Description: "Permission name to attach to the Team.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -119,7 +119,7 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	tflog.Debug(ctx, "Read Team Permission", map[string]any{
+	tflog.Debug(ctx, "Reading Team Permission", map[string]any{
 		"team":       teamID.String(),
 		"permission": state.Permission.ValueString(),
 	})
