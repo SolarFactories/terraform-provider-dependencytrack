@@ -43,7 +43,7 @@ type (
 )
 
 func Filter[T any](items []T, filter func(T) bool) []T {
-	filtered := []T{}
+	filtered := make([]T, 0, len(items))
 	for _, item := range items {
 		if !filter(item) {
 			continue
