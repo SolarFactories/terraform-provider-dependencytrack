@@ -108,7 +108,8 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	configPropertiesReq := make([]dtrack.ConfigProperty, 0, len(plan.Properties))
-	encryptedStringRetention := map[Identity]string{}
+	// Used to retain EncryptesStrings, and values that are ordered lists, encoded as strings.
+	valueStringRetention := map[Identity]string{}
 
 	for _, propertyReq := range plan.Properties {
 		configProperty := dtrack.ConfigProperty{
@@ -118,7 +119,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			Type:      propertyReq.Type.ValueString(),
 		}
 		if configProperty.Type == PropertyTypeEncryptedString {
-			encryptedStringRetention[Identity{
+			valueStringRetention[Identity{
 				group: configProperty.GroupName,
 				name:  configProperty.Name,
 			}] = configProperty.Value
@@ -158,7 +159,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			Description: types.StringValue(propertyRes.Description),
 		}
 		if propertyRes.Type == PropertyTypeEncryptedString {
-			model.Value = types.StringValue(encryptedStringRetention[Identity{
+			model.Value = types.StringValue(valueStringRetention[Identity{
 				group: propertyRes.GroupName,
 				name:  propertyRes.Name,
 			}])
@@ -276,7 +277,7 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	configPropertiesReq := make([]dtrack.ConfigProperty, 0, len(plan.Properties))
-	encryptedStringRetention := map[Identity]string{}
+	valueStringRetention := map[Identity]string{}
 
 	for _, propertyReq := range plan.Properties {
 		configProperty := dtrack.ConfigProperty{
@@ -286,7 +287,7 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Type:      propertyReq.Type.ValueString(),
 		}
 		if configProperty.Type == PropertyTypeEncryptedString {
-			encryptedStringRetention[Identity{
+			valueStringRetention[Identity{
 				group: configProperty.GroupName,
 				name:  configProperty.Name,
 			}] = configProperty.Value
@@ -325,7 +326,7 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Description: types.StringValue(propertyRes.Description),
 		}
 		if propertyRes.Type == PropertyTypeEncryptedString {
-			model.Value = types.StringValue(encryptedStringRetention[Identity{
+			model.Value = types.StringValue(valueStringRetention[Identity{
 				group: propertyRes.GroupName,
 				name:  propertyRes.Name,
 			}])
