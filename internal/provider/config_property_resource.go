@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
@@ -129,6 +130,13 @@ func (r *configPropertyResource) Create(ctx context.Context, req resource.Create
 	if propertyRes.Type == PropertyTypeEncryptedString {
 		propertyState.Value = plan.Value
 	}
+	if propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
+		requestedSorted := slices.SortedStableFunc(strings.SplitSeq(propertyReq.Value, ";"), strings.Compare)
+		responseSorted := slices.SortedStableFunc(strings.SplitSeq(propertyRes.Value, ";"), strings.Compare)
+		if slices.EqualFunc(requestedSorted, responseSorted, strings.EqualFold) {
+			propertyState.Value = types.StringValue(propertyReq.Value)
+		}
+	}
 
 	diags = resp.State.Set(ctx, &propertyState)
 	resp.Diagnostics.Append(diags...)
@@ -180,6 +188,14 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 	if configProperty.Type == PropertyTypeEncryptedString {
 		propertyState.Value = state.Value
 	}
+	if configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" && !state.Value.IsUnknown() {
+		currentSorted := slices.SortedStableFunc(strings.SplitSeq(state.Value.ValueString(), ";"), strings.Compare)
+		responseSorted := slices.SortedStableFunc(strings.SplitSeq(configProperty.Value, ";"), strings.Compare)
+		if slices.EqualFunc(currentSorted, responseSorted, strings.EqualFold) {
+			propertyState.Value = state.Value
+		}
+	}
+
 	diags = resp.State.Set(ctx, &propertyState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -235,6 +251,14 @@ func (r *configPropertyResource) Update(ctx context.Context, req resource.Update
 	if propertyRes.Type == PropertyTypeEncryptedString {
 		state.Value = plan.Value
 	}
+	if propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
+		requestedSorted := slices.SortedStableFunc(strings.SplitSeq(propertyReq.Value, ";"), strings.Compare)
+		responseSorted := slices.SortedStableFunc(strings.SplitSeq(propertyRes.Value, ";"), strings.Compare)
+		if slices.EqualFunc(requestedSorted, responseSorted, strings.EqualFold) {
+			state.Value = types.StringValue(propertyReq.Value)
+		}
+	}
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

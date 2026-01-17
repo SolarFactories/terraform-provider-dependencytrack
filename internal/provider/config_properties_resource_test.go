@@ -111,3 +111,53 @@ resource "dependencytrack_config_properties" "test" {
 		},
 	})
 }
+
+func TestAccConfigPropertiesResourceRegression149(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/149
+	//	Default return value for `google.osv.enabled` is a sorted list, e.g. `Debian;Alpine;NuGet` / `Debian;Go;Alpine;NuGet`.
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_config_properties" "dt_config" {
+	properties = [
+		{
+			group = "vuln-source"
+			name = "google.osv.enabled"
+			value = "Alpine;Debian;NuGet"
+			type = "STRING"
+		},
+   ]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.#", "1"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.0.name", "google.osv.enabled"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.0.value", "Alpine;Debian;NuGet"),
+				),
+			},
+			// Update and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_config_properties" "dt_config" {
+	properties = [
+		{
+			group = "vuln-source"
+			name = "google.osv.enabled"
+			value = "Alpine;Debian;NuGet;Go"
+			type = "STRING"
+		},
+   ]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.#", "1"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.0.name", "google.osv.enabled"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.0.value", "Alpine;Debian;NuGet;Go"),
+				),
+			},
+		},
+	})
+}
