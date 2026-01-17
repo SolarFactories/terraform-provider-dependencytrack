@@ -1,3 +1,12 @@
+## 1.17.1
+
+#### FIXES
+- `google.osv.enabled` in `dependencytrack_config_property` / `dependencytrack_config_properties` no longer needs to be sorted.
+  - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/149
+
+#### DEPENDENCIES
+- `actions/setup-go` `6.1.0` -> `6.2.0`
+
 ## 1.17
 
 #### FEATURES
@@ -12,7 +21,7 @@
 ## 1.16.3
 
 #### FIXES
-- `permissions` in `dependencytrack_team_permissions` no longer needs to be sorted
+- `permissions` in `dependencytrack_team_permissions` no longer needs to be sorted.
   - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/117
 
 #### MISC

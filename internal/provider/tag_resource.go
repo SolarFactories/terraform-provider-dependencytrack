@@ -45,14 +45,14 @@ func (*tagResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *re
 		Description: "Manages a Tag. Requires API version >= 4.13 to be created, but may be imported in API version >= 4.12.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Name of the Tag.",
+				Description: "Name of the Tag. Conformant to DependencyTrack Tag format of lowercase.",
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"name": schema.StringAttribute{
-				Description: "Name of the Tag.",
+				Description: "Name of the Tag. Conformant to DependencyTrack Tag format of lowercase.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
