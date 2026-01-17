@@ -25,11 +25,11 @@ resource "dependencytrack_tag" "example" {
 
 ### Required
 
-- `name` (String) Name of the Tag.
+- `name` (String) Name of the Tag. Conformant to DependencyTrack Tag format of lowercase.
 
 ### Read-Only
 
-- `id` (String) Name of the Tag.
+- `id` (String) Name of the Tag. Conformant to DependencyTrack Tag format of lowercase.
 
 ## Import
 
