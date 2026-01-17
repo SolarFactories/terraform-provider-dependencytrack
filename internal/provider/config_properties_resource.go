@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -124,9 +126,15 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 				name:  configProperty.Name,
 			}] = configProperty.Value
 		}
+		if configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
+			valueStringRetention[Identity{
+				group: configProperty.GroupName,
+				name:  configProperty.Name,
+			}] = configProperty.Value
+		}
 
 		configPropertiesReq = append(configPropertiesReq, configProperty)
-		tflog.Debug(ctx, "Creating bulk config property", map[string]any{
+		tflog.Debug(ctx, "Creating bulk config properties", map[string]any{
 			"group": configProperty.GroupName,
 			"name":  configProperty.Name,
 			"value": configProperty.Value,
@@ -164,8 +172,20 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 				name:  propertyRes.Name,
 			}])
 		}
+		if propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
+			retained := valueStringRetention[Identity{
+				group: propertyRes.GroupName,
+				name:  propertyRes.Name,
+			}]
+			retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
+			responseSorted := slices.SortedStableFunc(strings.SplitSeq(propertyRes.Value, ";"), strings.Compare)
+			if slices.EqualFunc(retainedSorted, responseSorted, strings.EqualFold) {
+				model.Value = types.StringValue(retained)
+			}
+		}
+
 		configPropertiesState.Properties = append(configPropertiesState.Properties, model)
-		tflog.Debug(ctx, "Created bulk config property", map[string]any{
+		tflog.Debug(ctx, "Created bulk config properties", map[string]any{
 			"group": propertyRes.GroupName,
 			"name":  propertyRes.Name,
 			"value": propertyRes.Value,
@@ -242,6 +262,15 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 		if configProperty.Type == PropertyTypeEncryptedString {
 			state.Properties[idx].Value = value
 		}
+		if configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
+			retained := configPropertyModel.Value.ValueString()
+			retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
+			responseSorted := slices.SortedStableFunc(strings.SplitSeq(configProperty.Value, ";"), strings.Compare)
+			if slices.EqualFunc(retainedSorted, responseSorted, strings.EqualFold) {
+				state.Properties[idx].Value = types.StringValue(retained)
+			}
+		}
+
 		tflog.Debug(ctx, "Read bulk config property", map[string]any{
 			"group":       state.Properties[idx].Group.ValueString(),
 			"name":        state.Properties[idx].Name.ValueString(),
@@ -292,6 +321,13 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 				name:  configProperty.Name,
 			}] = configProperty.Value
 		}
+		if configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
+			valueStringRetention[Identity{
+				group: configProperty.GroupName,
+				name:  configProperty.Name,
+			}] = configProperty.Value
+		}
+
 		configPropertiesReq = append(configPropertiesReq, configProperty)
 		tflog.Debug(ctx, "Updating bulk config properties", map[string]any{
 			"group": configProperty.GroupName,
@@ -331,6 +367,18 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 				name:  propertyRes.Name,
 			}])
 		}
+		if propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
+			retained := valueStringRetention[Identity{
+				group: propertyRes.GroupName,
+				name:  propertyRes.Name,
+			}]
+			retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
+			responseSorted := slices.SortedStableFunc(strings.SplitSeq(propertyRes.Value, ";"), strings.Compare)
+			if slices.EqualFunc(retainedSorted, responseSorted, strings.EqualFold) {
+				model.Value = types.StringValue(retained)
+			}
+		}
+
 		configPropertiesState.Properties = append(configPropertiesState.Properties, model)
 		tflog.Debug(ctx, "Updated bulk config property", map[string]any{
 			"group":       model.Group.ValueString(),
