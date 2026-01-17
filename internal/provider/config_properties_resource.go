@@ -134,7 +134,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		}
 
 		configPropertiesReq = append(configPropertiesReq, configProperty)
-		tflog.Debug(ctx, "Creating bulk config properties", map[string]any{
+		tflog.Debug(ctx, "Creating bulk config property", map[string]any{
 			"group": configProperty.GroupName,
 			"name":  configProperty.Name,
 			"value": configProperty.Value,
@@ -185,7 +185,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		}
 
 		configPropertiesState.Properties = append(configPropertiesState.Properties, model)
-		tflog.Debug(ctx, "Created bulk config properties", map[string]any{
+		tflog.Debug(ctx, "Created bulk config property", map[string]any{
 			"group": propertyRes.GroupName,
 			"name":  propertyRes.Name,
 			"value": propertyRes.Value,
@@ -329,7 +329,7 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 		}
 
 		configPropertiesReq = append(configPropertiesReq, configProperty)
-		tflog.Debug(ctx, "Updating bulk config properties", map[string]any{
+		tflog.Debug(ctx, "Updating bulk config property", map[string]any{
 			"group": configProperty.GroupName,
 			"name":  configProperty.Name,
 			"value": configProperty.Value,
@@ -368,14 +368,14 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			}])
 		}
 		if propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
-			retained := valueStringRetention[Identity{
+			requested := valueStringRetention[Identity{
 				group: propertyRes.GroupName,
 				name:  propertyRes.Name,
 			}]
-			retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
+			requestedSorted := slices.SortedStableFunc(strings.SplitSeq(requested, ";"), strings.Compare)
 			responseSorted := slices.SortedStableFunc(strings.SplitSeq(propertyRes.Value, ";"), strings.Compare)
-			if slices.EqualFunc(retainedSorted, responseSorted, strings.EqualFold) {
-				model.Value = types.StringValue(retained)
+			if slices.EqualFunc(requestedSorted, responseSorted, strings.EqualFold) {
+				model.Value = types.StringValue(requested)
 			}
 		}
 

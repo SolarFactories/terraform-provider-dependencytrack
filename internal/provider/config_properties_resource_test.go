@@ -129,17 +129,11 @@ resource "dependencytrack_config_properties" "dt_config" {
 			value = "Alpine;Debian;NuGet"
 			type = "STRING"
 		},
-		{
-			group = "vuln-source"
-			name = "google.osv.base.url"
-			value = "https://osv-vulnerabilities.storage.googleapis.com/"
-			type = "URL"
-		}
    ]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.#", "1"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.0.name", "google.osv.enabled"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.0.value", "Alpine;Debian;NuGet"),
 				),
@@ -155,17 +149,11 @@ resource "dependencytrack_config_properties" "dt_config" {
 			value = "Alpine;Debian;NuGet;Go"
 			type = "STRING"
 		},
-		{
-			group = "vuln-source"
-			name = "google.osv.base.url"
-			value = "https://osv-vulnerabilities.storage.googleapis.com/"
-			type = "URL"
-		}
    ]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.#", "1"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.0.name", "google.osv.enabled"),
 					resource.TestCheckResourceAttr("dependencytrack_config_properties.dt_config", "properties.0.value", "Alpine;Debian;NuGet;Go"),
 				),
