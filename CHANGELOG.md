@@ -1,3 +1,12 @@
+## 1.17.2
+
+#### FIXES
+- `tags` in `dependencytrack_project` no longer needs to be sorted.
+  - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/152
+
+#### DEPENDENCIES
+- `actions/checkout` `6.0.1` -> `6.0.2`
+
 ## 1.17.1
 
 #### FIXES

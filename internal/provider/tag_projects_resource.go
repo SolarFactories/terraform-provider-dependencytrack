@@ -61,6 +61,7 @@ func (*tagProjectsResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"projects": schema.ListAttribute{
+				// TODO: Use `ListUnorderedEqual` to remove requirement for this to be sorted.
 				Description: "Project UUIDs to which to apply tag. Sorted by project name.",
 				Required:    true,
 				ElementType: types.StringType,

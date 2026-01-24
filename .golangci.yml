@@ -60,7 +60,6 @@ linters:
             - "github.com/google/uuid$"
             - "github.com/DependencyTrack/client-go$"
             - "terraform-provider-dependencytrack/internal/provider$"
-            
     dogsled:
       max-blank-identifiers: 2 # Default 2
     dupl:
@@ -585,9 +584,11 @@ linters:
       - path: internal/provider/tag_projects_resource.go
         linters:
           - gocognit
+          - godox
       - path: internal/provider/tag_policies_resource.go
         linters:
           - gocognit
+          - godox
       - path: internal/provider/component_resource.go
         linters:
           - revive

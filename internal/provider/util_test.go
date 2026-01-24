@@ -3,6 +3,7 @@ package provider
 import (
 	"cmp"
 	"regexp"
+	"strings"
 	"testing"
 )
 
@@ -63,6 +64,33 @@ func TestParseSemver(t *testing.T) {
 	}
 }
 
+func TestSliceUnorderedEqual(t *testing.T) {
+	{
+		a := []int{1, 20, 15, 18}
+		b := []int{1, 15, 18, 20}
+		equal := SliceUnorderedEqual(a, b, func(a, b int) int { return b - a })
+		requireEqual(t, equal, true)
+	}
+	{
+		a := []int{1, 20, 15, 19}
+		b := []int{1, 15, 18, 20}
+		equal := SliceUnorderedEqual(a, b, func(a, b int) int { return b - a })
+		requireEqual(t, equal, false)
+	}
+	{
+		a := []int{}
+		b := []int{}
+		equal := SliceUnorderedEqual(a, b, func(a, b int) int { return b - a })
+		requireEqual(t, equal, true)
+	}
+	{
+		a := []string{"Foo", "Bar"}
+		b := []string{"Bar", "Foo"}
+		equal := SliceUnorderedEqual(a, b, strings.Compare)
+		requireEqual(t, equal, true)
+	}
+}
+
 func requireNoError(t *testing.T, actual error) {
 	t.Helper()
 	if actual != nil {
@@ -93,7 +121,7 @@ func requireNil[T any](t *testing.T, actual *T) {
 	}
 }
 
-func requireEqual[T cmp.Ordered](t *testing.T, actual T, expected T) {
+func requireEqual[T cmp.Ordered | bool](t *testing.T, actual T, expected T) {
 	t.Helper()
 	if actual != expected {
 		t.Errorf("Expected %v, received %v", expected, actual)

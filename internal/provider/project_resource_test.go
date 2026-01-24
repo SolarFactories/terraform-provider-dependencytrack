@@ -405,3 +405,48 @@ resource "dependencytrack_project" "test3" {
 		},
 	})
 }
+
+func TestAccProjectResourceRegression152(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/152
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "example" {
+  name        = "example-project"
+  description = "Example project"
+  tags = [
+    "collection-example",
+    "environment-test"
+  ]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.example", "tags.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_project.example", "tags.0", "collection-example"),
+					resource.TestCheckResourceAttr("dependencytrack_project.example", "tags.1", "environment-test"),
+				),
+			},
+			// Update and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "example" {
+  name        = "example-project"
+  description = "Example project With Change"
+  tags = [
+    "collection-example",
+    "environment-test"
+  ]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.example", "tags.#", "2"),
+					resource.TestCheckResourceAttr("dependencytrack_project.example", "tags.0", "collection-example"),
+					resource.TestCheckResourceAttr("dependencytrack_project.example", "tags.1", "environment-test"),
+				),
+			},
+		},
+	})
+}
