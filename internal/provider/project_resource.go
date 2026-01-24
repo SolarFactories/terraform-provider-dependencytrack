@@ -175,7 +175,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		}
 	}
 	if !plan.Tags.IsUnknown() && !plan.Tags.IsNull() {
-		strings, err := GetStringList(ctx, &resp.Diagnostics, plan.Tags)
+		tagStrings, err := GetStringList(ctx, &resp.Diagnostics, plan.Tags)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -187,7 +187,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 			)
 			return
 		}
-		projectReq.Tags = Map(strings, func(item string) dtrack.Tag { return dtrack.Tag{Name: item} })
+		projectReq.Tags = Map(tagStrings, func(item string) dtrack.Tag { return dtrack.Tag{Name: item} })
 	}
 	if plan.Active.IsUnknown() {
 		projectReq.Active = true
@@ -344,9 +344,20 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	tagValueList := Map(project.Tags, func(tag dtrack.Tag) attr.Value {
-		return types.StringValue(tag.Name)
-	})
+	stateTags, err := GetStringList(ctx, &resp.Diagnostics, state.Tags)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to load current tags on project",
+			"Error with transforming stored tags on project: "+id.String()+", in original error: "+err.Error(),
+		)
+		return
+	}
+	returnedTags := Map(project.Tags, func(tag dtrack.Tag) string { return tag.Name })
+	newStateTags := returnedTags
+	if SliceUnorderedEqual(stateTags, returnedTags, strings.Compare) {
+		newStateTags = stateTags
+	}
+	tagValueList := Map(newStateTags, func(name string) attr.Value { return types.StringValue(name) })
 	tagList, diags := types.ListValue(types.StringType, tagValueList)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
