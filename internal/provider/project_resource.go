@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -228,7 +229,13 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		)
 		return
 	}
-	tagValueList := Map(projectRes.Tags, func(tag dtrack.Tag) attr.Value {
+	resTags := projectRes.Tags
+	if SliceUnorderedEqual(projectReq.Tags, projectRes.Tags, func(req, res dtrack.Tag) int {
+		return strings.Compare(req.Name, res.Name)
+	}) {
+		resTags = projectReq.Tags
+	}
+	tagValueList := Map(resTags, func(tag dtrack.Tag) attr.Value {
 		return types.StringValue(tag.Name)
 	})
 	tagList, diags := types.ListValue(types.StringType, tagValueList)
