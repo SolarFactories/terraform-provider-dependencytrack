@@ -584,9 +584,11 @@ linters:
       - path: internal/provider/tag_projects_resource.go
         linters:
           - gocognit
+          - godox
       - path: internal/provider/tag_policies_resource.go
         linters:
           - gocognit
+          - godox
       - path: internal/provider/component_resource.go
         linters:
           - revive
