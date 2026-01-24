@@ -279,3 +279,9 @@ func GetStringList(ctx context.Context, diags *diag.Diagnostics, list types.List
 	})
 	return stringList, err
 }
+
+func SliceUnorderedEqual[T any](a, b []T, compare func(a, b T) int) bool {
+	sortedA := slices.SortedStableFunc(slices.Values(a), compare)
+	sortedB := slices.SortedStableFunc(slices.Values(b), compare)
+	return slices.EqualFunc(sortedA, sortedB, func(a, b T) bool { return compare(a, b) == 0 })
+}

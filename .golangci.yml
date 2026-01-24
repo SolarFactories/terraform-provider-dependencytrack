@@ -60,7 +60,6 @@ linters:
             - "github.com/google/uuid$"
             - "github.com/DependencyTrack/client-go$"
             - "terraform-provider-dependencytrack/internal/provider$"
-            
     dogsled:
       max-blank-identifiers: 2 # Default 2
     dupl:
