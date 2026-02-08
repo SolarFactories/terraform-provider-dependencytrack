@@ -1,3 +1,10 @@
+## 1.18
+
+#### FEATURES
+- Add `is_latest` attribute to `dependencytrack_project` resource, and `dependencytrack_project` data source.
+- `projects` in `dependencytrack_tag_projects` no longer needs to be sorted.
+- `policies` in `dependencytrack_tag_policies` no longer needs to be sorted.
+
 ## 1.17.2
 
 #### FIXES
