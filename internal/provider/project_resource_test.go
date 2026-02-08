@@ -406,6 +406,47 @@ resource "dependencytrack_project" "test3" {
 	})
 }
 
+// API 4.12+
+func TestAccProjectIsLatest(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test Project Is Latest"
+	version = "Test Version"
+	is_latest = true
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "is_latest", "true"),
+				),
+			},
+			// ImportState.
+			{
+				ResourceName:      "dependencytrack_project.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test Project Is Latest"
+	version = "Test Version"
+	is_latest = false
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_project.test", "is_latest", "false"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccProjectResourceRegression152(t *testing.T) {
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/152
 	resource.Test(t, resource.TestCase{
