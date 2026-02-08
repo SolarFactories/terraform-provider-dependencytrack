@@ -40,7 +40,7 @@ resource "dependencytrack_tag_policies" "example" {
 
 ### Required
 
-- `policies` (List of String) Policy UUIDs to which to apply tag. Sorted by policy name.
+- `policies` (List of String) Policy UUIDs to which to apply tag.
 - `tag` (String) Name of the Tag.
 
 ### Read-Only
