@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
@@ -61,8 +62,7 @@ func (*tagPoliciesResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"policies": schema.ListAttribute{
-				// TODO: Use `ListUnorderedEqual` to remove requirement for this to be sorted.
-				Description: "Policy UUIDs to which to apply tag. Sorted by policy name.",
+				Description: "Policy UUIDs to which to apply tag.",
 				Required:    true,
 				ElementType: types.StringType,
 			},
@@ -146,7 +146,7 @@ func (r *tagPoliciesResource) Create(ctx context.Context, req resource.CreateReq
 	tflog.Debug(ctx, "Created Tag Policies", map[string]any{
 		"id":       plan.ID.ValueString(),
 		"tag":      plan.Tag.ValueString(),
-		"policies": Map(plan.Policies, func(item types.String) string { return item.ValueString() }),
+		"policies": Map(plan.Policies, types.String.ValueString),
 	})
 }
 
@@ -162,7 +162,7 @@ func (r *tagPoliciesResource) Read(ctx context.Context, req resource.ReadRequest
 	tflog.Debug(ctx, "Reading Tag Policies", map[string]any{
 		"tag":        tagName,
 		"policies.#": len(state.Policies),
-		"policies":   Map(state.Policies, func(item types.String) string { return item.ValueString() }),
+		"policies":   Map(state.Policies, types.String.ValueString),
 	})
 
 	taggedPoliciesInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedPolicyListResponseItem], error) {
@@ -176,12 +176,20 @@ func (r *tagPoliciesResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	statePolicies := Map(taggedPoliciesInfo, func(info dtrack.TaggedPolicyListResponseItem) types.String {
+		return types.StringValue(info.UUID.String())
+	})
+
+	if SliceUnorderedEqual(statePolicies, state.Policies, func(a, b types.String) int {
+		return strings.Compare(a.ValueString(), b.ValueString())
+	}) {
+		statePolicies = state.Policies
+	}
+
 	state = tagPoliciesResourceModel{
-		ID:  types.StringValue(tagName),
-		Tag: types.StringValue(tagName),
-		Policies: Map(taggedPoliciesInfo, func(info dtrack.TaggedPolicyListResponseItem) types.String {
-			return types.StringValue(info.UUID.String())
-		}),
+		ID:       types.StringValue(tagName),
+		Tag:      types.StringValue(tagName),
+		Policies: statePolicies,
 	}
 
 	diags = resp.State.Set(ctx, &state)
@@ -192,7 +200,7 @@ func (r *tagPoliciesResource) Read(ctx context.Context, req resource.ReadRequest
 	tflog.Debug(ctx, "Read Tag Policies", map[string]any{
 		"id":       state.ID.ValueString(),
 		"tag":      state.Tag.ValueString(),
-		"policies": Map(state.Policies, func(v types.String) string { return v.ValueString() }),
+		"policies": Map(state.Policies, types.String.ValueString),
 	})
 }
 
@@ -209,7 +217,7 @@ func (r *tagPoliciesResource) Update(ctx context.Context, req resource.UpdateReq
 		"id":         plan.ID.ValueString(),
 		"tag":        tagName,
 		"policies.#": len(plan.Policies),
-		"policies":   Map(plan.Policies, func(item types.String) string { return item.ValueString() }),
+		"policies":   Map(plan.Policies, types.String.ValueString),
 	})
 
 	currentPoliciesInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedPolicyListResponseItem], error) {
@@ -280,7 +288,7 @@ func (r *tagPoliciesResource) Update(ctx context.Context, req resource.UpdateReq
 	tflog.Debug(ctx, "Updated Tag Policies", map[string]any{
 		"id":       plan.ID.ValueString(),
 		"tag":      plan.Tag.ValueString(),
-		"policies": Map(plan.Policies, func(t types.String) string { return t.ValueString() }),
+		"policies": Map(plan.Policies, types.String.ValueString),
 	})
 }
 
@@ -297,7 +305,7 @@ func (r *tagPoliciesResource) Delete(ctx context.Context, req resource.DeleteReq
 		"id":         state.ID.ValueString(),
 		"tag":        tagName,
 		"policies.#": len(state.Policies),
-		"policies":   Map(state.Policies, func(item types.String) string { return item.ValueString() }),
+		"policies":   Map(state.Policies, types.String.ValueString),
 	})
 
 	currentPoliciesInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedPolicyListResponseItem], error) {
@@ -324,7 +332,7 @@ func (r *tagPoliciesResource) Delete(ctx context.Context, req resource.DeleteReq
 	tflog.Debug(ctx, "Deleted Tag Policies", map[string]any{
 		"id":       state.ID.ValueString(),
 		"tag":      tagName,
-		"policies": Map(state.Policies, func(policy types.String) string { return policy.ValueString() }),
+		"policies": Map(state.Policies, types.String.ValueString),
 	})
 }
 
