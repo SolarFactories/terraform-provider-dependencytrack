@@ -211,7 +211,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 			projectReq.CollectionTag = nil
 		}
 	}
-	if hasIsLatestFeature(*r.semver) && !plan.IsLatest.IsNull() {
+	if hasProjectIsLatestFeature(*r.semver) && !plan.IsLatest.IsNull() {
 		projectReq.IsLatest = plan.IsLatest.ValueBoolPointer()
 	}
 
@@ -293,7 +293,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 			}
 		}
 	}
-	if hasIsLatestFeature(*r.semver) {
+	if hasProjectIsLatestFeature(*r.semver) {
 		plan.IsLatest = types.BoolValue(*projectRes.IsLatest)
 	}
 
@@ -416,7 +416,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 			}
 		}
 	}
-	if hasIsLatestFeature(*r.semver) {
+	if hasProjectIsLatestFeature(*r.semver) {
 		newState.IsLatest = types.BoolValue(*project.IsLatest)
 	}
 
@@ -521,7 +521,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		project.CollectionLogic = &collectionLogic
 		project.CollectionTag = &dtrack.Tag{Name: plan.Collection.Tag.ValueString()}
 	}
-	if hasIsLatestFeature(*r.semver) && !plan.IsLatest.IsNull() {
+	if hasProjectIsLatestFeature(*r.semver) && !plan.IsLatest.IsNull() {
 		project.IsLatest = plan.IsLatest.ValueBoolPointer()
 	}
 
@@ -598,7 +598,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 			}
 		}
 	}
-	if hasIsLatestFeature(*r.semver) {
+	if hasProjectIsLatestFeature(*r.semver) {
 		newPlan.IsLatest = types.BoolValue(*projectRes.IsLatest)
 	}
 
@@ -718,6 +718,6 @@ func hasProjectCollectionFeature(semver Semver) bool {
 	return semver.Major >= 4 && semver.Minor >= 13
 }
 
-func hasIsLatestFeature(semver Semver) bool {
+func hasProjectIsLatestFeature(semver Semver) bool {
 	return semver.Major >= 4 && semver.Minor >= 12
 }

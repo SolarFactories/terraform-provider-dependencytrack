@@ -48,3 +48,28 @@ data "dependencytrack_project" "test" {
 		},
 	})
 }
+
+// API 4.12+.
+func TestAccProjectDataSourceIsLatest(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Project_Data_Test_Latest"
+	version = "1"
+	is_latest = true
+}
+data "dependencytrack_project" "test2" {
+	name = dependencytrack_project.test.name
+	version = dependencytrack_project.test.version
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair("data.dependencytrack_project.test2", "is_latest", "dependencytrack_project.test", "is_latest"),
+				),
+			},
+		},
+	})
+}
