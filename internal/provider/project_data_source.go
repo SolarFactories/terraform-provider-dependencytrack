@@ -35,6 +35,7 @@ type (
 		SWID       types.String             `tfsdk:"swid"`
 		Properties []projectPropertiesModel `tfsdk:"properties"`
 		Tags       []types.String           `tfsdk:"tags"`
+		IsLatest   types.Bool               `tfsdk:"is_latest"`
 	}
 
 	projectPropertiesModel struct {
@@ -65,6 +66,11 @@ func (*projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 			"version": schema.StringAttribute{
 				Description: "Version of the project to find.",
 				Required:    true,
+			},
+			"is_latest": schema.BoolAttribute{
+				Description: "Whether the project is the latest version. Available in API 4.12+.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"id": schema.StringAttribute{
 				Description: "UUID of the project located.",
@@ -166,6 +172,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		Tags: Map(project.Tags, func(item dtrack.Tag) types.String {
 			return types.StringValue(item.Name)
 		}),
+		IsLatest: types.BoolNull(), // Set below.
 	}
 	if project.ParentRef != nil {
 		projectState.Parent = types.StringValue(project.ParentRef.UUID.String())
@@ -187,6 +194,10 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 			"description": property.Description,
 		})
 	}
+	if hasProjectIsLatestFeature(*d.semver) {
+		projectState.IsLatest = types.BoolValue(*project.IsLatest)
+	}
+
 	// Update state.
 	diags = resp.State.Set(ctx, &projectState)
 	resp.Diagnostics.Append(diags...)
@@ -197,6 +208,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		"id":           projectState.ID.ValueString(),
 		"name":         projectState.Name.ValueString(),
 		"version":      projectState.Version.ValueString(),
+		"is_latest":    projectState.IsLatest.ValueBool(),
 		"properties.#": len(projectState.Properties),
 		"classifier":   projectState.Classifier.ValueString(),
 		"cpe":          projectState.CPE.ValueString(),
