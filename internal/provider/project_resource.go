@@ -42,6 +42,7 @@ type (
 		SWID        types.String                    `tfsdk:"swid"`
 		Tags        types.List                      `tfsdk:"tags"`
 		Active      types.Bool                      `tfsdk:"active"`
+		IsLatest    types.Bool                      `tfsdk:"is_latest"`
 	}
 
 	projectResourceModelCollection struct {
@@ -85,6 +86,11 @@ func (*projectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp
 			},
 			"version": schema.StringAttribute{
 				Description: "Version of the project.",
+				Optional:    true,
+				Computed:    true,
+			},
+			"is_latest": schema.BoolAttribute{
+				Description: "Whether the Project is the latest version. Available in API 4.12+.",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -205,12 +211,16 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 			projectReq.CollectionTag = nil
 		}
 	}
+	if hasIsLatestFeature(*r.semver) && !plan.IsLatest.IsNull() {
+		projectReq.IsLatest = plan.IsLatest.ValueBoolPointer()
+	}
 
 	tflog.Debug(ctx, "Creating a Project", map[string]any{
 		"name":             projectReq.Name,
 		"description":      projectReq.Description,
 		"active":           projectReq.Active,
 		"version":          projectReq.Version,
+		"is_latest":        projectReq.IsLatest,
 		"parent":           projectReq.ParentRef,
 		"classifier":       projectReq.Classifier,
 		"group":            projectReq.Group,
@@ -249,6 +259,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		Description: types.StringValue(projectRes.Description),
 		Active:      types.BoolValue(projectRes.Active),
 		Version:     types.StringValue(projectRes.Version),
+		IsLatest:    types.BoolNull(),   // Updated below.
 		Parent:      types.StringNull(), // Updated below.
 		Classifier:  types.StringValue(projectRes.Classifier),
 		Group:       types.StringValue(projectRes.Group),
@@ -282,6 +293,9 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 			}
 		}
 	}
+	if hasIsLatestFeature(*r.semver) {
+		plan.IsLatest = types.BoolValue(*projectRes.IsLatest)
+	}
 
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -294,6 +308,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 		"description":      projectRes.Description,
 		"active":           projectRes.Active,
 		"version":          projectRes.Version,
+		"is_latest":        projectRes.IsLatest,
 		"parent":           projectRes.ParentRef,
 		"classifier":       projectRes.Classifier,
 		"group":            projectRes.Group,
@@ -327,6 +342,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		"description": state.Description.ValueString(),
 		"active":      state.Active.ValueBool(),
 		"version":     state.Version.ValueString(),
+		"is_latest":   state.IsLatest.ValueBool(),
 		"parent":      state.Parent.ValueString(),
 		"classifier":  state.Classifier.ValueString(),
 		"group":       state.Group.ValueString(),
@@ -370,6 +386,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		Description: types.StringValue(project.Description),
 		Active:      types.BoolValue(project.Active),
 		Version:     types.StringValue(project.Version),
+		IsLatest:    types.BoolNull(),   // Updated below.
 		Parent:      types.StringNull(), // Updated below.
 		Classifier:  types.StringValue(project.Classifier),
 		Group:       types.StringValue(project.Group),
@@ -399,6 +416,9 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 			}
 		}
 	}
+	if hasIsLatestFeature(*r.semver) {
+		newState.IsLatest = types.BoolValue(*project.IsLatest)
+	}
 
 	// Update state.
 	diags = resp.State.Set(ctx, &newState)
@@ -412,6 +432,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		"description":      project.Description,
 		"active":           project.Active,
 		"version":          project.Version,
+		"is_latest":        project.IsLatest,
 		"parent":           project.ParentRef,
 		"classifier":       project.Classifier,
 		"group":            project.Group,
@@ -500,6 +521,9 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		project.CollectionLogic = &collectionLogic
 		project.CollectionTag = &dtrack.Tag{Name: plan.Collection.Tag.ValueString()}
 	}
+	if hasIsLatestFeature(*r.semver) && !plan.IsLatest.IsNull() {
+		project.IsLatest = plan.IsLatest.ValueBoolPointer()
+	}
 
 	// Execute.
 	tflog.Debug(ctx, "Updating Project", map[string]any{
@@ -508,6 +532,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		"description":      project.Description,
 		"active":           project.Active,
 		"version":          project.Version,
+		"is_latest":        project.IsLatest,
 		"parent":           project.ParentRef,
 		"classifier":       project.Classifier,
 		"group":            project.Group,
@@ -543,6 +568,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		Description: types.StringValue(projectRes.Description),
 		Active:      types.BoolValue(projectRes.Active),
 		Version:     types.StringValue(projectRes.Version),
+		IsLatest:    types.BoolNull(),   // Updated below.
 		Parent:      types.StringNull(), // Updated below.
 		Classifier:  types.StringValue(projectRes.Classifier),
 		Group:       types.StringValue(projectRes.Group),
@@ -572,6 +598,9 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 			}
 		}
 	}
+	if hasIsLatestFeature(*r.semver) {
+		newPlan.IsLatest = types.BoolValue(*projectRes.IsLatest)
+	}
 
 	// Update State.
 	diags = resp.State.Set(ctx, newPlan)
@@ -585,6 +614,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		"description":      projectRes.Description,
 		"active":           projectRes.Active,
 		"version":          projectRes.Version,
+		"is_latest":        projectRes.IsLatest,
 		"parent":           projectRes.ParentRef,
 		"classifier":       projectRes.Classifier,
 		"group":            projectRes.Group,
@@ -620,6 +650,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		"description": state.Description.ValueString(),
 		"active":      state.Active.ValueBool(),
 		"version":     state.Version.ValueString(),
+		"is_latest":   state.IsLatest.ValueBool(),
 		"parent":      state.Parent.ValueString(),
 		"classifier":  state.Classifier.ValueString(),
 		"group":       state.Group.ValueString(),
@@ -642,6 +673,7 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 		"description": state.Description.ValueString(),
 		"active":      state.Active.ValueBool(),
 		"version":     state.Version.ValueString(),
+		"is_latest":   state.IsLatest.ValueBool(),
 		"parent":      state.Parent.ValueString(),
 		"classifier":  state.Classifier.ValueString(),
 		"group":       state.Group.ValueString(),
@@ -684,4 +716,8 @@ func (r *projectResource) Configure(_ context.Context, req resource.ConfigureReq
 
 func hasProjectCollectionFeature(semver Semver) bool {
 	return semver.Major >= 4 && semver.Minor >= 13
+}
+
+func hasIsLatestFeature(semver Semver) bool {
+	return semver.Major >= 4 && semver.Minor >= 12
 }

@@ -406,7 +406,7 @@ resource "dependencytrack_project" "test3" {
 	})
 }
 
-// API 4.12+
+// API 4.12+.
 func TestAccProjectIsLatest(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -419,9 +419,14 @@ resource "dependencytrack_project" "test" {
 	version = "Test Version"
 	is_latest = true
 }
+resource "dependencytrack_project" "default" {
+	name = "Test_Project_Is_Latest_Default"
+	version = "Test_Version"
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "is_latest", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_project.default", "is_latest", "false"),
 				),
 			},
 			// ImportState.
@@ -438,9 +443,14 @@ resource "dependencytrack_project" "test" {
 	version = "Test Version"
 	is_latest = false
 }
+resource "dependencytrack_project" "default" {
+	name = "Test_Project_Is_Latest_Default_With_Change"
+	version = "Test_Version"
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_project.test", "is_latest", "false"),
+					resource.TestCheckResourceAttr("dependencytrack_project.default", "is_latest", "false"),
 				),
 			},
 		},
