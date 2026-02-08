@@ -38,7 +38,7 @@ resource "dependencytrack_tag_projects" "example" {
 
 ### Required
 
-- `projects` (List of String) Project UUIDs to which to apply tag. Sorted by project name.
+- `projects` (List of String) Project UUIDs to which to apply tag.
 - `tag` (String) Name of the Tag. Must be lowercase.
 
 ### Read-Only

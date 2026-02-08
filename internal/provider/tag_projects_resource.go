@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/google/uuid"
@@ -61,8 +62,7 @@ func (*tagProjectsResource) Schema(_ context.Context, _ resource.SchemaRequest, 
 				},
 			},
 			"projects": schema.ListAttribute{
-				// TODO: Use `ListUnorderedEqual` to remove requirement for this to be sorted.
-				Description: "Project UUIDs to which to apply tag. Sorted by project name.",
+				Description: "Project UUIDs to which to apply tag.",
 				Required:    true,
 				ElementType: types.StringType,
 			},
@@ -146,7 +146,7 @@ func (r *tagProjectsResource) Create(ctx context.Context, req resource.CreateReq
 	tflog.Debug(ctx, "Created Tag Projects", map[string]any{
 		"id":       plan.ID.ValueString(),
 		"tag":      plan.Tag.ValueString(),
-		"projects": Map(plan.Projects, func(item types.String) string { return item.ValueString() }),
+		"projects": Map(plan.Projects, types.String.ValueString),
 	})
 }
 
@@ -163,7 +163,7 @@ func (r *tagProjectsResource) Read(ctx context.Context, req resource.ReadRequest
 		"id":         state.ID.ValueString(),
 		"tag":        tagName,
 		"projects.#": len(state.Projects),
-		"projects":   Map(state.Projects, func(item types.String) string { return item.ValueString() }),
+		"projects":   Map(state.Projects, types.String.ValueString),
 	})
 
 	taggedProjectsInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedProjectListResponseItem], error) {
@@ -177,12 +177,20 @@ func (r *tagProjectsResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
+	stateProjects := Map(taggedProjectsInfo, func(info dtrack.TaggedProjectListResponseItem) types.String {
+		return types.StringValue(info.UUID.String())
+	})
+
+	if SliceUnorderedEqual(stateProjects, state.Projects, func(a, b types.String) int {
+		return strings.Compare(a.ValueString(), b.ValueString())
+	}) {
+		stateProjects = state.Projects
+	}
+
 	state = tagProjectsResourceModel{
-		ID:  types.StringValue(tagName),
-		Tag: types.StringValue(tagName),
-		Projects: Map(taggedProjectsInfo, func(info dtrack.TaggedProjectListResponseItem) types.String {
-			return types.StringValue(info.UUID.String())
-		}),
+		ID:       types.StringValue(tagName),
+		Tag:      types.StringValue(tagName),
+		Projects: stateProjects,
 	}
 
 	diags = resp.State.Set(ctx, &state)
@@ -193,7 +201,7 @@ func (r *tagProjectsResource) Read(ctx context.Context, req resource.ReadRequest
 	tflog.Debug(ctx, "Read Tag Projects", map[string]any{
 		"id":       state.ID.ValueString(),
 		"tag":      state.Tag.ValueString(),
-		"projects": Map(state.Projects, func(v types.String) string { return v.ValueString() }),
+		"projects": Map(state.Projects, types.String.ValueString),
 	})
 }
 
@@ -210,7 +218,7 @@ func (r *tagProjectsResource) Update(ctx context.Context, req resource.UpdateReq
 		"id":         plan.ID.ValueString(),
 		"tag":        tagName,
 		"projects.#": len(plan.Projects),
-		"projects":   Map(plan.Projects, func(item types.String) string { return item.ValueString() }),
+		"projects":   Map(plan.Projects, types.String.ValueString),
 	})
 
 	currentProjectsInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedProjectListResponseItem], error) {
@@ -281,7 +289,7 @@ func (r *tagProjectsResource) Update(ctx context.Context, req resource.UpdateReq
 	tflog.Debug(ctx, "Updated Tag Projects", map[string]any{
 		"id":       plan.ID.ValueString(),
 		"tag":      plan.Tag.ValueString(),
-		"projects": Map(plan.Projects, func(t types.String) string { return t.ValueString() }),
+		"projects": Map(plan.Projects, types.String.ValueString),
 	})
 }
 
@@ -298,7 +306,7 @@ func (r *tagProjectsResource) Delete(ctx context.Context, req resource.DeleteReq
 		"id":         state.ID.ValueString(),
 		"tag":        tagName,
 		"projects.#": len(state.Projects),
-		"projects":   Map(state.Projects, func(t types.String) string { return t.ValueString() }),
+		"projects":   Map(state.Projects, types.String.ValueString),
 	})
 
 	currentProjectsInfo, err := dtrack.FetchAll(func(po dtrack.PageOptions) (dtrack.Page[dtrack.TaggedProjectListResponseItem], error) {
@@ -323,11 +331,9 @@ func (r *tagProjectsResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 	tflog.Debug(ctx, "Deleted Tag Projects", map[string]any{
-		"id":  state.ID.ValueString(),
-		"tag": tagName,
-		"projects": Map(state.Projects, func(project types.String) string {
-			return project.ValueString()
-		}),
+		"id":       state.ID.ValueString(),
+		"tag":      tagName,
+		"projects": Map(state.Projects, types.String.ValueString),
 	})
 }
 
@@ -353,7 +359,7 @@ func (r *tagProjectsResource) Configure(_ context.Context, req resource.Configur
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Configure Type",
-			fmt.Sprintf("Expected provider.clientInfo, got %T. Please report this issue to the provider developer.", req.ProviderData),
+			fmt.Sprintf("Expected provider.clientDebug, got %T. Please report this issue to the provider developer.", req.ProviderData),
 		)
 		return
 	}
