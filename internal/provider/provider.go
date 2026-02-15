@@ -247,6 +247,7 @@ func (*dependencyTrackProvider) DataSources(_ context.Context) []func() datasour
 		NewOidcAvailableDataSource,
 		NewOidcGroupMappingsDataSource,
 		NewOidcUsersDataSource,
+		NewOidcLoginDataSource,
 	}
 }
 
