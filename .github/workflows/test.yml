@@ -195,6 +195,7 @@ jobs:
           set -u
           token=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
           echo "OIDC_TOKEN=$token" >> $GITHUB_ENV
+          echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}

@@ -598,6 +598,9 @@ linters:
       - path: internal/provider/oidc_users_data_source.go
         linters:
           - gosec
+      - path: internal/provider/oidc_login_data_source_test.go
+        linters:
+          - godox
 
 formatters:
   enable:
