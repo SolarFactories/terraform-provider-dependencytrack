@@ -1,3 +1,13 @@
+## 1.18.1
+
+#### DEPENDENCIES
+- `hashicorp/setup-terraform` `3.1.2` -> `4.0.0`
+- `github.com/hashicorp/terraform-plugin-go` `0.29.0` -> `0.30.0`
+- `github.com/cloudflare/circl` `1.6.1` -> `1.6.3`
+- `actions/setup-go` `6.2.0` -> `6.3.0`
+- `github.com/hashicorp/terraform-plugin-framework` `1.17.0` -> `1.18.0`
+- `goreleaser/goreleaser-action` `6.4.0` -> `7.0.0`
+
 ## 1.18
 
 #### FEATURES
