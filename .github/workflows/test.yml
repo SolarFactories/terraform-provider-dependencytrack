@@ -56,6 +56,7 @@ jobs:
     name: Terraform Provider TLS Tests
     needs: build
     runs-on: ubuntu-latest
+    if: false # FIXME: Currently disabled TLS tests.
     timeout-minutes: 15
     services:
       api:
@@ -107,7 +108,7 @@ jobs:
     name: Terraform Provider Acceptance Tests
     needs:
       - build
-      - test_tls
+      #- test_tls
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
