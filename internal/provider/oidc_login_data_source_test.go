@@ -20,12 +20,12 @@ variable "oidc_id_token" {
 	sensitive = true
 	nullable = false
 }
-data "dependencytrack_oidc_login" {
+data "dependencytrack_oidc_login" "test" {
 	id_token = var.oidc_id_token
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.dependencytrack_oidc_login", "token"),
+					resource.TestCheckResourceAttrSet("data.dependencytrack_oidc_login.test", "token"),
 				),
 			},
 		},
