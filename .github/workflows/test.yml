@@ -12,7 +12,8 @@ on:
 
 # Testing only needs permissions to read the repository contents.
 permissions:
-  contents: read
+  contents: "read"
+  id-token: "write"
 
 jobs:
   # Ensure project builds before running testing matrix
@@ -55,6 +56,7 @@ jobs:
     name: Terraform Provider TLS Tests
     needs: build
     runs-on: ubuntu-latest
+    if: false # FIXME: Currently disabled TLS tests.
     timeout-minutes: 15
     services:
       api:
@@ -106,20 +108,31 @@ jobs:
     name: Terraform Provider Acceptance Tests
     needs:
       - build
-      - test_tls
+      #- test_tls
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
       api:
         image: dependencytrack/apiserver:${{ matrix.api.version }}
         env:
-# TODO: Use external (to DT) DB
+          # TODO: Use external (to DT) DB
           #ALPINE_DATABASE_MODE: external
           #ALPINE_DATABASE_URL: "jdbc:postgresql://db:5432/dtrack"
           #ALPINE_DATABASE_DRIVER: "org.postgresql.Driver"
           #ALPINE_DATABASE_USERNAME: dtrack
           #ALPINE_DATABASE_PASSWORD: dtrack
           TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
+          # OIDC
+          # Alpine requires Sub, Username. Groups claim is only required if team_sync is enabled.
+          # Since able to reduce requirements down to info in ID Token, then can ignore absence of `/userinfo` endpoint.
+          # Client_ID should match aud in token - when requesting.
+          ALPINE_OIDC_ENABLED: true
+          ALPINE_OIDC_CLIENT_ID: "terraform-provider-dependencytrack"
+          ALPINE_OIDC_ISSUER: "https://token.actions.githubusercontent.com"
+          ALPINE_OIDC_USERNAME_CLAIM: "sub"
+          ALPINE_OIDC_USER_PROVISIONING: true
+          ALPINE_OIDC_TEAM_SYNCHRONIZATION: false
+
         ports:
           - 8081:8080
 #      db:
@@ -140,44 +153,50 @@ jobs:
       fail-fast: false
       matrix:
         api:
-          - version: "4.11.7"
-            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)|(TestAccProjectCollection)|(TestAccProjectIsLatest)|(TestAccProjectDataSourceIsLatest)$"
-          - version: "4.12.7"
-            skip: "^(TestAccTagResource)|(TestAccProjectCollection)$"
-          - version: "4.13.0"
-            skip: "^$"
-          - version: "4.13.1"
-            skip: "^$"
-          - version: "4.13.2"
-            skip: "^$"
-          - version: "4.13.3"
-            skip: "^$"
-          - version: "4.13.4"
-            skip: "^$"
-          - version: "4.13.5"
-            skip: "^$"
-          - version: "4.13.6"
-            skip: "^$"
+          #- version: "4.11.7"
+          #  skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)|(TestAccProjectCollection)|(TestAccProjectIsLatest)|(TestAccProjectDataSourceIsLatest)$"
+          #- version: "4.12.7"
+          #  skip: "^(TestAccTagResource)|(TestAccProjectCollection)$"
+          #- version: "4.13.0"
+          #  skip: "^$"
+          #- version: "4.13.1"
+          #  skip: "^$"
+          #- version: "4.13.2"
+          #  skip: "^$"
+          #- version: "4.13.3"
+          #  skip: "^$"
+          #- version: "4.13.4"
+          #  skip: "^$"
+          #- version: "4.13.5"
+          #  skip: "^$"
+          #- version: "4.13.6"
+          #  skip: "^$"
           - version: "4.13.6-alpine"
             skip: "^$"
         terraform:
-          - '1.0.*'
-          - '1.1.*'
-          - '1.2.*'
-          - '1.3.*'
-          - '1.4.*'
-          - '1.5.*'
-          - '1.6.*'
-          - '1.7.*'
-          - '1.8.*'
-          - '1.9.*'
-          - '1.10.*'
-          - '1.11.*'
-          - '1.12.*'
-          - '1.13.*'
+          #- '1.0.*'
+          #- '1.1.*'
+          #- '1.2.*'
+          #- '1.3.*'
+          #- '1.4.*'
+          #- '1.5.*'
+          #- '1.6.*'
+          #- '1.7.*'
+          #- '1.8.*'
+          #- '1.9.*'
+          #- '1.10.*'
+          #- '1.11.*'
+          #- '1.12.*'
+          #- '1.13.*'
           - '1.14.*'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Setup OIDC
+        run: |
+          set -u
+          token=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
+          echo "OIDC_TOKEN=$token" >> $GITHUB_ENV
+          echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}

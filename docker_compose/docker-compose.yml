@@ -15,6 +15,17 @@ services:
       ALPINE_DATABASE_USERNAME: dtrack
       ALPINE_DATABASE_PASSWORD: dtrack
       TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
+      # OIDC
+      # Alpine requires Sub, Username. Groups claim is only required if team_sync is enabled.
+      # Since able to reduce requirements down to info in ID Token, then can ignore absence of `/userinfo` endpoint.
+      # Client_ID should match aud in token - when requesting.
+      ALPINE_OIDC_ENABLED: true
+      ALPINE_OIDC_CLIENT_ID: "terraform-provider-dependencytrack"
+      ALPINE_OIDC_ISSUER: "https://token.actions.githubusercontent.com"
+      ALPINE_OIDC_USERNAME_CLAIM: "sub"
+      ALPINE_OIDC_USER_PROVISIONING: true
+      ALPINE_OIDC_TEAM_SYNCHRONIZATION: false
+
     deploy:
       resources:
         limits:
@@ -34,7 +45,9 @@ services:
     depends_on:
       - dtrack-apiserver
     environment:
-      - API_BASE_URL=http://localhost:8081
+      API_BASE_URL: "http://localhost:8081"
+      OIDC_ISSUER: "https://token.actions.githubusercontent.com"
+      OIDC_CLIENT_ID: "terraform-provider-dependencytrack"
     ports:
       - "8080:8080"
     restart: unless-stopped
