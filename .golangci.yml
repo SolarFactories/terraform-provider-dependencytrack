@@ -531,6 +531,20 @@ linters:
           - cyclop
           - gochecknoglobals
           - forbidigo
+      - path: scripts/fake_oidc/main.go
+        linters:
+          - revive
+          - depguard
+          - exhaustruct
+          - errcheck
+          - goconst
+          - varnamelen
+          - godox
+          - forbidigo
+          - nlreturn
+          - mnd
+          - err113
+          - misspell
       - path: internal/provider/
         linters:
           - wsl
