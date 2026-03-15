@@ -1,3 +1,18 @@
+## 1.19
+
+#### FEATURES
+- Add `dependencytrack_oidc_user` to manage an OIDC User.
+- Add `dependencytrack_ldap_user` to manage an LDAP User.
+- Add explicit support and testing for DependencyTrack `4.14.0`, `4.14.0-alpine`.
+
+#### DEPENDENCIES
+- `github.com/hashicorp/terraform-plugin-framework` `1.18` -> `1.19`
+- `github.com/hashicorp/terraform-plugin-go` `0.30.0` -> `0.31.0`
+- `github.com/hashicorp/terraform-plugin-testing` `1.14.0` -> `1.15.0`
+
+#### MISC
+- Increase minimum Go Version from `1.24` to `1.25`.
+
 ## 1.18.1
 
 #### DEPENDENCIES
