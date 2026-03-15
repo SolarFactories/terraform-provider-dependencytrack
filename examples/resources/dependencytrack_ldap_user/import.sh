@@ -1,0 +1,1 @@
+terraform import dependencytrack_ldap_user.example Example
