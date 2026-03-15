@@ -234,6 +234,8 @@ func (*dependencyTrackProvider) Resources(_ context.Context) []func() resource.R
 		NewUserResource,
 		NewUserTeamResource,
 		NewUserPermissionResource,
+		NewOIDCUserResource,
+		NewLDAPUserResource,
 	}
 }
 
