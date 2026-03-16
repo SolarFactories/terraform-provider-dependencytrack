@@ -132,6 +132,7 @@ linters:
         - "^github.com/DependencyTrack/client-go\\.ManagedUser$"
         - "^github.com/DependencyTrack/client-go\\.OIDCUser$"
         - "^github.com/DependencyTrack/client-go\\.LdapUser$"
+        - "^github.com/DependencyTrack/client-go\\.UserPrincipal$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*Resource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*DataSource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.dependencyTrackProvider$"

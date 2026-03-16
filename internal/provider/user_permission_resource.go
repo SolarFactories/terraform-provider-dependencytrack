@@ -115,14 +115,7 @@ func (r *userPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 		"username":   username,
 		"permission": state.Permission.ValueString(),
 	})
-	user, err := FindPaged(
-		func(po dtrack.PageOptions) (dtrack.Page[dtrack.ManagedUser], error) {
-			return r.client.User.GetAllManaged(ctx, po)
-		},
-		func(usr dtrack.ManagedUser) bool {
-			return usr.Username == username
-		},
-	)
+	user, err := FindUserPrincipal(ctx, *r.client, username)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to get updated user",
