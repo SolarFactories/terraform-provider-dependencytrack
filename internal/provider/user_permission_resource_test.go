@@ -57,3 +57,50 @@ resource "dependencytrack_user_permission" "test" {
 		},
 	})
 }
+
+func TestAccUserPermissionResourceSSORegression177(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/177
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_oidc_user" "test" {
+	username = "Test_User_Regression177_OIDC"
+}
+resource "dependencytrack_ldap_user" "test" {
+	username = "Test_User_Regression177_LDAP"
+}
+
+resource "dependencytrack_user_permission" "oidc" {
+	username = dependencytrack_oidc_user.test.username
+	permission = "SYSTEM_CONFIGURATION"
+}
+resource "dependencytrack_user_permission" "ldap" {
+	username = dependencytrack_ldap_user.test.username
+	permission = "SYSTEM_CONFIGURATION"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_user_permission.oidc", "username",
+						"dependencytrack_oidc_user.test", "username",
+					),
+					resource.TestCheckResourceAttr(
+						"dependencytrack_user_permission.oidc", "permission",
+						"SYSTEM_CONFIGURATION",
+					),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_user_permission.ldap", "username",
+						"dependencytrack_ldap_user.test", "username",
+					),
+					resource.TestCheckResourceAttr(
+						"dependencytrack_user_permission.ldap", "permission",
+						"SYSTEM_CONFIGURATION",
+					),
+				),
+			},
+		},
+	})
+}

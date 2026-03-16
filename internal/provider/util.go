@@ -285,3 +285,72 @@ func SliceUnorderedEqual[T any](a, b []T, compare func(a, b T) int) bool {
 	sortedB := slices.SortedStableFunc(slices.Values(b), compare)
 	return slices.EqualFunc(sortedA, sortedB, func(a, b T) bool { return compare(a, b) == 0 })
 }
+
+func FindUserPrincipal(ctx context.Context, client dtrack.Client, username string) (*dtrack.UserPrincipal, error) {
+	// Search Order: Managed, OIDC, LDAP.
+	// Managed.
+	managed, err := FilterPaged(
+		func(po dtrack.PageOptions) (dtrack.Page[dtrack.ManagedUser], error) {
+			return client.User.GetAllManaged(ctx, po)
+		},
+		func(user dtrack.ManagedUser) bool {
+			return user.Username == username
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if len(managed) > 1 {
+		return nil, errors.New("found duplicated users")
+	} else if len(managed) == 1 {
+		return &dtrack.UserPrincipal{
+			Username:    managed[0].Username,
+			Teams:       managed[0].Teams,
+			Permissions: managed[0].Permissions,
+		}, nil
+	}
+	// OIDC.
+	oidc, err := FilterPaged(
+		func(_ dtrack.PageOptions) (dtrack.Page[dtrack.OIDCUser], error) {
+			return client.OIDC.GetAllUsers(ctx)
+		},
+		func(user dtrack.OIDCUser) bool {
+			return user.Username == username
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if len(oidc) > 1 {
+		return nil, errors.New("found duplicated users")
+	} else if len(oidc) == 1 {
+		return &dtrack.UserPrincipal{
+			Username:    oidc[0].Username,
+			Teams:       oidc[0].Teams,
+			Permissions: oidc[0].Permissions,
+		}, nil
+	}
+	// LDAP.
+	ldap, err := FilterPaged(
+		func(po dtrack.PageOptions) (dtrack.Page[dtrack.LdapUser], error) {
+			return client.LDAP.GetUsers(ctx, po)
+		},
+		func(user dtrack.LdapUser) bool {
+			return user.Username == username
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if len(ldap) > 1 {
+		return nil, errors.New("found duplicated users")
+	} else if len(ldap) == 1 {
+		return &dtrack.UserPrincipal{
+			Username:    ldap[0].Username,
+			Teams:       ldap[0].Teams,
+			Permissions: ldap[0].Permissions,
+		}, nil
+	}
+	// Not found.
+	return nil, errors.New("could not find user")
+}

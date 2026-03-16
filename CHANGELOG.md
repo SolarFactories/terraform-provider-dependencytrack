@@ -1,3 +1,11 @@
+## 1.19.1
+
+#### FIXES
+- Allow `dependencytrack_user_team` to be used with `dependencytrack_oidc_user`, and `dependencytrack_ldap_user`, in addition to existing `dependencytrack_user`.
+  - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/177
+- Allow `dependencytrack_user_permission` to be used with `dependencytrack_oidc_user`, and `dependencytrack_ldap_user`, in addition to existing `dependencytrack_user`.
+  - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/177
+
 ## 1.19
 
 #### FEATURES
