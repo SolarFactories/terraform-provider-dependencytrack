@@ -261,6 +261,7 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 	})
 }
 
+// TODO: Add logging.
 func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Fetch state.
 	var state notificationRuleResourceModel
@@ -271,65 +272,81 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	// Refresh.
-	/*id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
+	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
 		return
 	}
-	tflog.Debug(ctx, "Reading Notification Publisher", map[string]any{
-		"id":                 state.ID.ValueString(),
-		"name":               state.Name.ValueString(),
-		"description":        state.Description.ValueString(),
-		"publisher_class":    state.PublisherClass.ValueString(),
-		"template":           state.Template.ValueString(),
-		"template_mime_type": state.TemplateMimeType.ValueString(),
-		"default_publisher":  state.DefaultPublisher.ValueBool(),
-	})
+	filter := dtrack.GetAllRulesFilterOptions{}
+	if !state.TriggerType.IsUnknown() && !state.TriggerType.IsNull() {
+		filter.TriggerType = dtrack.NotificationRuleTriggerType(state.TriggerType.ValueString())
+	}
 
-	publishers, err := r.client.Notification.GetAllPublishers(ctx)
+	rule, err := FindPaged(
+		func(po dtrack.PageOptions) (dtrack.Page[dtrack.NotificationRule], error) {
+			return r.client.Notification.GetAllRules(ctx, po, dtrack.SortOptions{}, filter)
+		},
+		func(rule dtrack.NotificationRule) bool {
+			return rule.UUID.String() == id.String()
+		},
+	)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to read Notification Publishers",
-			"Error when reading ID: "+id.String()+", in original error: "+err.Error(),
+			"Unable to read Notification Rule",
+			"Error with finding notification rule with ID: "+id.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
-	publisher, err := Find(publishers, func(pub dtrack.NotificationPublisher) bool {
-		return pub.UUID.String() == id.String()
-	})
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to read Notification Publisher",
-			"Error with locating ID: "+id.String()+", in original error: "+err.Error(),
-		)
-		return
-	}
-
-	state = notificationRuleResourceModel{
-		ID:               types.StringValue(publisher.UUID.String()),
-		Name:             types.StringValue(publisher.Name),
-		Description:      types.StringValue(publisher.Description),
-		PublisherClass:   types.StringValue(publisher.PublisherClass),
-		Template:         types.StringValue(publisher.Template),
-		TemplateMimeType: types.StringValue(publisher.TemplateMIMEType),
-		DefaultPublisher: types.BoolValue(publisher.DefaultPublisher),
-	}
-
-	// Update state.
-	diags = resp.State.Set(ctx, &state)
+	newNotifyOn, diags := types.ListValue(types.StringType, Map(rule.NotifyOn, func(on dtrack.NotificationRuleNotifyOn) attr.Value {
+		return types.StringValue(string(on))
+	}))
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Read Notification Publisher", map[string]any{
-		"id":                 state.ID.ValueString(),
-		"name":               state.Name.ValueString(),
-		"description":        state.Description.ValueString(),
-		"publisher_class":    state.PublisherClass.ValueString(),
-		"template":           state.Template.ValueString(),
-		"template_mime_type": state.TemplateMimeType.ValueString(),
-		"default_publisher":  state.DefaultPublisher.ValueBool(),
-	})*/
+
+	newState := notificationRuleResourceModel{
+		ID:                    types.StringValue(rule.UUID.String()),
+		Name:                  types.StringValue(rule.Name),
+		Enabled:               types.BoolValue(rule.Enabled),
+		NotifyChildren:        types.BoolUnknown(), // Set Below - 4.12+.
+		LogSuccessfulPublish:  types.BoolValue(rule.LogSuccessfulPublish),
+		Scope:                 types.StringValue(string(rule.Scope)),
+		NotificationLevel:     types.StringValue(string(rule.NotificationLevel)),
+		NotifyOn:              newNotifyOn,
+		TriggerType:           types.StringValue(string(rule.TriggerType)),
+		Message:               types.StringValue(rule.Message),
+		ScheduleCron:          types.StringValue(rule.ScheduleCron),
+		ScheduleSkipUnchanged: types.BoolValue(rule.ScheduleSkipUnchanged),
+		PublisherConfig:       types.StringValue(rule.PublisherConfig),
+		PublisherID:           types.StringValue(rule.Publisher.UUID.String()),
+	}
+	if r.semver.Major == 4 && r.semver.Minor >= 12 {
+		newState.NotifyChildren = types.BoolValue(rule.NotifyChildren)
+	}
+
+	// Update state.
+	diags = resp.State.Set(ctx, newState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Read Notification Rule", map[string]any{
+		"id":                      newState.ID,
+		"name":                    newState.Name,
+		"enabled":                 newState.Enabled,
+		"notify_children":         newState.NotifyChildren,
+		"log_successful_publish":  newState.LogSuccessfulPublish,
+		"scope":                   newState.Scope,
+		"notification_level":      newState.NotificationLevel,
+		"notify_on":               newState.NotifyOn,
+		"trigger_type":            newState.TriggerType,
+		"message":                 newState.Message,
+		"schedule_cron":           newState.ScheduleCron,
+		"schedule_skip_unchanged": newState.ScheduleSkipUnchanged,
+		"publisher_config":        newState.PublisherConfig,
+		"publisher_id":            newState.PublisherID,
+	})
 }
 
 func (r *notificationRuleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
