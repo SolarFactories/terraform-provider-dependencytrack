@@ -263,6 +263,10 @@ func TryParseUUID(value types.String, action LifecycleAction, tfPath path.Path) 
 }
 
 func GetStringList(ctx context.Context, diags *diag.Diagnostics, list types.List) ([]string, error) {
+	if list.IsUnknown() || list.IsNull() {
+		return []string{}, nil
+	}
+
 	tagStrings := make([]types.String, 0, len(list.Elements()))
 	diags.Append(list.ElementsAs(ctx, &tagStrings, false)...)
 	if diags.HasError() {
