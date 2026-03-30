@@ -83,8 +83,8 @@ func (*notificationRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Computed:    true,
 			},
 			"log_successful_publish": schema.BoolAttribute{
-				Description: "Whethe to log each time a rule is successfully notified.",
-				Default:     booldefault.StaticBool(false),
+				Description: "Whether to log each time a rule is successfully notified.",
+				Default:     booldefault.StaticBool(true),
 				Optional:    true,
 				Computed:    true,
 			},
@@ -201,10 +201,20 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 		"publisher_id":            ruleReq.Publisher.UUID.String(),
 	})
 
+	// NOTE: Create only sets Name, Scope, Level, Publisher. All other details need an initial update to be triggered.
 	ruleRes, err := r.client.Notification.CreateRule(ctx, ruleReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Notification Rule",
+			"Error in rule: "+ruleReq.Name+", from original error: "+err.Error(),
+		)
+		return
+	}
+	ruleReq.UUID = ruleRes.UUID
+	ruleRes, err = r.client.Notification.UpdateRule(ctx, ruleReq)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error initialising Notification Rule",
 			"Error in rule: "+ruleReq.Name+", from original error: "+err.Error(),
 		)
 		return
@@ -261,7 +271,6 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 	})
 }
 
-// TODO: Add logging.
 func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	// Fetch state.
 	var state notificationRuleResourceModel
@@ -270,6 +279,23 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	tflog.Debug(ctx, "Reading Notification Rule", map[string]any{
+		"id":                      state.ID,
+		"name":                    state.Name,
+		"enabled":                 state.Enabled,
+		"notify_children":         state.NotifyChildren,
+		"log_successful_publish":  state.LogSuccessfulPublish,
+		"scope":                   state.Scope,
+		"notification_level":      state.NotificationLevel,
+		"notify_on":               state.NotifyOn,
+		"trigger_type":            state.TriggerType,
+		"message":                 state.Message,
+		"schedule_cron":           state.ScheduleCron,
+		"schedule_skip_unchanged": state.ScheduleSkipUnchanged,
+		"publisher_config":        state.PublisherConfig,
+		"publisher_id":            state.PublisherID,
+	})
 
 	// Refresh.
 	id, diag := TryParseUUID(state.ID, LifecycleRead, path.Root("id"))
@@ -359,70 +385,127 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	// Map TF to SDK.
-	/*id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
+	id, diag := TryParseUUID(plan.ID, LifecycleUpdate, path.Root("id"))
 	if diag != nil {
 		resp.Diagnostics.Append(diag)
+	}
+	notifyOn, err := GetStringList(ctx, &resp.Diagnostics, plan.NotifyOn)
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("notify_on"),
+			"Unable to Create Notification Rule",
+			"Error with notify_on, in original error: "+err.Error(),
+		)
+	}
+	publisherID, diag := TryParseUUID(plan.PublisherID, LifecycleCreate, path.Root("publisher_id"))
+	resp.Diagnostics.Append(diag)
+	if resp.Diagnostics.HasError() {
 		return
 	}
-	publisherReq := dtrack.NotificationPublisher{
-		UUID:             id,
-		Name:             plan.Name.ValueString(),
-		Description:      plan.Description.ValueString(),
-		PublisherClass:   plan.PublisherClass.ValueString(),
-		Template:         plan.Template.ValueString(),
-		TemplateMIMEType: plan.TemplateMimeType.ValueString(),
-		DefaultPublisher: plan.DefaultPublisher.ValueBool(),
+
+	ruleReq := dtrack.NotificationRule{
+		UUID:                  id,
+		Name:                  plan.Name.ValueString(),
+		Enabled:               plan.Enabled.ValueBool(),
+		LogSuccessfulPublish:  plan.LogSuccessfulPublish.ValueBool(),
+		Scope:                 dtrack.NotificationRuleScope(plan.Scope.ValueString()),
+		NotificationLevel:     dtrack.NotificationRuleLevel(plan.NotificationLevel.ValueString()),
+		NotifyOn:              Map(notifyOn, func(on string) dtrack.NotificationRuleNotifyOn { return dtrack.NotificationRuleNotifyOn(on) }),
+		TriggerType:           dtrack.NotificationRuleTriggerType(plan.TriggerType.ValueString()),
+		Message:               plan.Message.ValueString(),
+		ScheduleCron:          plan.ScheduleCron.ValueString(),
+		ScheduleSkipUnchanged: plan.ScheduleSkipUnchanged.ValueBool(),
+		PublisherConfig:       plan.PublisherConfig.ValueString(),
+		Publisher: dtrack.NotificationPublisher{
+			UUID: publisherID,
+		},
 	}
-	// Execute.
-	tflog.Debug(ctx, "Updating Notification Publisher", map[string]any{
-		"id":                 publisherReq.UUID.String(),
-		"name":               publisherReq.Name,
-		"description":        publisherReq.Description,
-		"publisher_class":    publisherReq.PublisherClass,
-		"template":           publisherReq.Template,
-		"template_mime_type": publisherReq.TemplateMIMEType,
-		"default_publisher":  publisherReq.DefaultPublisher,
+	if r.semver.Major == 4 && r.semver.Minor >= 12 {
+		ruleReq.NotifyChildren = plan.NotifyChildren.ValueBool()
+	}
+
+	tflog.Debug(ctx, "Updating Notification Rule", map[string]any{
+		"id":                      ruleReq.UUID.String(),
+		"name":                    ruleReq.Name,
+		"enabled":                 ruleReq.Enabled,
+		"notify_children":         ruleReq.NotifyChildren,
+		"log_successful_publish":  ruleReq.LogSuccessfulPublish,
+		"scope":                   ruleReq.Scope,
+		"notification_level":      ruleReq.NotificationLevel,
+		"notify_on":               ruleReq.NotifyOn,
+		"trigger_type":            ruleReq.TriggerType,
+		"message":                 ruleReq.Message,
+		"schedule_cron":           ruleReq.ScheduleCron,
+		"schedule_skip_unchanged": ruleReq.ScheduleSkipUnchanged,
+		"publisher_config":        ruleReq.PublisherConfig,
+		"publisher_id":            ruleReq.Publisher.UUID.String(),
 	})
-	publisherRes, err := r.client.Notification.UpdatePublisher(ctx, publisherReq)
+
+	// Execute.
+	ruleRes, err := r.client.Notification.UpdateRule(ctx, ruleReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to update Notification Publisher",
-			"Error in: "+id.String()+", from: "+err.Error(),
+			"Unable to update Notification Rule",
+			"Error in: "+id.String()+", from original error: "+err.Error(),
 		)
 		return
 	}
-
-	// Map SDK to TF.
-	state := notificationRuleResourceModel{
-		ID:               types.StringValue(publisherRes.UUID.String()),
-		Name:             types.StringValue(publisherRes.Name),
-		Description:      types.StringValue(publisherRes.Description),
-		PublisherClass:   types.StringValue(publisherRes.PublisherClass),
-		Template:         types.StringValue(publisherRes.Template),
-		TemplateMimeType: types.StringValue(publisherRes.TemplateMIMEType),
-		DefaultPublisher: types.BoolValue(publisherRes.DefaultPublisher),
-	}
-
-	// Update State.
-	diags = resp.State.Set(ctx, state)
+	newNotifyOn, diags := types.ListValue(types.StringType, Map(ruleRes.NotifyOn, func(on dtrack.NotificationRuleNotifyOn) attr.Value {
+		return types.StringValue(string(on))
+	}))
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated Notification Publisher", map[string]any{
-		"id":                 state.ID.ValueString(),
-		"name":               state.Name.ValueString(),
-		"description":        state.Description.ValueString(),
-		"publisher_class":    state.PublisherClass.ValueString(),
-		"template":           state.Template.ValueString(),
-		"template_mime_type": state.TemplateMimeType.ValueString(),
-		"default_publisher":  state.DefaultPublisher.ValueBool(),
-	})*/
+
+	// Map SDK to TF.
+	newState := notificationRuleResourceModel{
+		ID:                    types.StringValue(ruleRes.UUID.String()),
+		Name:                  types.StringValue(ruleRes.Name),
+		Enabled:               types.BoolValue(ruleRes.Enabled),
+		NotifyChildren:        types.BoolUnknown(), // Set Below - 4.12+.
+		LogSuccessfulPublish:  types.BoolValue(ruleRes.LogSuccessfulPublish),
+		Scope:                 types.StringValue(string(ruleRes.Scope)),
+		NotificationLevel:     types.StringValue(string(ruleRes.NotificationLevel)),
+		NotifyOn:              newNotifyOn,
+		TriggerType:           types.StringValue(string(ruleRes.TriggerType)),
+		Message:               types.StringValue(ruleRes.Message),
+		ScheduleCron:          types.StringValue(ruleRes.ScheduleCron),
+		ScheduleSkipUnchanged: types.BoolValue(ruleRes.ScheduleSkipUnchanged),
+		PublisherConfig:       types.StringValue(ruleRes.PublisherConfig),
+		PublisherID:           types.StringValue(ruleRes.Publisher.UUID.String()),
+	}
+	if r.semver.Major == 4 && r.semver.Minor >= 12 {
+		newState.NotifyChildren = types.BoolValue(ruleRes.NotifyChildren)
+	}
+
+	// Update State.
+	diags = resp.State.Set(ctx, newState)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	tflog.Debug(ctx, "Updated Notification Rule", map[string]any{
+		"id":                      newState.ID,
+		"name":                    newState.Name,
+		"enabled":                 newState.Enabled,
+		"notify_children":         newState.NotifyChildren,
+		"log_successful_publish":  newState.LogSuccessfulPublish,
+		"scope":                   newState.Scope,
+		"notification_level":      newState.NotificationLevel,
+		"notify_on":               newState.NotifyOn,
+		"trigger_type":            newState.TriggerType,
+		"message":                 newState.Message,
+		"schedule_cron":           newState.ScheduleCron,
+		"schedule_skip_unchanged": newState.ScheduleSkipUnchanged,
+		"publisher_config":        newState.PublisherConfig,
+		"publisher_id":            newState.PublisherID,
+	})
 }
 
 func (r *notificationRuleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Load state.
-	/*var state notificationRuleResourceModel
+	var state notificationRuleResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -436,33 +519,51 @@ func (r *notificationRuleResource) Delete(ctx context.Context, req resource.Dele
 		return
 	}
 
-	// Execute.
-	tflog.Debug(ctx, "Deleting Notification Publisher", map[string]any{
-		"id":                 id.String(),
-		"name":               state.Name.ValueString(),
-		"description":        state.Description.ValueString(),
-		"publisher_class":    state.PublisherClass.ValueString(),
-		"template":           state.Template.ValueString(),
-		"template_mime_type": state.TemplateMimeType.ValueString(),
-		"default_publisher":  state.DefaultPublisher.ValueBool(),
+	tflog.Debug(ctx, "Deleting Notification Rule", map[string]any{
+		"id":                      state.ID,
+		"name":                    state.Name,
+		"enabled":                 state.Enabled,
+		"notify_children":         state.NotifyChildren,
+		"log_successful_publish":  state.LogSuccessfulPublish,
+		"scope":                   state.Scope,
+		"notification_level":      state.NotificationLevel,
+		"notify_on":               state.NotifyOn,
+		"trigger_type":            state.TriggerType,
+		"message":                 state.Message,
+		"schedule_cron":           state.ScheduleCron,
+		"schedule_skip_unchanged": state.ScheduleSkipUnchanged,
+		"publisher_config":        state.PublisherConfig,
+		"publisher_id":            state.PublisherID,
 	})
-	err := r.client.Notification.DeletePublisher(ctx, id)
+
+	// Execute.
+	err := r.client.Notification.DeleteRule(ctx, dtrack.NotificationRule{
+		UUID: id,
+	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Unable to delete Notification Publisher",
-			"Unexpected error when trying to delete Notification Publisher: "+id.String()+", from error: "+err.Error(),
+			"Unable to delete Notification Rule",
+			"Error in id: "+id.String()+", in original error: "+err.Error(),
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted Notification Publisher", map[string]any{
-		"id":                 state.ID.ValueString(),
-		"name":               state.Name.ValueString(),
-		"description":        state.Description.ValueString(),
-		"publisher_class":    state.PublisherClass.ValueString(),
-		"template":           state.Template.ValueString(),
-		"template_mime_type": state.TemplateMimeType.ValueString(),
-		"default_publisher":  state.DefaultPublisher.ValueBool(),
-	})*/
+
+	tflog.Debug(ctx, "Deleted Notification Rule", map[string]any{
+		"id":                      state.ID,
+		"name":                    state.Name,
+		"enabled":                 state.Enabled,
+		"notify_children":         state.NotifyChildren,
+		"log_successful_publish":  state.LogSuccessfulPublish,
+		"scope":                   state.Scope,
+		"notification_level":      state.NotificationLevel,
+		"notify_on":               state.NotifyOn,
+		"trigger_type":            state.TriggerType,
+		"message":                 state.Message,
+		"schedule_cron":           state.ScheduleCron,
+		"schedule_skip_unchanged": state.ScheduleSkipUnchanged,
+		"publisher_config":        state.PublisherConfig,
+		"publisher_id":            state.PublisherID,
+	})
 }
 
 func (*notificationRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
