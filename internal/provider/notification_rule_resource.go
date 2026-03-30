@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -220,9 +221,12 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	newNotifyOn, diags := types.ListValue(types.StringType, Map(ruleRes.NotifyOn, func(on dtrack.NotificationRuleNotifyOn) attr.Value {
-		return types.StringValue(string(on))
-	}))
+	newNotifyOnStrings := Map(ruleRes.NotifyOn, func(notify dtrack.NotificationRuleNotifyOn) string { return string(notify) })
+	if SliceUnorderedEqual(notifyOn, newNotifyOnStrings, strings.Compare) {
+		newNotifyOnStrings = notifyOn
+	}
+
+	newNotifyOn, diags := types.ListValue(types.StringType, Map(newNotifyOnStrings, func(notify string) attr.Value { return types.StringValue(notify) }))
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -303,6 +307,15 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 		resp.Diagnostics.Append(diag)
 		return
 	}
+	notifyOn, err := GetStringList(ctx, &resp.Diagnostics, state.NotifyOn)
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("notify_on"),
+			"Unable to Read Notification Rule as strings",
+			"Error with notify_on, in original error: "+err.Error(),
+		)
+	}
+
 	filter := dtrack.GetAllRulesFilterOptions{}
 	if !state.TriggerType.IsUnknown() && !state.TriggerType.IsNull() {
 		filter.TriggerType = dtrack.NotificationRuleTriggerType(state.TriggerType.ValueString())
@@ -323,8 +336,12 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 		)
 		return
 	}
-	newNotifyOn, diags := types.ListValue(types.StringType, Map(rule.NotifyOn, func(on dtrack.NotificationRuleNotifyOn) attr.Value {
-		return types.StringValue(string(on))
+	newNotifyOnStrings := Map(rule.NotifyOn, func(notify dtrack.NotificationRuleNotifyOn) string { return string(notify) })
+	if SliceUnorderedEqual(notifyOn, newNotifyOnStrings, strings.Compare) {
+		newNotifyOnStrings = notifyOn
+	}
+	newNotifyOn, diags := types.ListValue(types.StringType, Map(newNotifyOnStrings, func(notify string) attr.Value {
+		return types.StringValue(notify)
 	}))
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -450,8 +467,14 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 		)
 		return
 	}
-	newNotifyOn, diags := types.ListValue(types.StringType, Map(ruleRes.NotifyOn, func(on dtrack.NotificationRuleNotifyOn) attr.Value {
-		return types.StringValue(string(on))
+	newNotifyOnStrings := Map(ruleRes.NotifyOn, func(notify dtrack.NotificationRuleNotifyOn) string {
+		return string(notify)
+	})
+	if SliceUnorderedEqual(notifyOn, newNotifyOnStrings, strings.Compare) {
+		newNotifyOnStrings = notifyOn
+	}
+	newNotifyOn, diags := types.ListValue(types.StringType, Map(newNotifyOnStrings, func(notify string) attr.Value {
+		return types.StringValue(notify)
 	}))
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

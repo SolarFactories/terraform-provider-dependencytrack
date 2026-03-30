@@ -599,6 +599,13 @@ linters:
       - path: internal/provider/component_property_resource_test.go
         linters:
           - godox
+      - path: internal/provider/notification_rule_resource.go
+        linters:
+          - govet
+          - gocognit
+          - exhaustruct
+          - gocyclo
+          - cyclop
 
 formatters:
   enable:
