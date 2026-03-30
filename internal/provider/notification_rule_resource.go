@@ -562,6 +562,9 @@ func (r *notificationRuleResource) Delete(ctx context.Context, req resource.Dele
 	// Execute.
 	err := r.client.Notification.DeleteRule(ctx, dtrack.NotificationRule{
 		UUID: id,
+		// Only needs UUID to delete. These are just to allow to be deserialised by API.
+		Scope:       dtrack.NotificationRuleScopePortfolio,
+		TriggerType: dtrack.NotificationRuleTriggerTypeEvent,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
