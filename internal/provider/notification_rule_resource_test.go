@@ -14,28 +14,29 @@ func TestAccNotificationRuleEventResource(t *testing.T) {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_notification_publisher" "test" {
-	name = "Test_Rule_Publisher"
+	name = "Test_Rule_Publisher_Event"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test" {
-	name = "Test_Rule_Name"
+	name = "Test_Rule_Name_Event"
 	trigger_type = "EVENT"
 	publisher_id = dependencytrack_notification_publisher.test.id
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_notification_rule.test", "id"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "name", "Test_Rule_Name"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "name", "Test_Rule_Name_Event"),
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_notification_rule.test", "publisher_id",
 						"dependencytrack_notification_publisher.test", "id",
 					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "trigger_type", "EVENT"),
 					// TODO: resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"), API 4.12+.
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", ""),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", "INFORMATIONAL"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_on.#", "0"),
 				),
 			},
@@ -49,12 +50,12 @@ resource "dependencytrack_notification_rule" "test" {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_notification_publisher" "test" {
-	name = "Test_Rule_Publisher"
+	name = "Test_Rule_Publisher_Event"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test" {
-	name = "Test_Rule_Name"
+	name = "Test_Rule_Name_Event"
 	trigger_type = "EVENT"
 	log_successful_publish = false
 	notify_on = [
@@ -67,16 +68,17 @@ resource "dependencytrack_notification_rule" "test" {
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_notification_rule.test", "id"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "name", "Test_Rule_Name"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "name", "Test_Rule_Name_Event"),
 					resource.TestCheckResourceAttrPair(
 						"dependencytrack_notification_rule.test", "publisher_id",
 						"dependencytrack_notification_publisher.test", "id",
 					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "trigger_type", "EVENT"),
 					// TODO: resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"), API 4.12+.
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "false"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", ""),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", "INFORMATIONAL"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_on.#", "3"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_on.0", "NEW_VULNERABILITY"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_on.1", "PROJECT_CREATED"),
@@ -87,7 +89,7 @@ resource "dependencytrack_notification_rule" "test" {
 	})
 }
 
-/*func TestAccNotificationRuleScheduleResource(t *testing.T) {
+func TestAccNotificationRuleScheduleResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -95,25 +97,38 @@ resource "dependencytrack_notification_rule" "test" {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_notification_publisher" "test" {
-	name = "Test_Notification_Publisher"
+	name = "Test_Rule_Publisher_Schedule"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
 	template_mime_type = "text/plain"
 }
+resource "dependencytrack_notification_rule" "test" {
+	name = "Test_Rule_Name_Schedule"
+	trigger_type = "SCHEDULE"
+	schedule_cron = "0 0 * * 0"
+	publisher_id = dependencytrack_notification_publisher.test.id
+}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("dependencytrack_notification_publisher.test", "id"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "name", "Test_Notification_Publisher"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "description", ""),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "publisher_class",
-						"org.dependencytrack.notification.publisher.ConsolePublisher"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template", ""),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template_mime_type", "text/plain"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "default_publisher", "false"),
+					resource.TestCheckResourceAttrSet("dependencytrack_notification_rule.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "name", "Test_Rule_Name_Schedule"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_notification_rule.test", "publisher_id",
+						"dependencytrack_notification_publisher.test", "id",
+					),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "trigger_type", "SCHEDULE"),
+					// TODO: resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"), API 4.12+.
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", "INFORMATIONAL"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_on.#", "0"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "schedule_cron", "0 0 * * 0"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "schedule_skip_unchanged", "false"),
 				),
 			},
 			// ImportState testing.
 			{
-				ResourceName:      "dependencytrack_notification_publisher.test",
+				ResourceName:      "dependencytrack_notification_rule.test",
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -121,24 +136,36 @@ resource "dependencytrack_notification_publisher" "test" {
 			{
 				Config: providerConfig + `
 resource "dependencytrack_notification_publisher" "test" {
-	name = "Test_Notification_Publisher_With_Changes"
+	name = "Test_Rule_Publisher_Schedule"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
-	description = "Test Description"
 	template_mime_type = "text/plain"
-	template = "Test Template"
+}
+resource "dependencytrack_notification_rule" "test" {
+	name = "Test_Rule_Name_Schedule"
+	trigger_type = "SCHEDULE"
+	schedule_cron = "0 0 * * 1"
+	schedule_skip_unchanged = true
+	publisher_id = dependencytrack_notification_publisher.test.id
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("dependencytrack_notification_publisher.test", "id"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "name", "Test_Notification_Publisher_With_Changes"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "description", "Test Description"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "publisher_class",
-						"org.dependencytrack.notification.publisher.ConsolePublisher"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template", "Test Template"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template_mime_type", "text/plain"),
-					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "default_publisher", "false"),
+					resource.TestCheckResourceAttrSet("dependencytrack_notification_rule.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "name", "Test_Rule_Name_Schedule"),
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_notification_rule.test", "publisher_id",
+						"dependencytrack_notification_publisher.test", "id",
+					),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "enabled", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "trigger_type", "SCHEDULE"),
+					// TODO: resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"), API 4.12+.
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "true"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", "INFORMATIONAL"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_on.#", "0"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "schedule_cron", "0 0 * * 1"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "schedule_skip_unchanged", "true"),
 				),
 			},
 		},
 	})
-}*/
+}

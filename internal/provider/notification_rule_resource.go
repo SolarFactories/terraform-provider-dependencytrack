@@ -102,6 +102,7 @@ func (*notificationRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Description: "Notification Level to set for Alert. See DependencyTrack for valid values.",
 				Optional:    true,
 				Computed:    true,
+				Default:     stringdefault.StaticString("INFORMATIONAL"),
 			},
 			"notify_on": schema.ListAttribute{
 				Description: "Events on which to trigger alert. Only relevant for trigger_type = \"EVENT\".",
@@ -110,7 +111,7 @@ func (*notificationRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				ElementType: types.StringType,
 			},
 			"trigger_type": schema.StringAttribute{
-				Description:   "Type of trigger for Rule. See DependencyTrack for valid values. Only relevant for API 4.13+.",
+				Description:   "Type of trigger for Rule. Supports 'EVENT', 'SCHEDULE'. Only relevant for API 4.13+.",
 				Required:      true,
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -203,7 +204,36 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 	})
 
 	// NOTE: Create only sets Name, Scope, Level, Publisher. All other details need an initial update to be triggered.
-	ruleRes, err := r.client.Notification.CreateRule(ctx, ruleReq)
+	triggerType := plan.TriggerType.ValueString()
+	var ruleRes dtrack.NotificationRule
+	// DT sets TriggerType.EVENT, when using `CreateRule` endpoint.
+	switch triggerType {
+	case "EVENT":
+		{
+			ruleRes, err = r.client.Notification.CreateRule(ctx, ruleReq)
+			break
+		}
+	case "SCHEDULE":
+		{
+			ruleRes, err = r.client.Notification.CreateScheduledRule(ctx, dtrack.CreateScheduledNotificationRuleRequest{
+				Name:              ruleReq.Name,
+				Scope:             ruleReq.Scope,
+				NotificationLevel: ruleReq.NotificationLevel,
+				Publisher: dtrack.Publisher{
+					UUID: publisherID,
+				},
+			})
+			break
+		}
+	default:
+		resp.Diagnostics.AddAttributeError(
+			path.Root("trigger_type"),
+			"Unable to create notification rule",
+			"Unsupported value for trigger_type: "+triggerType+", in rule: "+ruleReq.Name,
+		)
+		return
+	}
+
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating Notification Rule",

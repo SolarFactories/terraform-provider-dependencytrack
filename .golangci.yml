@@ -606,6 +606,9 @@ linters:
           - exhaustruct
           - gocyclo
           - cyclop
+      - path: internal/provider/notification_rule_resource_test.go
+        linters:
+          - godox
 
 formatters:
   enable:
