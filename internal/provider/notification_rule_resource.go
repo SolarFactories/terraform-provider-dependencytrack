@@ -285,12 +285,12 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 	if r.semver.Major == 4 && r.semver.Minor >= 12 {
 		newState.NotifyChildren = types.BoolValue(ruleRes.NotifyChildren)
 	} else {
-		newState.NotifyChildren = types.BoolNull()
+		newState.NotifyChildren = plan.NotifyChildren
 	}
-	if r.semver.Major == 4 && r.semver.Minor < 13 {
-		newState.TriggerType = types.StringValue(string(ruleReq.TriggerType))
-	} else {
+	if r.semver.Major == 4 && r.semver.Minor >= 13 {
 		newState.TriggerType = types.StringValue(string(ruleRes.TriggerType))
+	} else {
+		newState.TriggerType = types.StringValue(string(ruleReq.TriggerType))
 	}
 
 	diags = resp.State.Set(ctx, newState)
@@ -408,12 +408,12 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 	if r.semver.Major == 4 && r.semver.Minor >= 12 {
 		newState.NotifyChildren = types.BoolValue(rule.NotifyChildren)
 	} else {
-		newState.NotifyChildren = types.BoolNull()
+		newState.NotifyChildren = state.NotifyChildren
 	}
-	if r.semver.Major == 4 && r.semver.Minor < 13 {
-		newState.TriggerType = types.StringValue("EVENT")
-	} else {
+	if r.semver.Major == 4 && r.semver.Minor >= 13 {
 		newState.TriggerType = types.StringValue(string(rule.TriggerType))
+	} else {
+		newState.TriggerType = types.StringValue("EVENT")
 	}
 
 	// Update state.
@@ -549,12 +549,12 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 	if r.semver.Major == 4 && r.semver.Minor >= 12 {
 		newState.NotifyChildren = types.BoolValue(ruleRes.NotifyChildren)
 	} else {
-		newState.NotifyChildren = types.BoolNull()
+		newState.NotifyChildren = plan.NotifyChildren
 	}
-	if r.semver.Major == 4 && r.semver.Minor < 13 {
-		newState.TriggerType = types.StringValue(string(ruleReq.TriggerType))
-	} else {
+	if r.semver.Major == 4 && r.semver.Minor >= 13 {
 		newState.TriggerType = types.StringValue(string(ruleRes.TriggerType))
+	} else {
+		newState.TriggerType = types.StringValue(string(ruleReq.TriggerType))
 	}
 
 	// Update State.
