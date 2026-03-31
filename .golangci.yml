@@ -54,6 +54,7 @@ linters:
             - "encoding/json$"
             - "io$"
             - "github.com/hashicorp/terraform-plugin-framework/"
+            - "github.com/hashicorp/terraform-plugin-framework-validators/"
             - "github.com/hashicorp/terraform-plugin-testing/"
             - "github.com/hashicorp/terraform-plugin-log/tflog$"
             - "github.com/hashicorp/terraform-plugin-go/tfprotov6$"
