@@ -42,9 +42,10 @@ resource "dependencytrack_notification_rule" "test" {
 			},
 			// ImportState testing.
 			{
-				ResourceName:      "dependencytrack_notification_rule.test",
-				ImportState:       true,
-				ImportStateVerify: true,
+				ResourceName:            "dependencytrack_notification_rule.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"notify_children"}, // API 4.12+. Importing state in 4.13+ is covered by below test.
 			},
 			// Update and Read testing.
 			{
@@ -90,6 +91,7 @@ resource "dependencytrack_notification_rule" "test" {
 }
 
 func TestAccNotificationRuleScheduleResource(t *testing.T) {
+	// API 4.13+.
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
