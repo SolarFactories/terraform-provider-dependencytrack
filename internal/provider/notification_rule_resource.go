@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
@@ -97,6 +99,7 @@ func (*notificationRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{stringvalidator.OneOf("PORTFOLIO", "SYSTEM")},
 			},
 			"notification_level": schema.StringAttribute{
 				Description: "Notification Level to set for Alert. See DependencyTrack for valid values.",
@@ -111,8 +114,9 @@ func (*notificationRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				ElementType: types.StringType,
 			},
 			"trigger_type": schema.StringAttribute{
-				Description:   "Type of trigger for Rule. Supports 'EVENT', 'SCHEDULE'. Only relevant for API 4.13+.",
+				Description:   "Type of trigger for Rule. Supports 'EVENT' for API 3.2.0+, 'SCHEDULE' for API 4.13+.",
 				Required:      true,
+				Validators:    []validator.String{stringvalidator.OneOf("EVENT", "SCHEDULE")},
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
 			"message": schema.StringAttribute{
@@ -271,7 +275,7 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 		Scope:                 types.StringValue(string(ruleRes.Scope)),
 		NotificationLevel:     types.StringValue(string(ruleRes.NotificationLevel)),
 		NotifyOn:              newNotifyOn,
-		TriggerType:           types.StringValue(string(ruleRes.TriggerType)),
+		TriggerType:           types.StringUnknown(), // Set Below - 4.13+.
 		Message:               types.StringValue(ruleRes.Message),
 		ScheduleCron:          types.StringValue(ruleRes.ScheduleCron),
 		ScheduleSkipUnchanged: types.BoolValue(ruleRes.ScheduleSkipUnchanged),
@@ -280,6 +284,13 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 	}
 	if r.semver.Major == 4 && r.semver.Minor >= 12 {
 		newState.NotifyChildren = types.BoolValue(ruleRes.NotifyChildren)
+	} else {
+		newState.NotifyChildren = types.BoolNull()
+	}
+	if r.semver.Major == 4 && r.semver.Minor < 13 {
+		newState.TriggerType = types.StringValue(string(ruleReq.TriggerType))
+	} else {
+		newState.TriggerType = types.StringValue(string(ruleRes.TriggerType))
 	}
 
 	diags = resp.State.Set(ctx, newState)
@@ -387,7 +398,7 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 		Scope:                 types.StringValue(string(rule.Scope)),
 		NotificationLevel:     types.StringValue(string(rule.NotificationLevel)),
 		NotifyOn:              newNotifyOn,
-		TriggerType:           types.StringValue(string(rule.TriggerType)),
+		TriggerType:           types.StringUnknown(), // Set Below - 4.13+.
 		Message:               types.StringValue(rule.Message),
 		ScheduleCron:          types.StringValue(rule.ScheduleCron),
 		ScheduleSkipUnchanged: types.BoolValue(rule.ScheduleSkipUnchanged),
@@ -396,6 +407,13 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 	}
 	if r.semver.Major == 4 && r.semver.Minor >= 12 {
 		newState.NotifyChildren = types.BoolValue(rule.NotifyChildren)
+	} else {
+		newState.NotifyChildren = types.BoolNull()
+	}
+	if r.semver.Major == 4 && r.semver.Minor < 13 {
+		newState.TriggerType = types.StringValue("EVENT")
+	} else {
+		newState.TriggerType = types.StringValue(string(rule.TriggerType))
 	}
 
 	// Update state.
@@ -521,7 +539,7 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 		Scope:                 types.StringValue(string(ruleRes.Scope)),
 		NotificationLevel:     types.StringValue(string(ruleRes.NotificationLevel)),
 		NotifyOn:              newNotifyOn,
-		TriggerType:           types.StringValue(string(ruleRes.TriggerType)),
+		TriggerType:           types.StringUnknown(), // Set Below - 4.13+.
 		Message:               types.StringValue(ruleRes.Message),
 		ScheduleCron:          types.StringValue(ruleRes.ScheduleCron),
 		ScheduleSkipUnchanged: types.BoolValue(ruleRes.ScheduleSkipUnchanged),
@@ -530,6 +548,13 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 	}
 	if r.semver.Major == 4 && r.semver.Minor >= 12 {
 		newState.NotifyChildren = types.BoolValue(ruleRes.NotifyChildren)
+	} else {
+		newState.NotifyChildren = types.BoolNull()
+	}
+	if r.semver.Major == 4 && r.semver.Minor < 13 {
+		newState.TriggerType = types.StringValue(string(ruleReq.TriggerType))
+	} else {
+		newState.TriggerType = types.StringValue(string(ruleRes.TriggerType))
 	}
 
 	// Update State.

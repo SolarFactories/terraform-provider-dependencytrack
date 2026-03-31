@@ -48,7 +48,7 @@ resource "dependencytrack_notification_rule" "example_schedule" {
 
 - `name` (String) Name of the Notification Rule.
 - `publisher_id` (String) UUID of the Publisher to use for this alert rule.
-- `trigger_type` (String) Type of trigger for Rule. Supports 'EVENT', 'SCHEDULE'. Only relevant for API 4.13+.
+- `trigger_type` (String) Type of trigger for Rule. Supports 'EVENT' for API 3.2.0+, 'SCHEDULE' for API 4.13+.
 
 ### Optional
 
