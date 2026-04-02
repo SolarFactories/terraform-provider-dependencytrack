@@ -1,0 +1,1 @@
+terraform import dependencytrack_notification_rule.example fdcff7ae-a0c0-4f54-9bb6-7bdb6c56c9fd

@@ -1,0 +1,1 @@
+terraform import dependencytrack_notification_publisher.example c575bdcd-a606-4ef8-8c51-5b3c8ab0416a

@@ -54,6 +54,7 @@ linters:
             - "encoding/json$"
             - "io$"
             - "github.com/hashicorp/terraform-plugin-framework/"
+            - "github.com/hashicorp/terraform-plugin-framework-validators/"
             - "github.com/hashicorp/terraform-plugin-testing/"
             - "github.com/hashicorp/terraform-plugin-log/tflog$"
             - "github.com/hashicorp/terraform-plugin-go/tfprotov6$"
@@ -133,6 +134,7 @@ linters:
         - "^github.com/DependencyTrack/client-go\\.OIDCUser$"
         - "^github.com/DependencyTrack/client-go\\.LdapUser$"
         - "^github.com/DependencyTrack/client-go\\.UserPrincipal$"
+        - "^github.com/DependencyTrack/client-go\\.NotificationPublisher$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*Resource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*DataSource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.dependencyTrackProvider$"
@@ -194,7 +196,8 @@ linters:
 #      template-path: "" # Default ""
     gomoddirectives:
       replace-local: false # Default false
-      replace-allow-list: []
+      replace-allow-list:
+        - "github.com/DependencyTrack/client-go"
       retract-allow-no-explanation: false # Default false
       exclude-forbidden: true # Default false
       toolchain-forbidden: true # Default false
@@ -595,6 +598,16 @@ linters:
           - revive
           - staticcheck
       - path: internal/provider/component_property_resource_test.go
+        linters:
+          - godox
+      - path: internal/provider/notification_rule_resource.go
+        linters:
+          - govet
+          - gocognit
+          - exhaustruct
+          - gocyclo
+          - cyclop
+      - path: internal/provider/notification_rule_resource_test.go
         linters:
           - godox
 
