@@ -92,7 +92,7 @@ func (*notificationRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Computed:    true,
 			},
 			"scope": schema.StringAttribute{
-				Description: "Scope to which this alert applies. See DependencyTrack for valid values.",
+				Description: "Scope to which this alert applies. Supports \"PORTFOLIO\", and \"SYSTEM\".",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("PORTFOLIO"),
@@ -102,10 +102,11 @@ func (*notificationRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Validators: []validator.String{stringvalidator.OneOf("PORTFOLIO", "SYSTEM")},
 			},
 			"notification_level": schema.StringAttribute{
-				Description: "Notification Level to set for Alert. See DependencyTrack for valid values.",
+				Description: "Notification Level to set for Alert. Supports \"INFORMATIONAL\", \"WARNING\", \"ERROR\".",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("INFORMATIONAL"),
+				Validators:  []validator.String{stringvalidator.OneOf("INFORMATIONAL", "WARNING", "ERROR")},
 			},
 			"notify_on": schema.ListAttribute{
 				Description: "Events on which to trigger alert. Only relevant for trigger_type = \"EVENT\".",
@@ -114,7 +115,7 @@ func (*notificationRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				ElementType: types.StringType,
 			},
 			"trigger_type": schema.StringAttribute{
-				Description:   "Type of trigger for Rule. Supports 'EVENT' for API 3.2.0+, 'SCHEDULE' for API 4.13+.",
+				Description:   "Type of trigger for Rule. Supports \"EVENT\" for API 3.2.0+, \"SCHEDULE\" for API 4.13+.",
 				Required:      true,
 				Validators:    []validator.String{stringvalidator.OneOf("EVENT", "SCHEDULE")},
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
@@ -458,11 +459,11 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 	if err != nil {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("notify_on"),
-			"Unable to Create Notification Rule",
-			"Error with notify_on, in original error: "+err.Error(),
+			"Unable to Update Notification Rule",
+			"Error with notify_on, for rule: "+id.String()+", in original error: "+err.Error(),
 		)
 	}
-	publisherID, diag := TryParseUUID(plan.PublisherID, LifecycleCreate, path.Root("publisher_id"))
+	publisherID, diag := TryParseUUID(plan.PublisherID, LifecycleUpdate, path.Root("publisher_id"))
 	resp.Diagnostics.Append(diag)
 	if resp.Diagnostics.HasError() {
 		return

@@ -48,20 +48,20 @@ resource "dependencytrack_notification_rule" "example_schedule" {
 
 - `name` (String) Name of the Notification Rule.
 - `publisher_id` (String) UUID of the Publisher to use for this alert rule.
-- `trigger_type` (String) Type of trigger for Rule. Supports 'EVENT' for API 3.2.0+, 'SCHEDULE' for API 4.13+.
+- `trigger_type` (String) Type of trigger for Rule. Supports "EVENT" for API 3.2.0+, "SCHEDULE" for API 4.13+.
 
 ### Optional
 
 - `enabled` (Boolean) Whether the rule is enabled.
 - `log_successful_publish` (Boolean) Whether to log each time a rule is successfully notified.
 - `message` (String) Alert Rule Message.
-- `notification_level` (String) Notification Level to set for Alert. See DependencyTrack for valid values.
+- `notification_level` (String) Notification Level to set for Alert. Supports "INFORMATIONAL", "WARNING", "ERROR".
 - `notify_children` (Boolean) Whether to notify children in child projects. Available in API 4.12+.
 - `notify_on` (List of String) Events on which to trigger alert. Only relevant for trigger_type = "EVENT".
 - `publisher_config` (String) Additional configuration to pass to the publisher. Format is custom per publisher.
 - `schedule_cron` (String) CRON expression for schedule.
 - `schedule_skip_unchanged` (Boolean) Skip sending alert if there is no change.
-- `scope` (String) Scope to which this alert applies. See DependencyTrack for valid values.
+- `scope` (String) Scope to which this alert applies. Supports "PORTFOLIO", and "SYSTEM".
 
 ### Read-Only
 
