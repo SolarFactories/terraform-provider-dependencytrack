@@ -238,6 +238,9 @@ func (*dependencyTrackProvider) Resources(_ context.Context) []func() resource.R
 		NewLDAPUserResource,
 		NewNotificationPublisherResource,
 		NewNotificationRuleResource,
+		NewNotificationRuleProjectResource,
+		NewNotificationRuleTeamResource,
+		NewTagNotificationRulesResource,
 	}
 }
 

@@ -135,6 +135,7 @@ linters:
         - "^github.com/DependencyTrack/client-go\\.LdapUser$"
         - "^github.com/DependencyTrack/client-go\\.UserPrincipal$"
         - "^github.com/DependencyTrack/client-go\\.NotificationPublisher$"
+        - "^github.com/DependencyTrack/client-go\\.GetAllRulesFilterOptions$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*Resource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*DataSource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.dependencyTrackProvider$"
@@ -610,6 +611,9 @@ linters:
       - path: internal/provider/notification_rule_resource_test.go
         linters:
           - godox
+      - path: internal/provider/tag_notification_rules_resource.go
+        linters:
+          - gocognit
 
 formatters:
   enable:
