@@ -235,9 +235,9 @@ func (*notificationRuleProjectResource) Update(ctx context.Context, req resource
 		return
 	}
 	tflog.Debug(ctx, "Updated Notification Rule Project Mapping", map[string]any{
-		"id":      plan.ID.ValueString(),
-		"rule":    plan.Rule.ValueString(),
-		"project": plan.Project.ValueString(),
+		"id":      newState.ID.ValueString(),
+		"rule":    newState.Rule.ValueString(),
+		"project": newState.Project.ValueString(),
 	})
 }
 
@@ -273,7 +273,7 @@ func (r *notificationRuleProjectResource) Delete(ctx context.Context, req resour
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Notification Rule Project Mapping",
-			"Error for rule with id: "+ruleID.String()+", and project with id: "+projectID.String()+", in orifinal error: "+err.Error(),
+			"Error for rule with id: "+ruleID.String()+", and project with id: "+projectID.String()+", in original error: "+err.Error(),
 		)
 		return
 	}

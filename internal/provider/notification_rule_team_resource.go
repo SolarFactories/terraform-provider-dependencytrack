@@ -235,9 +235,9 @@ func (*notificationRuleTeamResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 	tflog.Debug(ctx, "Updated Notification Rule Team Mapping", map[string]any{
-		"id":   plan.ID.ValueString(),
-		"rule": plan.Rule.ValueString(),
-		"team": plan.Team.ValueString(),
+		"id":   newState.ID.ValueString(),
+		"rule": newState.Rule.ValueString(),
+		"team": newState.Team.ValueString(),
 	})
 }
 
@@ -273,7 +273,7 @@ func (r *notificationRuleTeamResource) Delete(ctx context.Context, req resource.
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to delete Notification Rule Team Mapping",
-			"Error for rule with id: "+ruleID.String()+", and team with id: "+teamID.String()+", in orifinal error: "+err.Error(),
+			"Error for rule with id: "+ruleID.String()+", and team with id: "+teamID.String()+", in original error: "+err.Error(),
 		)
 		return
 	}

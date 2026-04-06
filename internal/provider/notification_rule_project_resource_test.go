@@ -81,6 +81,7 @@ resource "dependencytrack_notification_rule_project" "test" {
 						"dependencytrack_project.test", "id",
 					),
 				),
+				// NOTE: Can check to expect no change to plan.
 			},
 		},
 	})

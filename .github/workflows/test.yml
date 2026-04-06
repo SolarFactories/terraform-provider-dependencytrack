@@ -141,7 +141,7 @@ jobs:
       matrix:
         api:
           - version: "4.11.7"
-            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)|(TestAccProjectCollection)|(TestAccProjectIsLatest)|(TestAccProjectDataSourceIsLatest)|(TestAccNotificationRuleScheduleResource)$"
+            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)|(TestAccProjectCollection)|(TestAccProjectIsLatest)|(TestAccProjectDataSourceIsLatest)|(TestAccNotificationRuleScheduleResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)$"
           - version: "4.12.7"
             skip: "^(TestAccTagResource)|(TestAccProjectCollection)|(TestAccNotificationRuleScheduleResource)$"
           - version: "4.13.0"

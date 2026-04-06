@@ -101,7 +101,7 @@ func (r *tagNotificationRulesResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	tflog.Debug(ctx, "Creating Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Creating Tag NotificationRules Mapping", map[string]any{
 		"tag":     tagName,
 		"current": currentNotificationRules,
 		"desired": desiredNotificationRules,
@@ -143,7 +143,7 @@ func (r *tagNotificationRulesResource) Create(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Created Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Created Tag NotificationRules Mapping", map[string]any{
 		"id":                 plan.ID.ValueString(),
 		"tag":                plan.Tag.ValueString(),
 		"notification_rules": Map(plan.NotificationRules, types.String.ValueString),
@@ -159,7 +159,7 @@ func (r *tagNotificationRulesResource) Read(ctx context.Context, req resource.Re
 	}
 
 	tagName := state.ID.ValueString()
-	tflog.Debug(ctx, "Reading Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Reading Tag NotificationRules Mapping", map[string]any{
 		"tag":                  tagName,
 		"notification_rules.#": len(state.NotificationRules),
 		"notification_rules":   Map(state.NotificationRules, types.String.ValueString),
@@ -197,7 +197,7 @@ func (r *tagNotificationRulesResource) Read(ctx context.Context, req resource.Re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Read Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Read Tag NotificationRules Mapping", map[string]any{
 		"id":                 newState.ID.ValueString(),
 		"tag":                newState.Tag.ValueString(),
 		"notification_rules": Map(newState.NotificationRules, types.String.ValueString),
@@ -213,7 +213,7 @@ func (r *tagNotificationRulesResource) Update(ctx context.Context, req resource.
 	}
 
 	tagName := plan.Tag.ValueString()
-	tflog.Debug(ctx, "Updating Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Updating Tag NotificationRules Mapping", map[string]any{
 		"id":                   plan.ID.ValueString(),
 		"tag":                  tagName,
 		"notification_rules.#": len(plan.NotificationRules),
@@ -242,7 +242,7 @@ func (r *tagNotificationRulesResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	tflog.Debug(ctx, "Updating Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Updating Tag NotificationRules Mapping", map[string]any{
 		"id":      plan.ID.ValueString(),
 		"tag":     tagName,
 		"current": currentNotificationRules,
@@ -272,7 +272,7 @@ func (r *tagNotificationRulesResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	plan = tagNotificationRulesResourceModel{
+	newState := tagNotificationRulesResourceModel{
 		ID:  types.StringValue(tagName),
 		Tag: types.StringValue(tagName),
 		NotificationRules: Map(desiredNotificationRules, func(u uuid.UUID) types.String {
@@ -280,15 +280,15 @@ func (r *tagNotificationRulesResource) Update(ctx context.Context, req resource.
 		}),
 	}
 
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Updated Tag NotificationRules", map[string]any{
-		"id":                 plan.ID.ValueString(),
-		"tag":                plan.Tag.ValueString(),
-		"notification_rules": Map(plan.NotificationRules, types.String.ValueString),
+	tflog.Debug(ctx, "Updated Tag NotificationRules Mapping", map[string]any{
+		"id":                 newState.ID.ValueString(),
+		"tag":                newState.Tag.ValueString(),
+		"notification_rules": Map(newState.NotificationRules, types.String.ValueString),
 	})
 }
 
@@ -301,7 +301,7 @@ func (r *tagNotificationRulesResource) Delete(ctx context.Context, req resource.
 	}
 
 	tagName := state.Tag.ValueString()
-	tflog.Debug(ctx, "Deleting Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Deleting Tag NotificationRules Mapping", map[string]any{
 		"id":                   state.ID.ValueString(),
 		"tag":                  tagName,
 		"notification_rules.#": len(state.NotificationRules),
@@ -329,7 +329,7 @@ func (r *tagNotificationRulesResource) Delete(ctx context.Context, req resource.
 		)
 		return
 	}
-	tflog.Debug(ctx, "Deleted Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Deleted Tag NotificationRules Mapping", map[string]any{
 		"id":                 state.ID.ValueString(),
 		"tag":                tagName,
 		"notification_rules": Map(state.NotificationRules, types.String.ValueString),
@@ -337,14 +337,14 @@ func (r *tagNotificationRulesResource) Delete(ctx context.Context, req resource.
 }
 
 func (*tagNotificationRulesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	tflog.Debug(ctx, "Importing Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Importing Tag NotificationRules Mapping", map[string]any{
 		"id": req.ID,
 	})
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Debug(ctx, "Imported Tag NotificationRules", map[string]any{
+	tflog.Debug(ctx, "Imported Tag NotificationRules Mapping", map[string]any{
 		"id": req.ID,
 	})
 }

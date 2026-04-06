@@ -24,12 +24,12 @@ resource "dependencytrack_notification_publisher" "test" {
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test_a" {
-	name = "Test_Rule_Publisher_Tag_A"
+	name = "A_Test_Rule_Publisher_Tag"
 	trigger_type = "EVENT"
 	publisher_id = dependencytrack_notification_publisher.test.id
 }
 resource "dependencytrack_notification_rule" "test_z" {
-	name = "Test_Rule_Publisher_Tag_Z"
+	name = "Z_Test_Rule_Publisher_Tag"
 	trigger_type = "EVENT"
 	publisher_id = dependencytrack_notification_publisher.test.id
 }
@@ -75,17 +75,17 @@ resource "dependencytrack_notification_publisher" "test" {
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test_a" {
-	name = "Test_Rule_Publisher_Tag_A"
+	name = "A_Test_Rule_Publisher_Tag"
 	trigger_type = "EVENT"
 	publisher_id = dependencytrack_notification_publisher.test.id
 }
 resource "dependencytrack_notification_rule" "test_b" {
-	name = "Test_Rule_Publisher_Tag_B"
+	name = "B_Test_Rule_Publisher_Tag"
 	trigger_type = "EVENT"
 	publisher_id = dependencytrack_notification_publisher.test.id
 }
 resource "dependencytrack_notification_rule" "test_z" {
-	name = "Test_Rule_Publisher_Tag_Z"
+	name = "Z_Test_Rule_Publisher_Tag"
 	trigger_type = "EVENT"
 	publisher_id = dependencytrack_notification_publisher.test.id
 }

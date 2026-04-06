@@ -40,7 +40,7 @@ resource "dependencytrack_notification_rule" "example" {
 
 resource "dependencytrack_tag_notification_rules" "example" {
   tag = "example_tag"
-  policies = [
+  notification_rules = [
     dependencytrack_notification_rule.example.id,
   ]
   depends_on = [dependencytrack_project.example]
