@@ -122,14 +122,7 @@ func (r *userTeamResource) Read(ctx context.Context, req resource.ReadRequest, r
 		"username": username,
 		"team":     teamID.String(),
 	})
-	user, err := FindPaged(
-		func(po dtrack.PageOptions) (dtrack.Page[dtrack.ManagedUser], error) {
-			return r.client.User.GetAllManaged(ctx, po)
-		},
-		func(usr dtrack.ManagedUser) bool {
-			return usr.Username == username
-		},
-	)
+	user, err := FindUserPrincipal(ctx, *r.client, username)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to read user",

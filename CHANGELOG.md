@@ -1,3 +1,27 @@
+## 1.20
+
+#### FEATURES
+- Add explicit support and testing for DependencyTrack `4.14.1`, `4.14.1-alpine`.
+- Add `dependencytrack_notification_publisher` resource for managing custom publishers.
+- Add `dependencytrack_notification_rule` resource for managing alerting configurations.
+- Add `dependencytrack_notification_rule_project` resource for applying notification rules to a project.
+- Add `dependencytrack_notification_rule_team` resource for applying email notifications to be sent to a team.
+- Add `dependencytrack_tag_notification_rules` resource for restricting notification rules to specific tags.
+
+#### DEPENDENCIES
+- `actions/setup-go` `6.3.0` -> `6.4.0`.
+- `google.golang.org/grpc` `1.79.2` -> `1.79.3`.
+- Add `github.com/hashicorp/terraform/plugin-framework-validators` `0.19.0`
+- Override `github.com/DependencyTrack/client-go` with `github.com/SolarFactories/client-go@notifications`
+
+## 1.19.1
+
+#### FIXES
+- Allow `dependencytrack_user_team` to be used with `dependencytrack_oidc_user`, and `dependencytrack_ldap_user`, in addition to existing `dependencytrack_user`.
+  - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/177
+- Allow `dependencytrack_user_permission` to be used with `dependencytrack_oidc_user`, and `dependencytrack_ldap_user`, in addition to existing `dependencytrack_user`.
+  - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/177
+
 ## 1.19
 
 #### FEATURES
