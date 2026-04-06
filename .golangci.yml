@@ -135,6 +135,7 @@ linters:
         - "^github.com/DependencyTrack/client-go\\.LdapUser$"
         - "^github.com/DependencyTrack/client-go\\.UserPrincipal$"
         - "^github.com/DependencyTrack/client-go\\.NotificationPublisher$"
+        - "^github.com/DependencyTrack/client-go\\.GetAllRulesFilterOptions$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*Resource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.[a-z][a-zA-Z]*DataSource$"
         - "^terraform-provider-dependencytrack/internal/provider\\.dependencyTrackProvider$"
