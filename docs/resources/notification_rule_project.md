@@ -3,12 +3,12 @@
 page_title: "dependencytrack_notification_rule_project Resource - dependencytrack"
 subcategory: ""
 description: |-
-  Manages an mapping for a Notification Rule to a Project
+  Manages a mapping for a Notification Rule to a Project
 ---
 
 # dependencytrack_notification_rule_project (Resource)
 
-Manages an mapping for a Notification Rule to a Project
+Manages a mapping for a Notification Rule to a Project
 
 ## Example Usage
 

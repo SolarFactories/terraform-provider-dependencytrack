@@ -44,7 +44,7 @@ func (*notificationRuleTeamResource) Metadata(_ context.Context, req resource.Me
 
 func (*notificationRuleTeamResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages an mapping for a Notification Rule to a Team",
+		Description: "Manages a mapping for a Notification Rule to a Team",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "ID for the mapping. Has no meaning to DependencyTrack.",

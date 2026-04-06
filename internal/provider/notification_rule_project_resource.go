@@ -44,7 +44,7 @@ func (*notificationRuleProjectResource) Metadata(_ context.Context, req resource
 
 func (*notificationRuleProjectResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Manages an mapping for a Notification Rule to a Project",
+		Description: "Manages a mapping for a Notification Rule to a Project",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "ID for the mapping. Has no meaning to DependencyTrack.",

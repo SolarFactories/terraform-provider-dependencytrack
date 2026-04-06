@@ -611,6 +611,9 @@ linters:
       - path: internal/provider/notification_rule_resource_test.go
         linters:
           - godox
+      - path: internal/provider/tag_notification_rules_resource.go
+        linters:
+          - gocognit
 
 formatters:
   enable:

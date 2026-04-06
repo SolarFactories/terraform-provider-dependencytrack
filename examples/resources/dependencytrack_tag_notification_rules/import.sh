@@ -1,0 +1,1 @@
+terraform import dependencytrack_tag_notification_rules.example example_tag

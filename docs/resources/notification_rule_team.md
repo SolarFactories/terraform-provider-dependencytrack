@@ -3,12 +3,12 @@
 page_title: "dependencytrack_notification_rule_team Resource - dependencytrack"
 subcategory: ""
 description: |-
-  Manages an mapping for a Notification Rule to a Team
+  Manages a mapping for a Notification Rule to a Team
 ---
 
 # dependencytrack_notification_rule_team (Resource)
 
-Manages an mapping for a Notification Rule to a Team
+Manages a mapping for a Notification Rule to a Team
 
 ## Example Usage
 
