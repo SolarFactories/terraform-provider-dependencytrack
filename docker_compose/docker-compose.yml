@@ -15,6 +15,7 @@ services:
       ALPINE_DATABASE_USERNAME: dtrack
       ALPINE_DATABASE_PASSWORD: dtrack
       TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
+
     deploy:
       resources:
         limits:
@@ -24,7 +25,7 @@ services:
       restart_policy:
         condition: on-failure
     ports:
-      - '8081:8080'
+      - '127.0.0.1:8081:8080'
     volumes:
       - 'dependency-track:/data'
     restart: unless-stopped
@@ -34,9 +35,9 @@ services:
     depends_on:
       - dtrack-apiserver
     environment:
-      - API_BASE_URL=http://localhost:8081
+      API_BASE_URL: "http://localhost:8081"
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
     restart: unless-stopped
 
   dtrack-postgres:

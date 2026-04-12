@@ -12,7 +12,8 @@ on:
 
 # Testing only needs permissions to read the repository contents.
 permissions:
-  contents: read
+  contents: "read"
+  id-token: "write"
 
 jobs:
   # Ensure project builds before running testing matrix
@@ -20,6 +21,8 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: "read"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
@@ -35,6 +38,8 @@ jobs:
 
   generate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
@@ -56,6 +61,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: "read"
     services:
       api:
         image: dependencytrack/apiserver:${{ matrix.api }}
@@ -113,13 +120,24 @@ jobs:
       api:
         image: dependencytrack/apiserver:${{ matrix.api.version }}
         env:
-# TODO: Use external (to DT) DB
+          # TODO: Use external (to DT) DB
           #ALPINE_DATABASE_MODE: external
           #ALPINE_DATABASE_URL: "jdbc:postgresql://db:5432/dtrack"
           #ALPINE_DATABASE_DRIVER: "org.postgresql.Driver"
           #ALPINE_DATABASE_USERNAME: dtrack
           #ALPINE_DATABASE_PASSWORD: dtrack
           TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
+          # OIDC
+          # Alpine requires Sub, Username. Groups claim is only required if team_sync is enabled.
+          # Since able to reduce requirements down to info in ID Token, then can ignore absence of `/userinfo` endpoint.
+          # Client_ID should match aud in token - when requesting.
+          ALPINE_OIDC_ENABLED: true
+          ALPINE_OIDC_CLIENT_ID: "terraform-provider-dependencytrack"
+          ALPINE_OIDC_ISSUER: "https://token.actions.githubusercontent.com"
+          ALPINE_OIDC_USERNAME_CLAIM: "sub"
+          ALPINE_OIDC_USER_PROVISIONING: true
+          ALPINE_OIDC_TEAM_SYNCHRONIZATION: false
+
         ports:
           - 8081:8080
 #      db:
@@ -186,6 +204,11 @@ jobs:
           - '1.14.*'
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Setup OIDC
+        run: |
+          set -euo pipefail
+          token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
+          echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}

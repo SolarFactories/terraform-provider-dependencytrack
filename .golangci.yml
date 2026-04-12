@@ -110,6 +110,7 @@ linters:
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.Schema$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.StringAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.BoolAttribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.Int32Attribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.ListAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.ListNestedAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/datasource/schema\\.NestedAttributeObject$"
@@ -614,6 +615,9 @@ linters:
       - path: internal/provider/tag_notification_rules_resource.go
         linters:
           - gocognit
+      - path: internal/provider/oidc_users_data_source.go
+        linters:
+          - gosec
 
 formatters:
   enable:
