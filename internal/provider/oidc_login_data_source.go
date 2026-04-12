@@ -77,7 +77,7 @@ func (d *oidcLoginDataSource) Read(ctx context.Context, req datasource.ReadReque
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, unable to fetch OIDC availability.",
+			"Within Read, unable to Login with OIDC Token",
 			"Unexpected error within: "+err.Error(),
 		)
 		return
