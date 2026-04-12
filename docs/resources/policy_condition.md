@@ -45,6 +45,8 @@ resource "dependencytrack_policy_condition" "example" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import dependencytrack_policy_condition.example 81b6f3d1-d9ae-49d2-b687-fd1c7b783736
 ```
