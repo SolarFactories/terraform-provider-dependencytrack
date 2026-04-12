@@ -19,7 +19,11 @@ fmt:
 test:
 	go test -v -cover -timeout=120s -parallel=10 -skip="^TestAcc" ./...
 
+# Skip certain OIDC tests when testing locally, since we do not provide an OIDC IdP.
+# These tests are covered using GitHub Actions OIDC ID Tokens in the pipeline.
+# If wanting to test these locally, then you will be required to setup your own OIDC IdP
+#	following https://docs.dependencytrack.org/getting-started/openidconnect-configuration/
 testacc:
-	TF_ACC=1 go test -v -cover -timeout 120m ./...
+	TF_ACC=1 go test -v -cover -timeout 120m -skip="^(TestAccOidcAvailableDataSource)|(TestAccOidcLoginDataSource)" ./...
 
 .PHONY: fmt lint test testacc build install generate
