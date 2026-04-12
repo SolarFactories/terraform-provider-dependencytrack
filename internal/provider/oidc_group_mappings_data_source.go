@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -96,6 +98,9 @@ func (d *oidcGroupMappingsDataSource) Read(ctx context.Context, req datasource.R
 		)
 		return
 	}
+	slices.SortStableFunc(teams, func(a, b dtrack.Team) int {
+		return strings.Compare(a.Name, b.Name)
+	})
 	newState := oidcGroupMappingsDataSourceModel{
 		GroupID: types.StringValue(groupID.String()),
 		Teams: Map(teams, func(team dtrack.Team) oidcGroupMappingsTeamsModel {
