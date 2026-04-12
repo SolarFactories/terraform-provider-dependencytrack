@@ -61,6 +61,10 @@ func (*oidcUsersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"username": schema.StringAttribute{
+							Description: "Username of the User.",
+							Computed:    true,
+						},
 						"teams": schema.ListNestedAttribute{
 							Description: "List of teams of which the User is a member.",
 							Computed:    true,

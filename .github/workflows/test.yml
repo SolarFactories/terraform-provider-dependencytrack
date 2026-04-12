@@ -206,9 +206,8 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Setup OIDC
         run: |
-          set -u
-          token=$(curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
-          echo "OIDC_TOKEN=$token" >> $GITHUB_ENV
+          set -euo pipefail
+          token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
           echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
       - uses: ./.github/actions/test
         with:

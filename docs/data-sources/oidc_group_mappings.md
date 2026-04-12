@@ -28,7 +28,7 @@ resource "dependencytrack_oidc_group_mapping" "example" {
 
 data "dependencytrack_oidc_group_mappings" "example" {
   group      = dependencytrack_oidc_group.example.id
-  depends_on = dependencytrack_oidc_group_mapping.example
+  depends_on = [dependencytrack_oidc_group_mapping.example]
 }
 ```
 
