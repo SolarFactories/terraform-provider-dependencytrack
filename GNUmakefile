@@ -24,6 +24,6 @@ test:
 # If wanting to test these locally, then you will be required to setup your own OIDC IdP
 #	following https://docs.dependencytrack.org/getting-started/openidconnect-configuration/
 testacc:
-	TF_ACC=1 go test -v -cover -timeout 120m -skip="^(TestAccOidcAvailableDataSource)|(TestAccOidcLoginDataSource)" ./...
+	TF_ACC=1 go test -v -cover -timeout 120m -skip='^(TestAccOidcAvailableDataSource)|(TestAccOidcLoginDataSource)$$' ./...
 
 .PHONY: fmt lint test testacc build install generate
