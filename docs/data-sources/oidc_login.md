@@ -17,7 +17,7 @@ data "dependencytrack_oidc_login" "example" {
   id_token = "eyJ..."
 }
 
-output "oidc_available" {
+output "bearer_token" {
   value = data.dependencytrack_oidc_login.example.token
 }
 ```
