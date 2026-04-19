@@ -78,6 +78,8 @@ Optional:
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import dependencytrack_component.example ad0eeb57-5169-42e1-a4e0-04dbd2e9e5a0
 ```

@@ -48,6 +48,8 @@ resource "dependencytrack_repository" "example" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import dependencytrack_repository.example ecc8e95f-6879-4d2c-9cc5-446543c611da
 ```

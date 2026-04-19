@@ -46,6 +46,8 @@ resource "dependencytrack_team_apikey" "example" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 # API <4.13 / Legacy API Keys
 terraform import dependencytrack_team_apikey.example 51e49752-6039-404b-bd4d-02e5d624a934/odt_6VTCwNpiihw1WmHhuEn48u39AGMkqfez

@@ -45,6 +45,8 @@ resource "dependencytrack_notification_publisher" "example" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import dependencytrack_notification_publisher.example c575bdcd-a606-4ef8-8c51-5b3c8ab0416a
 ```

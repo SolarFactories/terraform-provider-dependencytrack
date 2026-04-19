@@ -43,6 +43,8 @@ resource "dependencytrack_oidc_group_mapping" "example" {
 
 Import is supported using the following syntax:
 
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
 ```shell
 terraform import dependencytrack_oidc_group_mapping.example 1362ea68-9443-45c8-834a-8e7bd5006254
 ```
