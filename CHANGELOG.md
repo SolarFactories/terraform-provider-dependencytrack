@@ -1,3 +1,28 @@
+## 1.21
+
+#### FEATURES
+- Add `dependencytrack_oidc_available` Data source.
+- Add `dependencytrack_oidc_group_mappings` Data source, to obtain a list of Teams mapped to an OIDC Group.
+- Add `dependencytrack_oidc_login` Data source, to obtain a DependencyTrack Bearer Token, given an OIDC ID Token, and portentially optional Access Token.
+- Add `dependencytrack_oidc_users` Data source, to obtain list of all existing OIDC users.
+
+#### DEPENDENCIES
+- `actions/setup-go` `5.5.0` => `6.4.0` in `.github/actions/test`.
+- `hashicorp/setup-terraform` `3.1.2` -> `4.0.0` in `.github/actions/test`.
+- `goreleaser/goreleaser-action` `7.0.0` -> `7.2.1`.
+- `github.com/hashicorp/terraform-plugin-testing` `1.15.0` -> `1.16.0`.
+- Add `github.com/hashicorp/terraform/plugin-framework-validators` `0.19.0`.
+- Update override of `github.com/DependencyTrack/client-go` with updated `github.com/SolarFactories/client-go@notifications`
+- Remove `github.com/hashicorp/copywrite` in `/tools`.
+
+#### MISC
+- Removed partial artefacts from partial implementation of [CDKTF](https://developer.hashicorp.com/terraform/cdktf) support.
+- Modified Pipeline workflow to add OIDC Data Source Testing, using GitHub OIDC token.
+  - Excluded locally running tests which rely upon OIDC Tokens.
+- Updated `docker-compose` file for local development, to only bind on port for `127.0.0.1`, as opposed to implicit `0.0.0.0/0`
+- Increase minimum Go Version from `1.25.0` to `1.25.8`.
+- Increase minimum Go Version from `1.24.0` to `1.25.0` in `/tools`.
+
 ## 1.20
 
 #### FEATURES
@@ -11,7 +36,6 @@
 #### DEPENDENCIES
 - `actions/setup-go` `6.3.0` -> `6.4.0`.
 - `google.golang.org/grpc` `1.79.2` -> `1.79.3`.
-- Add `github.com/hashicorp/terraform/plugin-framework-validators` `0.19.0`
 - Override `github.com/DependencyTrack/client-go` with `github.com/SolarFactories/client-go@notifications`
 
 ## 1.19.1
