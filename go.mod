@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 )
 
-replace github.com/DependencyTrack/client-go v0.18.0 => github.com/SolarFactories/client-go v0.0.0-20260412160250-4044f1fd0f86
+replace github.com/DependencyTrack/client-go v0.18.0 => github.com/SolarFactories/client-go v0.0.0-20260504193428-18d489a040e4
 
 require (
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
