@@ -50,7 +50,7 @@ Other API versions may work, with a subset of functionality, but are not guarant
 The latest patch version within a minor release is supported, even if it might not be tested - PR's to update would always be welcome.
 The list of API Versions will grow as functionality adapts to allow further tests to pass.
 The latest 2 patches within the latest minor version, at a minimum, will be tested, and supported to allow for continued support while migrating.
-- Terraform: `1.0` -> `1.14`
+- Terraform: `1.0` -> `1.15`
 - DependencyTrack: `4.11.7`, `4.12.7`, `4.13.0`, `4.13.1`, `4.13.2`, `4.13.3`, `4.13.4`, `4.13.5`, `4.13.6`, `4.13.6-alpine`, `4.14.0`, `4.14.0-alpine`, `4.14.1`, `4.14.1-alpine`.
 
 ## Troubleshooting
