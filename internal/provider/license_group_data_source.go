@@ -110,7 +110,7 @@ func (d *licenseGroupDataSource) Read(ctx context.Context, req datasource.ReadRe
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Within Read, unable to fetch License Group.",
-			"Error for License Group: "+name+",in original error: "+err.Error(),
+			"Error for License Group: "+name+", in original error: "+err.Error(),
 		)
 		return
 	}
