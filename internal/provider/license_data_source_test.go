@@ -28,9 +28,9 @@ data "dependencytrack_license" "afl" {
 					resource.TestCheckResourceAttr("data.dependencytrack_license.test", "osi_approved", "true"),
 					resource.TestCheckResourceAttr("data.dependencytrack_license.test", "fsf_libre", "true"),
 					resource.TestCheckResourceAttr("data.dependencytrack_license.test", "is_deprecated_license_id", "false"),
-					resource.TestCheckResourceAttr("data.dependencytrack_license.test", "see_also.#", "2"),
+					resource.TestCheckResourceAttrSet("data.dependencytrack_license.test", "see_also.#"),
+					// Element `see_also.1` is added for `MIT` in API 4.13.5.
 					resource.TestCheckResourceAttr("data.dependencytrack_license.test", "see_also.0", "https://opensource.org/license/mit/"),
-					resource.TestCheckResourceAttr("data.dependencytrack_license.test", "see_also.1", "http://opensource.org/licenses/MIT"),
 					// Comment, Header are not present on MIT, so using another license to verify the retrieval of values.
 					resource.TestCheckResourceAttr("data.dependencytrack_license.afl", "comment", "This license has been superseded by later versions."),
 					resource.TestCheckResourceAttr("data.dependencytrack_license.afl", "header", "\"Licensed under the Academic Free License version 1.1.\""),
