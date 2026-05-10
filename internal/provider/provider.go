@@ -257,6 +257,7 @@ func (*dependencyTrackProvider) DataSources(_ context.Context) []func() datasour
 		NewOidcLoginDataSource,
 		NewLicenseGroupDataSource,
 		NewLicenseDataSource,
+		NewPermissionsDataSource,
 	}
 }
 
