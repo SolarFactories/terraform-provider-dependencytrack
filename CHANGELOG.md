@@ -1,3 +1,18 @@
+## 1.22
+
+#### FEATURES
+- Add explicit support and testing for API `4.14.2`, `4.14.2-alpine`.
+- Add explicit support and testing for Terraform `1.15.*`.
+- Add `dependencytrack_license` Data source to retrieve a license by SPDX ID.
+- Add `dependencytrack_license_group` Data source to retrieve a license group by name.
+- Add `dependencytrack_permissions` Data source to retrieve the list of all permissions.
+
+#### DEPENDENCIES
+- Update override of `github.com/DependencyTrack/client-go` with updated `github.com/SolarFactories/client-go@staging`
+
+#### MISC
+- Removed patching of SDK request for deleting Project Properties, since it has been patched upstream.
+
 ## 1.21
 
 #### FEATURES
