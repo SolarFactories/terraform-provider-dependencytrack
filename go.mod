@@ -3,7 +3,7 @@ module terraform-provider-dependencytrack
 go 1.25.8
 
 require (
-	github.com/DependencyTrack/client-go v0.18.0
+	github.com/DependencyTrack/client-go v0.19.0
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.19.0
@@ -11,8 +11,6 @@ require (
 	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
 )
-
-replace github.com/DependencyTrack/client-go v0.18.0 => github.com/SolarFactories/client-go v0.0.0-20260510130659-0f4c8fc228da
 
 require (
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
