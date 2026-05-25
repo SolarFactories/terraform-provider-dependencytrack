@@ -1,3 +1,11 @@
+## 1.22.1
+
+#### DEPENDENCIES
+- `hashicorp/setup-terraform` `4.0.0` -> `4.0.1`
+- `github.com/DependencyTrack/client-go` `v0.18.0` -> `v0.19.0`, removing override from `github.com/SolarFactories/client-go@staging`.
+- `goreleaser/goreleaser-action` `7.2.1` -> `7.2.2`
+- `golangci/golangci-lint-action` `9.2.0` -> `9.2.1`
+
 ## 1.22
 
 #### FEATURES
