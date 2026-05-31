@@ -44,7 +44,34 @@ func (*userSelfDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 func (*userSelfDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Obtain current authenticated user.",
-		Attributes:  map[string]schema.Attribute{},
+		Attributes: map[string]schema.Attribute{
+			"username": schema.StringAttribute{
+				Description: "Username of the current User.",
+				Computed:    true,
+			},
+			"email": schema.StringAttribute{
+				Description: "Email address of the current User.",
+				Computed:    true,
+			},
+			"name": schema.StringAttribute{
+				Description: "Name of the current User.",
+				Computed:    true,
+			},
+			"teams": schema.ListAttribute{
+				Description: "UUID's of teams that the current User is a member of.",
+				Computed:    true,
+				ElementType: types.StringType,
+			},
+			"permissions": schema.ListAttribute{
+				Description: "Permissions assigned directly to the current User.",
+				Computed:    true,
+				ElementType: types.StringType,
+			},
+			"id": schema.Int64Attribute{
+				Description: "ID of the current User.",
+				Computed:    true,
+			},
+		},
 	}
 }
 
@@ -67,6 +94,7 @@ func (d *userSelfDataSource) Read(ctx context.Context, req datasource.ReadReques
 		)
 		return
 	}
+	fmt.Printf("ID: %v\n", user.Id)
 	newState := userSelfDataSourceModel{
 		ID:          types.Int64Value(user.Id),
 		Username:    types.StringValue(user.Username),

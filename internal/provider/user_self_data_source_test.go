@@ -3,6 +3,8 @@ package provider
 import (
 	"context"
 	"errors"
+	"fmt"
+	"os"
 	"testing"
 
 	tfjson "github.com/hashicorp/terraform-json"
@@ -16,6 +18,7 @@ var _ statecheck.StateCheck = tokenExtractor{}
 type (
 	tokenExtractor struct {
 		token         *string
+		callback      func(string)
 		resAddress    string
 		attributePath tfjsonpath.Path
 	}
@@ -39,13 +42,25 @@ func (extractor tokenExtractor) CheckState(_ context.Context, req statecheck.Che
 		resp.Error = errors.New("expected string result, but received another type")
 		return
 	}
-	*extractor.token = token
+	fmt.Printf("Extracting token: [%s]\n", token)
+	if extractor.token != nil {
+		*extractor.token = token
+	}
+	if extractor.callback != nil {
+		extractor.callback(token)
+	}
 }
 
 func TestAccUserSelfDataSource(t *testing.T) {
 	var token string
 	tokenChecker := tokenExtractor{
-		token:         &token,
+		token: &token,
+		callback: func(token string) {
+			err := os.Setenv("TF_VAR_provider_bearer_token", token)
+			if err != nil {
+				panic(err)
+			}
+		},
 		resAddress:    "data.dependencytrack_user_login.test",
 		attributePath: tfjsonpath.New("token"),
 	}
@@ -63,21 +78,9 @@ resource "dependencytrack_user" "user" {
 	password = "PASSWORD"
 }
 
-provider "dependencytrack" {
-	host = local.provider_host
-	root_ca = local.provider_root_ca
-	mtls = local.provider_mtls
-
-	auth = {
-		type = "NONE"
-	}
-	alias = "unauthenticated"
-}
-
 data "dependencytrack_user_login" "test" {
 	username = dependencytrack_user.user.username
 	password = dependencytrack_user.user.password
-	provider = dependencytrack.unauthenticated
 }
 `,
 				ConfigStateChecks: []statecheck.StateCheck{
@@ -94,6 +97,11 @@ resource "dependencytrack_user" "user" {
 	password = "PASSWORD"
 }
 
+variable "provider_bearer_token" {
+	type = string
+	sensitive = true
+}
+
 provider "dependencytrack" {
 	host = local.provider_host
 	root_ca = local.provider_root_ca
@@ -101,7 +109,7 @@ provider "dependencytrack" {
 
 	auth = {
 		type = "BEARER"
-		bearer = "` + token + `"
+		bearer = var.provider_bearer_token
 	}
 	alias = "managed"
 }
