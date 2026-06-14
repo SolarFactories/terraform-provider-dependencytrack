@@ -17,16 +17,25 @@ resource "dependencytrack_notification_publisher" "test" {
   description        = "Publisher for testing data source"
   publisher_class    = "org.dependencytrack.notification.publisher.SlackPublisher"
   template_mime_type = "application/json"
+  template           = "{}"
 }
 
 data "dependencytrack_notification_publisher" "test" {
   name = dependencytrack_notification_publisher.test.name
+}
+
+data "dependencytrack_notification_publisher" "console" {
+	name = "Console"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrPair(
 						"data.dependencytrack_notification_publisher.test", "id",
 						"dependencytrack_notification_publisher.test", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_notification_publisher.test", "name",
+						"dependencytrack_notification_publisher.test", "name",
 					),
 					resource.TestCheckResourceAttrPair(
 						"data.dependencytrack_notification_publisher.test", "description",
@@ -40,6 +49,12 @@ data "dependencytrack_notification_publisher" "test" {
 						"data.dependencytrack_notification_publisher.test", "template_mime_type",
 						"dependencytrack_notification_publisher.test", "template_mime_type",
 					),
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_notification_publisher.test", "template",
+						"dependencytrack_notification_publisher.test", "template",
+					),
+					resource.TestCheckResourceAttr("data.dependencytrack_notification_publisher.test", "default_publisher", "false"),
+					resource.TestCheckResourceAttr("data.dependencytrack_notification_publisher.console", "default_publisher", "true"),
 				),
 			},
 		},

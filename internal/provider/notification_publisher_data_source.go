@@ -85,8 +85,10 @@ func (d *notificationPublisherDataSource) Read(ctx context.Context, req datasour
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	name := state.Name.ValueString()
+
 	tflog.Debug(ctx, "Reading Notification Publisher", map[string]any{
-		"name": state.Name.ValueString(),
+		"name": name,
 	})
 
 	publishers, err := d.client.Notification.GetAllPublishers(ctx)
@@ -99,18 +101,18 @@ func (d *notificationPublisherDataSource) Read(ctx context.Context, req datasour
 	}
 
 	publisher, err := Find(publishers, func(pub dtrack.NotificationPublisher) bool {
-		return pub.Name == state.Name.ValueString()
+		return pub.Name == name
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Unable to locate Notification Publisher",
-			"Error with locating Name: "+state.Name.ValueString()+", in original error: "+err.Error(),
+			"Error with locating Name: "+name+", in original error: "+err.Error(),
 		)
 		return
 	}
 
 	// Transform data into model.
-	state = notificationPublisherDataSourceModel{
+	newState := notificationPublisherDataSourceModel{
 		ID:               types.StringValue(publisher.UUID.String()),
 		Name:             types.StringValue(publisher.Name),
 		Description:      types.StringValue(publisher.Description),
@@ -121,14 +123,19 @@ func (d *notificationPublisherDataSource) Read(ctx context.Context, req datasour
 	}
 
 	// Update state.
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	tflog.Debug(ctx, "Read Notification Publisher", map[string]any{
-		"id":   state.ID.ValueString(),
-		"name": state.Name.ValueString(),
+		"id":                 state.ID.ValueString(),
+		"name":               state.Name.ValueString(),
+		"description":        state.Description.ValueString(),
+		"publisher_class":    state.PublisherClass.ValueString(),
+		"template.#":         len(state.Template.ValueString()),
+		"template_mime_type": state.TemplateMimeType.ValueString(),
+		"default_publisher":  state.DefaultPublisher.ValueBool(),
 	})
 }
 
