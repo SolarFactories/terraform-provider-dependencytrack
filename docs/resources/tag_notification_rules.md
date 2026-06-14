@@ -35,7 +35,7 @@ resource "dependencytrack_notification_rule" "example" {
     "PROJECT_CREATED",
     "BOM_PROCESSED"
   ]
-  publisher_id = dependencytrack_notification_publisher.test.id
+  publisher_id = dependencytrack_notification_publisher.example.id
 }
 
 resource "dependencytrack_tag_notification_rules" "example" {
