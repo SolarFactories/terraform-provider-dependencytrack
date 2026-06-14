@@ -1,3 +1,17 @@
+## 1.23
+
+#### FEATURES
+- Add `dependencytrack_notification_publisher` Data source, for fetching information on an existing Notification Publisher.
+  - Thanks to [@cschindlbeck](https://github.com/cschindlbeck) for contributing in [#211](https://github.com/SolarFactories/terraform-provider-dependencytrack/pull/211).
+
+#### FIXES
+- Fix inconsistent id's in examples, using `test` instead of `example`.
+  - Thanks to [@cschindlbeck](https://github.com/cschindlbeck) for reporting and fixing in [#210](https://github.com/SolarFactories/terraform-provider-dependencytrack/pull/210).
+- Fix `TestLicenseDataSource` and `TestLicenseGroupDataSource` not being marked as Acceptance Tests.
+
+#### DEPENDENCIES
+- `actions/checkout` `6.0.2` -> `6.0.3`
+
 ## 1.22.1
 
 #### DEPENDENCIES
@@ -65,8 +79,10 @@
 
 #### FIXES
 - Allow `dependencytrack_user_team` to be used with `dependencytrack_oidc_user`, and `dependencytrack_ldap_user`, in addition to existing `dependencytrack_user`.
+  - Thanks for [@nicolasbriere1](https://github.com/nicolasbriere1) for reporting.
   - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/177
 - Allow `dependencytrack_user_permission` to be used with `dependencytrack_oidc_user`, and `dependencytrack_ldap_user`, in addition to existing `dependencytrack_user`.
+  - Thanks for [@nicolasbriere1](https://github.com/nicolasbriere1) for reporting.
   - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/177
 
 ## 1.19
@@ -105,6 +121,7 @@
 
 #### FIXES
 - `tags` in `dependencytrack_project` no longer needs to be sorted.
+  - Thanks to [@dstnscn](https://github.com/dstnscn) for reporting.
   - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/152
 
 #### DEPENDENCIES
@@ -114,6 +131,7 @@
 
 #### FIXES
 - `google.osv.enabled` in `dependencytrack_config_property` / `dependencytrack_config_properties` no longer needs to be sorted.
+  - Thanks to [@jkvbe](https://github.com/jkvbe) for reporting.
   - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/149
 
 #### DEPENDENCIES
@@ -134,6 +152,7 @@
 
 #### FIXES
 - `permissions` in `dependencytrack_team_permissions` no longer needs to be sorted.
+  - Thanks to [@jkvbe](https://github.com/jkvbe) for reporting.
   - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/117
 
 #### MISC
@@ -322,7 +341,7 @@
 
 #### FIXES
 - `comment` on `dependencytrack_team_apikey` resource was improperly set upon creation to an empty string.
-	- Thanks to `@acidghost` for contributing a fix.
+	- Thanks to [@acidghost](https://github.com/acidghost) for contributing a fix in [#73](https://github.com/SolarFactories/terraform-provider-dependencytrack/pull/73).
 	- Added regression test within `team_apikey_resource_test.go`.
 
 #### DEPENDENCIES
@@ -338,7 +357,9 @@
 	- GitHub actions are lagging, due to inability to manage dependencies between job services.
 
 #### ISSUES
-- [Fixed in `1.10.2`] Comments on API keys are set to an empty string in state upon creation. Thanks to `@acidghost` for reporting.
+- [Fixed in `1.10.2`] Comments on API keys are set to an empty string in state upon creation.
+  - Thanks to [@acidghost](https://github.com/acidghost) for reporting.
+  - https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/72
 
 ## 1.10.0
 
