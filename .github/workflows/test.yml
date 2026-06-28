@@ -76,7 +76,7 @@ jobs:
       matrix:
         api:
           # TLS Connectivity is between TF and Nginx, so is independent of API version.
-          # Full API testing is handled in subsequent jobs. Therefore, this can be the latest supported API version.
+          # Full API testing is handled in subsequent jobs. Therefore, this can be any supported API version.
           - "4.14.2-alpine"
         provider:
           - "default"
@@ -111,8 +111,8 @@ jobs:
 
 
   # Run acceptance tests in a matrix with Terraform CLI versions
-  test:
-    name: Terraform Provider Acceptance Tests
+  test_v4:
+    name: Terraform Provider Acceptance Tests API v4
     needs:
       - build
       #- test_tls
@@ -139,14 +139,6 @@ jobs:
           ALPINE_OIDC_USERNAME_CLAIM: "sub"
           ALPINE_OIDC_USER_PROVISIONING: true
           ALPINE_OIDC_TEAM_SYNCHRONIZATION: false
-          # V5 variables
-          DT_OIDC_ENABLED: true
-          DT_OIDC_ISSUER: "https://token.actions.githubusercontent.com"
-          DT_OIDC_CLIENT_ID: "terraform-provider-dependencytrack"
-          DT_OIDC_USERNAME_CLAIM: "sub"
-          DT_OIDC_USER_PROVISIONING: true
-          DT_OIDC_TEAM_SYNCHRONIZATION: false
-
         ports:
           - 8081:8080
 #      db:
@@ -197,8 +189,63 @@ jobs:
 #            skip: "^$"
 #          - version: "4.14.2"
 #            skip: "^$"
-#          - version: "4.14.2-alpine"
-#            skip: "^$"
+          - version: "4.14.2-alpine"
+            skip: "^$"
+        terraform:
+#          - '1.0.*'
+#          - '1.1.*'
+#          - '1.2.*'
+#          - '1.3.*'
+#          - '1.4.*'
+#          - '1.5.*'
+#          - '1.6.*'
+#          - '1.7.*'
+#          - '1.8.*'
+#          - '1.9.*'
+#          - '1.10.*'
+#          - '1.11.*'
+#          - '1.12.*'
+#          - '1.13.*'
+#          - '1.14.*'
+          - '1.15.*'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Setup OIDC
+        run: |
+          set -euo pipefail
+          token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
+          echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
+      - uses: ./.github/actions/test
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          tests_skip_regex: ${{ matrix.api.skip }}
+
+
+  test_v5:
+    name: Terraform Provider Acceptance Tests API v5
+    needs:
+      - build
+      #- test_tls
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+      db:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: dtrack
+          POSTGRES_USER: dtrack
+          POSTGRES_PASSWORD: dtrack
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api:
           - version: "5.0.2"
             # Currently failing tests, which will require adjusting implementation to properly fix.
             skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)$"
@@ -221,6 +268,24 @@ jobs:
           - '1.15.*'
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Start API Cn
+        run: |
+          docker run --detach \
+          --env 'DT_DATASOURCE_URL=jdbc:postgres:5432/dtrack' \
+          --env 'DT_DATASOURCE_USERNAME=dtrack' \
+          --env 'DT_DATASOURCE_PASSWORD=dtrack' \
+          --env 'TELEMETRY_SUBMISSION_ENABLED=false' \
+          --env 'DT_OIDC_ENABLED=true' \
+          --env 'DT_OIDC_ISSUER='https://token.actions.githubusercontent.com' \
+          --env 'DT_OIDC_CLIENT_ID='terraform-provider-dependencytrack' \
+          --env 'DT_OIDC_USERNAME_CLAIM='sub' \
+          --env 'DT_OIDC_USER_PROVISIONING=true' \
+          --env 'DT_OIDC_TEAM_SYNCHRONIZATION=false' \
+          --publish '127.0.0.1:9001:8080' \
+          --volume 'data:\data' \
+          --read-only \
+          --rm \
+          ghcr.io/dependencytrack/apiserver:${{ matrix.api.version }}
       - name: Setup OIDC
         run: |
           set -euo pipefail
