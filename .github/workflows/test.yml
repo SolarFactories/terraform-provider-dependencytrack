@@ -285,9 +285,11 @@ jobs:
           --publish '127.0.0.1:9081:8080' \
           --publish '127.0.0.1:8081:8080' \
           --volume 'data:\data' \
+          --name 'api' \
           --read-only \
           --rm \
           ghcr.io/dependencytrack/apiserver:${{ matrix.api.version }}
+          docker logs --follow api &
       - name: Setup OIDC
         run: |
           set -euo pipefail
