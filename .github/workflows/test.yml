@@ -282,7 +282,8 @@ jobs:
           --env 'DT_OIDC_USERNAME_CLAIM=sub' \
           --env 'DT_OIDC_USER_PROVISIONING=true' \
           --env 'DT_OIDC_TEAM_SYNCHRONIZATION=false' \
-          --publish '127.0.0.1:9001:8080' \
+          --publish '127.0.0.1:9081:8080' \
+          --publish '127.0.0.1:8081:8080' \
           --volume 'data:\data' \
           --read-only \
           --rm \
@@ -296,3 +297,4 @@ jobs:
         with:
           terraform_version: ${{ matrix.terraform }}
           tests_skip_regex: ${{ matrix.api.skip }}
+          provider_config_key: 'v5'
