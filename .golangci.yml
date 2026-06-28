@@ -103,6 +103,8 @@ linters:
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.StringAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.BoolAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.Int32Attribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.Int64Attribute$"
+        - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.Float64Attribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.ListAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.ListNestedAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.NestedAttributeObject$"
@@ -618,6 +620,11 @@ linters:
       - path: internal/provider/oidc_users_data_source.go
         linters:
           - gosec
+      - path: internal/provider/vulnerability_policy_resource.go
+        linters:
+          - gocognit
+          - gocyclo
+          - cyclop
 
 formatters:
   enable:
