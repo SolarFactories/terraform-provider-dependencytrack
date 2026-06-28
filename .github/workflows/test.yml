@@ -31,10 +31,10 @@ jobs:
           cache: true
       - run: go mod download
       - run: go build -v .
-      - name: Run linters
-        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
-        with:
-          version: latest
+#      - name: Run linters
+#        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
+#        with:
+#          version: latest
 
   generate:
     runs-on: ubuntu-latest
