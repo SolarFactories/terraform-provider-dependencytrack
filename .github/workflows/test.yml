@@ -272,7 +272,7 @@ jobs:
       - name: Start API Container
         run: |
           docker run --detach \
-          --env 'DT_DATASOURCE_URL=jdbc:postgres:5432/dtrack' \
+          --env 'DT_DATASOURCE_URL=jdbc:postgresql://localhost:5432/dtrack' \
           --env 'DT_DATASOURCE_USERNAME=dtrack' \
           --env 'DT_DATASOURCE_PASSWORD=dtrack' \
           --env 'TELEMETRY_SUBMISSION_ENABLED=false' \
