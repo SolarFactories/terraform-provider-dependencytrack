@@ -188,7 +188,7 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 			UUID: publisherID,
 		},
 	}
-	if r.semver.Major == 4 && r.semver.Minor >= 12 {
+	if hasNotificationChildrenFeature(*r.semver) {
 		ruleReq.NotifyChildren = plan.NotifyChildren.ValueBool()
 	}
 
@@ -283,12 +283,12 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 		PublisherConfig:       types.StringValue(ruleRes.PublisherConfig),
 		PublisherID:           types.StringValue(ruleRes.Publisher.UUID.String()),
 	}
-	if r.semver.Major == 4 && r.semver.Minor >= 12 {
+	if hasNotificationChildrenFeature(*r.semver) {
 		newState.NotifyChildren = types.BoolValue(ruleRes.NotifyChildren)
 	} else {
 		newState.NotifyChildren = plan.NotifyChildren
 	}
-	if r.semver.Major == 4 && r.semver.Minor >= 13 {
+	if hasNotificationTriggerTypeFeature(*r.semver) {
 		newState.TriggerType = types.StringValue(string(ruleRes.TriggerType))
 	} else {
 		newState.TriggerType = types.StringValue(string(ruleReq.TriggerType))
@@ -406,12 +406,12 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 		PublisherConfig:       types.StringValue(rule.PublisherConfig),
 		PublisherID:           types.StringValue(rule.Publisher.UUID.String()),
 	}
-	if r.semver.Major == 4 && r.semver.Minor >= 12 {
+	if hasNotificationChildrenFeature(*r.semver) {
 		newState.NotifyChildren = types.BoolValue(rule.NotifyChildren)
 	} else {
 		newState.NotifyChildren = state.NotifyChildren
 	}
-	if r.semver.Major == 4 && r.semver.Minor >= 13 {
+	if hasNotificationTriggerTypeFeature(*r.semver) {
 		newState.TriggerType = types.StringValue(string(rule.TriggerType))
 	} else {
 		newState.TriggerType = types.StringValue("EVENT")
@@ -486,7 +486,7 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 			UUID: publisherID,
 		},
 	}
-	if r.semver.Major == 4 && r.semver.Minor >= 12 {
+	if hasNotificationChildrenFeature(*r.semver) {
 		ruleReq.NotifyChildren = plan.NotifyChildren.ValueBool()
 	}
 
@@ -547,12 +547,12 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 		PublisherConfig:       types.StringValue(ruleRes.PublisherConfig),
 		PublisherID:           types.StringValue(ruleRes.Publisher.UUID.String()),
 	}
-	if r.semver.Major == 4 && r.semver.Minor >= 12 {
+	if hasNotificationChildrenFeature(*r.semver) {
 		newState.NotifyChildren = types.BoolValue(ruleRes.NotifyChildren)
 	} else {
 		newState.NotifyChildren = plan.NotifyChildren
 	}
-	if r.semver.Major == 4 && r.semver.Minor >= 13 {
+	if hasNotificationTriggerTypeFeature(*r.semver) {
 		newState.TriggerType = types.StringValue(string(ruleRes.TriggerType))
 	} else {
 		newState.TriggerType = types.StringValue(string(ruleReq.TriggerType))
@@ -676,4 +676,12 @@ func (r *notificationRuleResource) Configure(_ context.Context, req resource.Con
 	}
 	r.client = clientInfoData.client
 	r.semver = clientInfoData.semver
+}
+
+func hasNotificationChildrenFeature(semver Semver) bool {
+	return (semver.Major == 4 && semver.Minor >= 12) || (semver.Major >= 5)
+}
+
+func hasNotificationTriggerTypeFeature(semver Semver) bool {
+	return (semver.Major == 4 && semver.Minor >= 13) || (semver.Major >= 5)
 }
