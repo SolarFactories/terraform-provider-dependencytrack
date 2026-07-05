@@ -31,7 +31,6 @@ runs:
         set -eu
         export API_KEY="$(go run ./scripts/bootstrap_pipeline.go)"
         echo "DEPENDENCYTRACK_API_KEY=${API_KEY}" >> $GITHUB_ENV
-        echo ${API_KEY} | wc
       env:
         HOST: "http://localhost:8081"
         USERNAME: "admin"
@@ -43,7 +42,6 @@ runs:
 
     - name: Setup Nginx
       shell: bash
-      if: false
       run: |
         set -eu
         openssl req -newkey rsa:4096 -noenc -keyout /opt/server_key.pem -x509 -days 1 -out /opt/server_cert.pem -subj '/OU=DT_API /CN=localhost' -addext "subjectAltName=DNS:localhost"
@@ -54,15 +52,12 @@ runs:
         sudo nginx
 
     - uses: hashicorp/setup-terraform@5e8dbf3c6d9deaf4193ca7a8fb23f2ac83bb6c85 # v4.0.0
-      if: false
       with:
         terraform_version: ${{ inputs.terraform }}
         terraform_wrapper: false
     - run: go mod download
-      if: false
       shell: bash
     - run: go test -v -cover ./internal/provider/ -skip "${{ inputs.tests_skip_regex }}" -run "${{ inputs.tests_run_regex }}"
-      if: false
       shell: bash
       env:
         TF_ACC: "1"
