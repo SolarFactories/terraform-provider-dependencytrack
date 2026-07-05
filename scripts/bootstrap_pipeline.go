@@ -113,15 +113,18 @@ func getSemverParts(ctx context.Context, client *dtrack.Client) ([]int, error) {
 	if err != nil {
 		return nil, errors.New("unable to retrieve About Info, from: " + err.Error())
 	}
+	log.Printf("API Version: %s\n", about.Version)
 	parts := strings.Split(about.Version, ".")
 	result := make([]int, 0, len(parts))
-	for i, p := range parts {
+	for idx, p := range parts {
 		part, err := strconv.Atoi(p)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse semver part in %d of %s, from: %s", i, p, err.Error())
+			return nil, fmt.Errorf("unable to parse semver part in %d of %s, from: %s", idx, p, err.Error())
 		}
-		result[i] = part
+		result[idx] = part
+		log.Printf("Parsed %d=%d\n", idx, part)
 	}
+	log.Printf("Parsed Semver: %v\n", result)
 
 	return result, nil
 }
