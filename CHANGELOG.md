@@ -1,3 +1,12 @@
+## 1.23.1
+
+#### DEPENDENCIES
+- `actions/checkout` `6.0.3` -> `7.0.0`
+- `actions/setup-go` `6.4.0` -> `6.5.0`
+- `goreleaser/goreleaser-action` `7.2.2` -> `7.2.3`
+- `golangci/golangci-lint-action` `9.2.1` -> `9.3.0`
+- `golang.org/x/net` `0.52.0` -> `0.55.0`
+
 ## 1.23
 
 #### FEATURES
