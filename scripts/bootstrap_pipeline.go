@@ -121,7 +121,7 @@ func getSemverParts(ctx context.Context, client *dtrack.Client) ([]int, error) {
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse semver part in %d of %s, from: %s", idx, p, err.Error())
 		}
-		result[idx] = part
+		result = append(result, part)
 		log.Printf("Parsed %d=%d\n", idx, part)
 	}
 	log.Printf("Parsed Semver: %v\n", result)
