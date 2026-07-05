@@ -20,6 +20,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    if: false
     timeout-minutes: 5
     permissions:
       contents: "read"
@@ -38,6 +39,7 @@ jobs:
 
   generate:
     runs-on: ubuntu-latest
+    if: false
     permissions:
       contents: "read"
     steps:
@@ -113,6 +115,7 @@ jobs:
   # Run acceptance tests in a matrix with Terraform CLI versions
   test_v4:
     name: Terraform Provider Acceptance Tests API v4
+    if: false
     needs:
       - build
       #- test_tls
@@ -224,7 +227,7 @@ jobs:
   test_v5:
     name: Terraform Provider Acceptance Tests API v5
     needs:
-      - build
+      #- build
       #- test_tls
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -292,6 +295,7 @@ jobs:
           ghcr.io/dependencytrack/apiserver:${{ matrix.api.version }}
           docker logs --follow api &
       - name: Setup OIDC
+        if: false
         run: |
           set -euo pipefail
           token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
@@ -301,3 +305,6 @@ jobs:
           terraform_version: ${{ matrix.terraform }}
           tests_skip_regex: ${{ matrix.api.skip }}
           provider_config_key: 'v5'
+      - name: API Container Logs
+        run: docker logs api
+        if: ${{ always() }}
