@@ -14,11 +14,11 @@ services:
       DT_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/dtrack"
       DT_DATASOURCE_USERNAME: "dtrack"
       DT_DATASOURCE_PASSWORD: "dtrack"
-      TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
+      DT_TELEMETRY_SUBMISSION_DEEFAULT_ENABLED: false
     ports:
-    - "127.0.0.1:9081:8080"
+      - "127.0.0.1:9081:8080"
     volumes:
-    - "apiserver-data:/data"
+      - "apiserver-data:/data"
     restart: unless-stopped
 
   frontend:
@@ -26,7 +26,7 @@ services:
     environment:
       API_BASE_URL: "http://localhost:9081"
     ports:
-    - "127.0.0.1:9080:8080"
+      - "127.0.0.1:9080:8080"
     restart: unless-stopped
 
   postgres:
@@ -41,7 +41,7 @@ services:
       timeout: 3s
       retries: 3
     volumes:
-    - "postgres-data:/var/lib/postgresql"
+      - "postgres-data:/var/lib/postgresql"
 
 volumes:
   apiserver-data: {}
