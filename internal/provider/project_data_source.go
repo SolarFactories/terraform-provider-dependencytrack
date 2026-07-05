@@ -177,6 +177,9 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	if project.ParentRef != nil {
 		projectState.Parent = types.StringValue(project.ParentRef.UUID.String())
 	}
+
+	// TODO: V5: Removed `Project.Properties`
+	// https://dependencytrack.github.io/docs/next/reference/api/v5-breaking-changes/#project-resource
 	for _, property := range project.Properties {
 		model := projectPropertiesModel{
 			Group:       types.StringValue(property.Group),
