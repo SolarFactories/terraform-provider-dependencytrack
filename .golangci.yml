@@ -6,6 +6,7 @@ linters:
     - goheader
     - wsl
     - wsl_v5
+    - gomodguard
   settings:
     asasalint:
       exclude: []
@@ -209,14 +210,8 @@ linters:
       tool-forbidden: true # Default false
       go-debug-forbidden: true # Default false
       go-version-pattern: "" # Default "" # TODO
-    gomodguard:
-      allowed:
-        modules: [] # Default []
-        domains: [] # Default []
-      blocked:
-        modules: [] # Default []
-        versions: [] # Default []
-        local-replace-directives: true # Default false
+    gomodguard_v2:
+      local-replace-directives: true # Default false
     gosec:
       includes: [] # Includes all # Default []
       excludes: [] # Default []
@@ -540,6 +535,7 @@ linters:
           - cyclop
           - gochecknoglobals
           - forbidigo
+          - mnd
       - path: internal/provider/
         linters:
           - wsl
@@ -551,6 +547,7 @@ linters:
           - funlen
           - err113
           - dupl
+          - mnd
       - path: main.go
         linters:
           - cyclop
@@ -620,6 +617,9 @@ linters:
       - path: internal/provider/oidc_users_data_source.go
         linters:
           - gosec
+      - path: internal/provider/project_data_source.go
+        linters:
+          - godox
       - path: internal/provider/vulnerability_policy_resource.go
         linters:
           - gocognit

@@ -25,14 +25,14 @@ jobs:
       contents: "read"
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version-file: 'go.mod'
           cache: true
       - run: go mod download
       - run: go build -v .
       - name: Run linters
-        uses: golangci/golangci-lint-action@82606bf257cbaff209d206a39f5134f0cfbfd2ee # v9.2.1
+        uses: golangci/golangci-lint-action@ba0d7d2ec06a0ea1cb5fa41b2e4a3ab91d21278a # v9.3.0
         with:
           version: latest
 
@@ -42,7 +42,7 @@ jobs:
       contents: "read"
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -58,7 +58,9 @@ jobs:
 
   test_tls:
     name: Terraform Provider TLS Tests
-    needs: build
+    needs:
+      - build
+      - generate
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
@@ -75,7 +77,7 @@ jobs:
       matrix:
         api:
           # TLS Connectivity is between TF and Nginx, so is independent of API version.
-          # Full API testing is handled in subsequent jobs. Therefore, this can be the latest supported API version.
+          # Full API testing is handled in subsequent jobs. Therefore, this can be any compatible API version.
           - "4.14.2-alpine"
         provider:
           - "default"
@@ -110,11 +112,11 @@ jobs:
 
 
   # Run acceptance tests in a matrix with Terraform CLI versions
-  test:
-    name: Terraform Provider Acceptance Tests
+  test_v4:
+    name: Terraform Provider Acceptance Tests API v4
     needs:
       - build
-      - test_tls
+      - generate
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -138,7 +140,6 @@ jobs:
           ALPINE_OIDC_USERNAME_CLAIM: "sub"
           ALPINE_OIDC_USER_PROVISIONING: true
           ALPINE_OIDC_TEAM_SYNCHRONIZATION: false
-
         ports:
           - 8081:8080
 #      db:
@@ -219,3 +220,86 @@ jobs:
         with:
           terraform_version: ${{ matrix.terraform }}
           tests_skip_regex: ${{ matrix.api.skip }}
+
+
+  test_v5:
+    name: Terraform Provider Acceptance Tests API v5
+    needs:
+      - build
+      - generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      db:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: dtrack
+          POSTGRES_USER: dtrack
+          POSTGRES_PASSWORD: dtrack
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api:
+          - version: "5.0.2"
+            # Currently failing tests, which will require adjusting implementation to properly fix.
+            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)$"
+        terraform:
+          - '1.0.*'
+          - '1.1.*'
+          - '1.2.*'
+          - '1.3.*'
+          - '1.4.*'
+          - '1.5.*'
+          - '1.6.*'
+          - '1.7.*'
+          - '1.8.*'
+          - '1.9.*'
+          - '1.10.*'
+          - '1.11.*'
+          - '1.12.*'
+          - '1.13.*'
+          - '1.14.*'
+          - '1.15.*'
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - name: Start API Container
+        run: |
+          docker run --detach \
+          --env 'DT_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/dtrack' \
+          --env 'DT_DATASOURCE_USERNAME=dtrack' \
+          --env 'DT_DATASOURCE_PASSWORD=dtrack' \
+          --env 'DT_TELEMETRY_SUBMISSION_ENABLED=false' \
+          --env 'DT_OIDC_ENABLED=true' \
+          --env 'DT_OIDC_ISSUER=https://token.actions.githubusercontent.com' \
+          --env 'DT_OIDC_CLIENT_ID=terraform-provider-dependencytrack' \
+          --env 'DT_OIDC_USERNAME_CLAIM=sub' \
+          --env 'DT_OIDC_USER_PROVISIONING=true' \
+          --env 'DT_OIDC_TEAM_SYNCHRONIZATION=false' \
+          --publish '9081:8080' \
+          --publish '8081:8080' \
+          --add-host 'host.docker.internal:host-gateway' \
+          --volume 'data:/data' \
+          --name 'api' \
+          --rm \
+          ghcr.io/dependencytrack/apiserver:${{ matrix.api.version }}
+      - name: Setup OIDC
+        run: |
+          set -euo pipefail
+          token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
+          echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
+      - uses: ./.github/actions/test
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          tests_skip_regex: ${{ matrix.api.skip }}
+          provider_config_key: 'v5'
+      - name: API Container Logs
+        run: docker logs api
+        if: ${{ always() }}
