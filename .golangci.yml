@@ -538,6 +538,7 @@ linters:
           - cyclop
           - gochecknoglobals
           - forbidigo
+          - mnd
       - path: internal/provider/
         linters:
           - wsl

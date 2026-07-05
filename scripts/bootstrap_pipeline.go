@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 )
@@ -106,6 +108,24 @@ func createProject(ctx context.Context, client *dtrack.Client) error {
 	return nil
 }
 
+func getSemverParts(ctx context.Context, client *dtrack.Client) ([]int, error) {
+	about, err := client.About.Get(ctx)
+	if err != nil {
+		return nil, errors.New("unable to retrieve About Info, from: " + err.Error())
+	}
+	parts := strings.Split(about.Version, ".")
+	result := make([]int, 0, len(parts))
+	for i, p := range parts {
+		part, err := strconv.Atoi(p)
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse semver part in %d of %s, from: %s", i, p, err.Error())
+		}
+		result[i] = part
+	}
+
+	return result, nil
+}
+
 func main() {
 	ctx := context.Background()
 
@@ -119,15 +139,22 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	_, err = client.Config.Update(ctx, dtrack.ConfigProperty{
-		GroupName:   "vuln-source",
-		Name:        "nvd.enabled",
-		Value:       "false",
-		Type:        "BOOLEAN",
-		Description: "",
-	})
+	semver, err := getSemverParts(ctx, client)
 	if err != nil {
 		log.Fatal(err.Error())
+	}
+
+	if semver[0] == 4 {
+		_, err = client.Config.Update(ctx, dtrack.ConfigProperty{
+			GroupName:   "vuln-source",
+			Name:        "nvd.enabled",
+			Value:       "false",
+			Type:        "BOOLEAN",
+			Description: "",
+		})
+		if err != nil {
+			log.Fatal(err.Error())
+		}
 	}
 
 	team, err := createTeam(ctx, client)
