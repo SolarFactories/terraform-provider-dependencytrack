@@ -584,7 +584,7 @@ func (r *projectResource) Update(ctx context.Context, req resource.UpdateRequest
 		newPlan.Parent = types.StringNull()
 	}
 	if hasProjectCollectionFeature(*r.semver) {
-		if ((r.semver.Major == 4 && *projectRes.CollectionLogic == "None") || (r.semver.Major >= 5 && projectRes.CollectionLogic == nil)) && plan.Collection == nil {
+		if ((r.semver.Major == 4 && *projectRes.CollectionLogic == "NONE") || (r.semver.Major >= 5 && projectRes.CollectionLogic == nil)) && plan.Collection == nil {
 			newPlan.Collection = nil
 		} else {
 			newPlan.Collection = &projectResourceModelCollection{
