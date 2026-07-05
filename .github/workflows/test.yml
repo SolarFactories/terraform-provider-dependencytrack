@@ -282,10 +282,10 @@ jobs:
           --env 'DT_OIDC_USERNAME_CLAIM=sub' \
           --env 'DT_OIDC_USER_PROVISIONING=true' \
           --env 'DT_OIDC_TEAM_SYNCHRONIZATION=false' \
-          --publish '127.0.0.1:9081:8080' \
-          --publish '127.0.0.1:8081:8080' \
+          --publish '9081:8080' \
+          --publish '8081:8080' \
           --add-host 'host.docker.internal:host-gateway' \
-          --volume 'data:\data' \
+          --volume 'data:/data' \
           --name 'api' \
           --read-only \
           --rm \
