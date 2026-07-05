@@ -58,7 +58,6 @@ var (
 				host = "http://localhost:9081"
 				key = "OS_ENV"
 			}`
-
 		}
 		return `provider "dependencytrack" {
 			host = "http://localhost:8081"
