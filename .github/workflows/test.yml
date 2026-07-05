@@ -290,9 +290,9 @@ jobs:
           --add-host 'host.docker.internal:host-gateway' \
           --volume 'data:/data' \
           --name 'api' \
-          --read-only \
           --rm \
           ghcr.io/dependencytrack/apiserver:${{ matrix.api.version }}
+          #--read-only \
           docker logs --follow api &
       - name: Setup OIDC
         if: false
