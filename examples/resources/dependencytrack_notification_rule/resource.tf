@@ -14,7 +14,7 @@ resource "dependencytrack_notification_rule" "example_event" {
     "PROJECT_CREATED",
     "BOM_PROCESSED"
   ]
-  publisher_id = dependencytrack_notification_publisher.test.id
+  publisher_id = dependencytrack_notification_publisher.example.id
 }
 
 // Scheduled. Available in DependencyTrack API 4.13+
@@ -22,6 +22,6 @@ resource "dependencytrack_notification_rule" "example_schedule" {
   name          = "Example Schedule Rule"
   trigger_type  = "SCHEDULE"
   schedule_cron = "0 0 * * 0"
-  publisher_id  = dependencytrack_notification_publisher.test.id
+  publisher_id  = dependencytrack_notification_publisher.example.id
 }
 
