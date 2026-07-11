@@ -2,7 +2,7 @@
 
 #### DEPENDENCIES
 - `golang.org/x/crypto` `0.51.0` -> `0.52.0`
-- `golang.org/x/crypto` `0.51.0` -> `0.52.0` in `/tools`
+- `golang.org/x/crypto` `0.45.0` -> `0.52.0` in `/tools`
 
 #### MISC
 - Add initial automated testing for API v5, in preparation for further resources.
