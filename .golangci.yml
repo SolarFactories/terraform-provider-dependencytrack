@@ -575,9 +575,6 @@ linters:
         linters:
           - nonamedreturns
           - godoclint
-      - path: internal/provider/util_test.go
-        linters:
-          - cyclop
       - path: internal/provider/team_data_source_test.go
         linters:
           - godox
@@ -624,6 +621,9 @@ linters:
         linters:
           - gocognit
           - gocyclo
+          - cyclop
+      - path: internal/provider/vulnerability_policy_resource_test.go
+        linters:
           - cyclop
 
 formatters:
