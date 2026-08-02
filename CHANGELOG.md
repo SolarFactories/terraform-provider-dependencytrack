@@ -1,3 +1,14 @@
+## 1.24
+
+#### FEATURES
+- Add `dependencytrack_vulnerability_policy` resource, requiring API v5+.
+
+#### DEPENDENCIES
+- `google.golang.org/grpc` `1.79.3` -> `1.82.1`
+- `actions/setup-go` `6.5.0` -> `7.0.0`
+- `actions/checkout` `7.0.0` -> `7.0.1`
+- Override `github.com/DependencyTrack/client-go` with `github.com/SolarFactories/client-go@vulnerability-policy`
+
 ## 1.23.2
 
 #### DEPENDENCIES
