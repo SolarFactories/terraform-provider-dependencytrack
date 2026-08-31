@@ -192,6 +192,10 @@ jobs:
             skip: "^(TestAccVulnerabilityPolicyResource)$"
           - version: "4.14.2-alpine"
             skip: "^(TestAccVulnerabilityPolicyResource)$"
+          - version: "4.14.3"
+            skip: "^(TestAccVulnerabilityPolicyResource)$"
+          - version: "4.14.3-alpine"
+            skip: "^(TestAccVulnerabilityPolicyResource)$"
         terraform:
           - '1.0.*'
           - '1.1.*'
@@ -249,6 +253,12 @@ jobs:
       matrix:
         api:
           - version: "5.0.2"
+            # Currently failing tests, which will require adjusting implementation to properly fix.
+            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)$"
+          - version: "5.0.5"
+            # Currently failing tests, which will require adjusting implementation to properly fix.
+            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)$"
+          - version: "5.1.0"
             # Currently failing tests, which will require adjusting implementation to properly fix.
             skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)$"
         terraform:
