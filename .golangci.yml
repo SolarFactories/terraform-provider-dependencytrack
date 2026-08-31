@@ -7,6 +7,7 @@ linters:
     - wsl
     - wsl_v5
     - gomodguard
+    - exhaustruct
   settings:
     asasalint:
       exclude: []
@@ -95,9 +96,8 @@ linters:
       explicit-exhaustive-switch: false # Default false
       explicit-exhaustive-map: false # Default false
       default-case-required: false # Default false
-    exhaustruct:
-      include: []
-      exclude:
+    exhaustruct_v5:
+      ignore-patterns:
         - "^github.com/hashicorp/terraform-plugin-testing/helper/resource\\.TestCase$"
         - "^github.com/hashicorp/terraform-plugin-testing/helper/resource\\.TestStep$"
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.Schema$"
@@ -602,7 +602,7 @@ linters:
         linters:
           - govet
           - gocognit
-          - exhaustruct
+          - exhaustruct_v5
           - gocyclo
           - cyclop
       - path: internal/provider/notification_rule_resource_test.go
