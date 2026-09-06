@@ -1,3 +1,17 @@
+## 1.24.1
+
+#### DEPENDENCIES
+- `github.com/hashicorp/terraform-plugin-log` `0.10.0` -> `0.11.0`
+- `google.golang.org/grpc` `1.82.1` -> `1.83.1`
+
+#### MISC
+- Add automated testing and explicit support for API `4.14.3-alpine`.
+- Remove automated testing for non-alpine API variants, where an alpine variant exists.
+	- These are still supported, due to hitting the matrix limit for automated testing over 256 jobs.
+- Add automated testing for API `5.0.5`, `5.1.0`, with the same set of excluded tests as `5.0.2`.
+- Hardened running of API v5 container in pipeline, to not hit external providers to download data.
+- Update linting from deprecated `exhaustruct` to `exhaustruct_v5`.
+
 ## 1.24
 
 #### FEATURES
