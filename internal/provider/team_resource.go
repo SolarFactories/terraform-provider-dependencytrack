@@ -116,9 +116,18 @@ func (r *teamResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	})
 	team, err := r.client.Team.Get(ctx, teamID)
 	if err != nil {
+		err := err.Error()
+		if err == "The team could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Missing team when attempting to read. Will be removed from state", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get updated team",
-			"Error with reading team: "+teamID.String()+", in original error: "+err.Error(),
+			"Error with reading team: "+teamID.String()+", in original error: "+err,
 		)
 		return
 	}
@@ -212,6 +221,13 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	})
 	err := r.client.Team.Delete(ctx, team)
 	if err != nil {
+		if err.Error() == "The team could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Could not delete missing team. Ignoring since in desired state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete team",
 			"Unexpected error when trying to delete team: "+id.String()+", error: "+err.Error(),

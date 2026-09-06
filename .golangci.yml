@@ -100,6 +100,7 @@ linters:
       ignore-patterns:
         - "^github.com/hashicorp/terraform-plugin-testing/helper/resource\\.TestCase$"
         - "^github.com/hashicorp/terraform-plugin-testing/helper/resource\\.TestStep$"
+        - "^github.com/hashicorp/terraform-plugin-testing/helper/resource\\.ConfigPlanChecks$"
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.Schema$"
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.StringAttribute$"
         - "^github.com/hashicorp/terraform-plugin-framework/resource/schema\\.BoolAttribute$"
