@@ -78,7 +78,7 @@ jobs:
         api:
           # TLS Connectivity is between TF and Nginx, so is independent of API version.
           # Full API testing is handled in subsequent jobs. Therefore, this can be any compatible API version.
-          - "4.14.2-alpine"
+          - "4.14.3-alpine"
         provider:
           - "default"
           - "rootCA"
@@ -286,10 +286,39 @@ jobs:
           --publish '9081:8080' \
           --publish '8081:8080' \
           --add-host 'host.docker.internal:host-gateway' \
+          --add-host 'api.github.com:0.0.0.0' \
+          --add-host 'api.nuget.org:0.0.0.0' \
+          --add-host 'api.snyk.io:0.0.0.0' \
+          --add-host 'channels.nixos.org:0.0.0.0' \
+          --add-host 'crates.io:0.0.0.0' \
+          --add-host 'epss.empiricalsecurity.com:0.0.0.0' \
+          --add-host 'fastapi.metacpan.org:0.0.0.0' \
+          --add-host 'hackage.haskell.org:0.0.0.0' \
+          --add-host 'hex.pem:0.0.0.0' \
+          --add-host 'maven.google.com:0.0.0.0' \
+          --add-host 'metrics.dependencytrack.org:0.0.0.0' \
+          --add-host 'nvd.nist.gov:0.0.0.0' \
+          --add-host 'ossindex.sonatype.org:0.0.0.0' \
+          --add-host 'osv-vulnerabilities.storage.googleapis.com:0.0.0.0' \
+          --add-host 'packages.atlassian.com:0.0.0.0' \
+          --add-host 'proxy.golang.org:0.0.0.0' \
+          --add-host 'pypi.org:0.0.0.0' \
+          --add-host 'registry.npmjs.org:0.0.0.0' \
+          --add-host 'repo1.maven.org:0.0.0.0' \
+          --add-host 'repo.clojars.org:0.0.0.0' \
+          --add-host 'repo.packagist.org:0.0.0.0' \
+          --add-host 'repository.jboss.org:0.0.0.0' \
+          --add-host 'rubygems.org:0.0.0.0' \
+          --add-host 'vulndb.cyberriskanalytics.com:0.0.0.0' \
           --volume 'data:/data' \
+          --volume '/tmp:/tmp' \
           --name 'api' \
+          --read-only \
           --rm \
           ghcr.io/dependencytrack/apiserver:${{ matrix.api.version }}
+      - name: Wait for Healthy
+        run: |
+          while [ "$(docker inspect -f {{.State.Health.Status}} api)" != "healthy" ]; do sleep 1; done
       - name: Setup OIDC
         run: |
           set -euo pipefail
