@@ -123,9 +123,18 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 	oidcGroup, err := Find(oidcGroups, func(group dtrack.OIDCGroup) bool { return group.UUID == id })
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing OIDC Group. Will be removed from state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to locate updated oidc group",
-			"Error with locating oidc group: "+id.String()+", in original error: "+err.Error(),
+			"Error with locating oidc group: "+id.String()+", in original error: "+err,
 		)
 		return
 	}

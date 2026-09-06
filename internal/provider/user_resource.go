@@ -194,9 +194,17 @@ func (r *userResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		},
 	)
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing User. Will be removed from state.", map[string]any{
+				"username": state.Username.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to read managed user",
-			"Error for user: "+username+", in original error: "+err.Error(),
+			"Error for user: "+username+", in original error: "+err,
 		)
 		return
 	}

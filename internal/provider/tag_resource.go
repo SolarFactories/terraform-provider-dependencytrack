@@ -120,9 +120,17 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return tag.Name == tagID
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Tag. Will be removed from state.", map[string]any{
+				"id": state.ID.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to get updated tag",
-			"Error with reading tag: "+tagID+", from: "+err.Error(),
+			"Error with reading tag: "+tagID+", from: "+err,
 		)
 		return
 	}

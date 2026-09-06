@@ -211,9 +211,20 @@ func (r *componentPropertyResource) Read(ctx context.Context, req resource.ReadR
 		return cp.UUID == propertyID
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Missing Component Property when attempting to read. Will be removed from state.", map[string]any{
+				"id":        propertyID.String(),
+				"component": componentID.String(),
+				"group":     state.Group.ValueString(),
+				"name":      state.Name.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, Unable to identify Component Property",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}
@@ -339,9 +350,18 @@ func (r *componentPropertyResource) Delete(ctx context.Context, req resource.Del
 
 	err := r.client.Component.DeleteProperty(ctx, componentID, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The component property could not be found (status: 404)" {
+			tflog.Warn(ctx, "Could not delete missing Component Property. Ignoring since in desired state.", map[string]any{
+				"id":        id.String(),
+				"component": componentID.String(),
+				"group":     state.Group.ValueString(),
+				"name":      state.Name.ValueString(),
+			})
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete Component Property.",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}

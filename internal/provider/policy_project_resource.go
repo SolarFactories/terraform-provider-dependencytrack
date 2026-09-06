@@ -147,9 +147,18 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 		return project.UUID == projectID
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Policy Project Mapping. Will be removed from state.", map[string]any{
+				"policy":  state.PolicyID.ValueString(),
+				"project": state.ProjectID.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to locate project-policy mapping",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}

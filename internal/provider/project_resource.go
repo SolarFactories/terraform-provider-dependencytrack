@@ -353,9 +353,20 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	})
 	project, err := r.client.Project.Get(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The project could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to read missing Project. Will be removed from state.", map[string]any{
+				"id":      state.ID.ValueString(),
+				"name":    state.Name.ValueString(),
+				"version": state.Version.ValueString(),
+				"parent":  state.Parent.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get updated project",
-			"Error with reading project: "+id.String()+", in original error: "+err.Error(),
+			"Error with reading project: "+id.String()+", in original error: "+err,
 		)
 		return
 	}

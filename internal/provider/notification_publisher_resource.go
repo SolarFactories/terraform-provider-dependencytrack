@@ -183,9 +183,19 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 		return pub.UUID.String() == id.String()
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Notification Publisher. Will be removed from state.", map[string]any{
+				"id":    state.ID.ValueString(),
+				"name":  state.Name.ValueString(),
+				"class": state.PublisherClass.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to read Notification Publisher",
-			"Error with locating ID: "+id.String()+", in original error: "+err.Error(),
+			"Error with locating ID: "+id.String()+", in original error: "+err,
 		)
 		return
 	}

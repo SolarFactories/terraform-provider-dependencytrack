@@ -158,9 +158,18 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 	})
 
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to get missing ACL mapping when attempting to read. Will be removed from state.", map[string]any{
+				"team":    teamID.String(),
+				"project": projectID.String(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get ACL mapping within Read",
-			"Error with reading acl mapping for team: "+teamID.String()+", and project: "+projectID.String()+", in original error: "+err.Error(),
+			"Error with reading acl mapping for team: "+teamID.String()+", and project: "+projectID.String()+", in original error: "+err,
 		)
 		return
 	}
@@ -252,6 +261,8 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 		"team":    team.String(),
 		"project": project.String(),
 	})
+	// Deletion of non-existent ACL mapping is 200 OK, (against API 5.1.0).
+	// TODO: Write test for this, as may not be the same in API v4.
 	err := r.client.ACL.RemoveProjectMapping(ctx, team, project)
 	if err != nil {
 		resp.Diagnostics.AddError(

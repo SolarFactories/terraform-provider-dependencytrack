@@ -139,9 +139,18 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	policy, err := r.client.Policy.Get(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The policy could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to read missing Policy. Will be removed from state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get updated policy",
-			"Error with reading policy: "+id.String()+", from: "+err.Error(),
+			"Error with reading policy: "+id.String()+", from: "+err,
 		)
 		return
 	}

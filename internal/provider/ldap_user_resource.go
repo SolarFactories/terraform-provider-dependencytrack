@@ -123,9 +123,18 @@ func (r *ldapUserResource) Read(ctx context.Context, req resource.ReadRequest, r
 		},
 	)
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing LDAP User. Will be removed from state.", map[string]any{
+				"id":       state.ID.ValueString(),
+				"username": state.Username.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to read LDAP user",
-			"Error for user: "+username+", in original error: "+err.Error(),
+			"Error for user: "+username+", in original error: "+err,
 		)
 		return
 	}

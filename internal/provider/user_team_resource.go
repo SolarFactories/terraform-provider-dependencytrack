@@ -124,17 +124,35 @@ func (r *userTeamResource) Read(ctx context.Context, req resource.ReadRequest, r
 	})
 	user, err := FindUserPrincipal(ctx, *r.client, username)
 	if err != nil {
+		err := err.Error()
+		if err == "could not find user" {
+			tflog.Warn(ctx, "Unable to read User Team due to missing User. Will be removed from state.", map[string]any{
+				"username": state.Username.ValueString(),
+				"team":     state.TeamID.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to read user",
-			"Error with reading user: "+username+", in original error: "+err.Error(),
+			"Error with reading user: "+username+", in original error: "+err,
 		)
 		return
 	}
 	team, err := Find(user.Teams, func(team dtrack.Team) bool { return team.UUID == teamID })
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing User Team. Will be removed from state.", map[string]any{
+				"username": state.Username.ValueString(),
+				"team":     state.TeamID.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to identify user team membership",
-			"Error with locating team: "+teamID.String()+", for user: "+username+", in original error: "+err.Error(),
+			"Error with locating team: "+teamID.String()+", for user: "+username+", in original error: "+err,
 		)
 		return
 	}

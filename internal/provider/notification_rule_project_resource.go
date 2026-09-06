@@ -158,9 +158,19 @@ func (r *notificationRuleProjectResource) Read(ctx context.Context, req resource
 		},
 	)
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Notification Rule for Project. Will be removed from state.", map[string]any{
+				"id":      state.ID.ValueString(),
+				"rule":    state.Rule.ValueString(),
+				"project": state.Project.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to read Notification Rule Project Mapping",
-			"Error for rule with id: "+ruleID.String()+", and project with id: "+projectID.String()+", in original error: "+err.Error(),
+			"Error for rule with id: "+ruleID.String()+", and project with id: "+projectID.String()+", in original error: "+err,
 		)
 		return
 	}

@@ -161,11 +161,21 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	})
 
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing LDAP Team Mapping. Will be removed from State.", map[string]any{
+				"id":                 state.ID.ValueString(),
+				"team":               state.Team.ValueString(),
+				"distinguished_name": state.DistinguishedName.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to locate ldap mapping",
 			fmt.Sprintf(
 				"Error with finding mapping with id: %s, for team: %s, and distinguished name: %s, in original error: %s",
-				id.String(), team.String(), distinguishedName, err.Error(),
+				id.String(), team.String(), distinguishedName, err,
 			),
 		)
 		return

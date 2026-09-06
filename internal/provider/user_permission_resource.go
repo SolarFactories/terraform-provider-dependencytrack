@@ -117,9 +117,18 @@ func (r *userPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 	})
 	user, err := FindUserPrincipal(ctx, *r.client, username)
 	if err != nil {
+		err := err.Error()
+		if err == "could not find user" {
+			tflog.Warn(ctx, "Unable to read User Missing due to missing User. Will be removed from state.", map[string]any{
+				"username":   state.Username.ValueString(),
+				"permission": state.Permission.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get updated user",
-			"Error with reading user: "+username+", in original error: "+err.Error(),
+			"Error with reading user: "+username+", in original error: "+err,
 		)
 		return
 	}
@@ -127,9 +136,18 @@ func (r *userPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 		return permission.Name == state.Permission.ValueString()
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing User Permission. Will be removed from state.", map[string]any{
+				"username":   state.Username.ValueString(),
+				"permission": state.Permission.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to identify user permission",
-			"Unexpected Error from: "+err.Error(),
+			"Unexpected Error from: "+err,
 		)
 		return
 	}

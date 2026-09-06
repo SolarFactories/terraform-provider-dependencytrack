@@ -158,9 +158,19 @@ func (r *notificationRuleTeamResource) Read(ctx context.Context, req resource.Re
 		},
 	)
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Notification Rule for Team. Will be removed from state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"rule": state.Rule.ValueString(),
+				"team": state.Team.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to read Notification Rule Team Mapping",
-			"Error for rule with id: "+ruleID.String()+", and team with id: "+teamID.String()+", in original error: "+err.Error(),
+			"Error for rule with id: "+ruleID.String()+", and team with id: "+teamID.String()+", in original error: "+err,
 		)
 		return
 	}

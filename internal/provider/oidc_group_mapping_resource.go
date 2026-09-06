@@ -150,11 +150,21 @@ func (r *oidcGroupMappingResource) Read(ctx context.Context, req resource.ReadRe
 		return r.client.Team.GetAll(ctx, po)
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing OIDC Group Mapping. Will be removed from state.", map[string]any{
+				"id":    state.ID.ValueString(),
+				"team":  state.Team.ValueString(),
+				"group": state.Group.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get group team mapping within Read",
 			fmt.Sprintf(
 				"Error with reading OIDC Group Mapping with id: %s, for team: %s, and group: %s, in original errr: %s",
-				id.String(), state.Team.ValueString(), state.Group.ValueString(), err.Error(),
+				id.String(), state.Team.ValueString(), state.Group.ValueString(), err,
 			),
 		)
 		return

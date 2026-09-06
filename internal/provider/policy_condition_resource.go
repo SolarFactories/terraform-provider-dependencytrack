@@ -161,9 +161,19 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 		return r.client.Policy.GetAll(ctx, po)
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Policy Condition. Will be removed from state.", map[string]any{
+				"id":      state.ID.ValueString(),
+				"policy":  state.PolicyID.ValueString(),
+				"subject": state.Subject.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to identify policy condition",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}
