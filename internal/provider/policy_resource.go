@@ -259,9 +259,17 @@ func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	})
 	err := r.client.Policy.Delete(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the policy could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Policy. Ignoring since is desired state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete policy",
-			"Unexpected error when trying to delete policy: "+id.String()+", from error: "+err.Error(),
+			"Unexpected error when trying to delete policy: "+id.String()+", from error: "+err,
 		)
 		return
 	}

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccRepositoryResource(t *testing.T) {
@@ -72,6 +73,82 @@ resource "dependencytrack_repository" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_repository.test", "username", "Test_Username"),
 					resource.TestCheckResourceAttr("dependencytrack_repository.test", "password", "Test_Password_With_Change"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccRepositoryResourceRegression236(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial Repository.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_repository" "test" {
+	type = "GITHUB"
+	identifier = "Test_Repository_236"
+	url = "https://localhost"
+	internal = false
+	enabled = true
+	username = ""
+	password = ""
+}
+`,
+			},
+			// Duplicate reference to the Repository.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_repository" "test" {
+	type = "GITHUB"
+	identifier = "Test_Repository_236"
+	url = "https://localhost"
+	internal = false
+	enabled = true
+	username = ""
+	password = ""
+}
+resource "dependencytrack_repository" "test2" {
+	type = "GITHUB"
+	identifier = "Test_Repository_236"
+	url = "https://localhost"
+	internal = false
+	enabled = true
+	username = ""
+	password = ""
+}
+import {
+	to = dependencytrack_repository.test2
+	id = dependencytrack_repository.test.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_repository.test", "id",
+						"dependencytrack_repository.test2", "id",
+					),
+				),
+			},
+			// Delete one.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_repository" "test2" {
+	type = "GITHUB"
+	identifier = "Test_Repository_236"
+	url = "https://localhost"
+	internal = false
+	enabled = true
+	username = ""
+	password = ""
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("dependencytrack_repository.test2", "Create"),
+					},
+				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

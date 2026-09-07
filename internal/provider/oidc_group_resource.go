@@ -231,9 +231,17 @@ func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	})
 	err := r.client.OIDC.DeleteGroup(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "An OpenID Connect group with the specified UUID could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing OIDC Group. Ignoring since in desired state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete oidc group",
-			"Unexpected error when trying to delete oidc group: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete oidc group: "+id.String()+", error: "+err,
 		)
 		return
 	}

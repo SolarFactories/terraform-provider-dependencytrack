@@ -355,9 +355,18 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	})
 	err := r.client.Repository.Delete(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the repository could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Repository. Ignoring since is desired state.", map[string]any{
+				"id":         state.ID.ValueString(),
+				"type":       state.Type.ValueString(),
+				"identifier": state.Identifier.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete repository",
-			"Unexpected error when trying to delete repository: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete repository: "+id.String()+", error: "+err,
 		)
 		return
 	}

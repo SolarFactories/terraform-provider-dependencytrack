@@ -266,9 +266,18 @@ func (r *oidcGroupMappingResource) Delete(ctx context.Context, req resource.Dele
 	})
 	err := r.client.OIDC.RemoveTeamMapping(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the mapping could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete OIDC Group Mapping. Ignoring since in desired state.", map[string]any{
+				"id":    state.ID.ValueString(),
+				"team":  state.Team.ValueString(),
+				"group": state.Group.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete group mapping",
-			"Unexpected error when trying to delete oidc group mapping with id: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete oidc group mapping with id: "+id.String()+", error: "+err,
 		)
 		return
 	}

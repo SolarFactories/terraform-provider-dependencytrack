@@ -227,9 +227,17 @@ func (r *policyTagResource) Delete(ctx context.Context, req resource.DeleteReque
 	})
 	_, err := r.client.Policy.DeleteTag(ctx, policyID, tagName)
 	if err != nil {
+		err := err.Error()
+		if err == "api error (status: 304)" {
+			tflog.Warn(ctx, "Unable to delete missing Policy Tag. Ignoring since is desired state.", map[string]any{
+				"policy": state.PolicyID.ValueString(),
+				"tag":    state.Tag.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete Policy Tag Mapping",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 	}
 	tflog.Debug(ctx, "Deleted Policy Tag Mapping", map[string]any{
