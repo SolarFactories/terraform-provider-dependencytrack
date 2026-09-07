@@ -351,13 +351,14 @@ func (r *componentPropertyResource) Delete(ctx context.Context, req resource.Del
 	err := r.client.Component.DeleteProperty(ctx, componentID, id)
 	if err != nil {
 		err := err.Error()
-		if err == "The component property could not be found (status: 404)" {
+		if err == "The component property could not be found. (status: 404)" {
 			tflog.Warn(ctx, "Could not delete missing Component Property. Ignoring since in desired state.", map[string]any{
 				"id":        id.String(),
 				"component": componentID.String(),
 				"group":     state.Group.ValueString(),
 				"name":      state.Name.ValueString(),
 			})
+			return
 		}
 		resp.Diagnostics.AddError(
 			"Unable to delete Component Property.",
@@ -406,17 +407,18 @@ func (r *componentPropertyResource) ImportState(ctx context.Context, req resourc
 	componentProperties, err := r.client.Component.GetProperties(ctx, componentID)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, Unable to fetch Component Properties",
+			"Within Import, Unable to fetch Component Properties",
 			"Error from: "+err.Error(),
 		)
 		return
 	}
+
 	componentProperty, err := Find(componentProperties, func(cp dtrack.ComponentProperty) bool {
 		return cp.UUID == propertyID
 	})
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Within Read, Unable to identify Component Property",
+			"Within Import, Unable to identify Component Property",
 			"Error from: "+err.Error(),
 		)
 		return

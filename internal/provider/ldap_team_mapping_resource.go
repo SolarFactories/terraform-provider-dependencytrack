@@ -163,6 +163,9 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	if err != nil {
 		err := err.Error()
 		if err == "did not find item" {
+			// TODO: Since `dependencytrack_ldap_team_mapping` does not implement `Import`:
+			//	unable to create duplicated references in Acceptance Tests.
+			//	So, add Import, adding fields to ImportID as required.
 			tflog.Warn(ctx, "Unable to read missing LDAP Team Mapping. Will be removed from State.", map[string]any{
 				"id":                 state.ID.ValueString(),
 				"team":               state.Team.ValueString(),

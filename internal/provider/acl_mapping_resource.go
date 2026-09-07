@@ -261,13 +261,20 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 		"team":    team.String(),
 		"project": project.String(),
 	})
-	// Deletion of non-existent ACL mapping is 200 OK, (against API 5.1.0).
-	// TODO: Write test for this, as may not be the same in API v4.
 	err := r.client.ACL.RemoveProjectMapping(ctx, team, project)
 	if err != nil {
+		err := err.Error()
+		// Deletion of non-existent ACL mapping is 200 OK within API v5.x
+		if r.semver.Major == 4 && err == "The UUID of the team or project could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing ACL Mapping. Ignoring since in desired state.", map[string]any{
+				"project": state.Project.ValueString(),
+				"team":    state.Team.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete acl mapping",
-			"Unexpected error when trying to delete acl mapping, from error: "+err.Error(),
+			"Unexpected error when trying to delete acl mapping, from error: "+err,
 		)
 		return
 	}
