@@ -47,9 +47,6 @@ resource "dependencytrack_team" "test" {
 
 func TestAccTeamResourceRegression236(t *testing.T) {
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
-	// Only checks `Delete` accounting for absence, and not `Read`. Manually checked at time of implementation.
-	// Previous attempts to only delete one, resulted in a non-empty plan refresh, where both had been removed from State.
-	//	And so was trying to create remaining, which could not be disregarded.
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -85,12 +82,17 @@ import {
 			// Remove one `dependencytrack_team`, removing Team within DT.
 			// Causing other when attempting to be deleted, to account for it's absence without error.
 			{
-				Config: providerConfig,
+				Config: providerConfig + `
+resource "dependencytrack_team" "test2" {
+	name = "Test_Team_236"
+}
+`,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
+						plancheck.ExpectResourceAction("dependencytrack_team.test2", "Create"),
 					},
 				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

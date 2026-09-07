@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccComponentResource(t *testing.T) {
@@ -74,6 +75,79 @@ resource "dependencytrack_component" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.md5", ""),
 					resource.TestCheckResourceAttr("dependencytrack_component.test", "hashes.sha1", ""),
 				),
+			},
+		},
+	})
+}
+
+func TestAccComponentResourceRegression236(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial Component
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_Component_236"
+}
+resource "dependencytrack_component" "test" {
+	project = dependencytrack_project.test.id
+	name = "Test_Component_236"
+	version = "v1.0"
+	hashes = {}
+}
+`,
+			},
+			// Duplicate reference to the component
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_Component_236"
+}
+resource "dependencytrack_component" "test" {
+	project = dependencytrack_project.test.id
+	name = "Test_Component_236"
+	version = "v1.0"
+	hashes = {}
+}
+resource "dependencytrack_component" "test2" {
+	project = dependencytrack_project.test.id
+	name = "Test_Component_236"
+	version = "v1.0"
+	hashes = {}
+}
+import {
+	to = dependencytrack_component.test2
+	id = dependencytrack_component.test.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_component.test", "id",
+						"dependencytrack_component.test2", "id",
+					),
+				),
+			},
+			// Delete one
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_Component_236"
+}
+resource "dependencytrack_component" "test2" {
+	project = dependencytrack_project.test.id
+	name = "Test_Component_236"
+	version = "v1.0"
+	hashes = {}
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("dependencytrack_component.test2", "Create"),
+					},
+				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
