@@ -221,7 +221,8 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	})
 	err := r.client.Team.Delete(ctx, team)
 	if err != nil {
-		if err.Error() == "The team could not be found. (status: 404)" {
+		err := err.Error()
+		if err == "The team could not be found. (status: 404)" {
 			tflog.Warn(ctx, "Could not delete missing team. Ignoring since in desired state.", map[string]any{
 				"id":   state.ID.ValueString(),
 				"name": state.Name.ValueString(),
@@ -230,7 +231,7 @@ func (r *teamResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		}
 		resp.Diagnostics.AddError(
 			"Unable to delete team",
-			"Unexpected error when trying to delete team: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete team: "+id.String()+", error: "+err,
 		)
 		return
 	}

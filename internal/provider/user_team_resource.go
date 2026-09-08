@@ -215,9 +215,19 @@ func (r *userTeamResource) Delete(ctx context.Context, req resource.DeleteReques
 	})
 	_, err := r.client.User.RemoveTeamFromUser(ctx, username, team)
 	if err != nil {
+		err := err.Error()
+		// TODO: Not covered by test, due to resource not implementing `Import`.
+		// Could not trigger with brief manual testing, so condition is from static review.
+		if err == "The user was not a member of the specified team. (status: 304)" {
+			tflog.Warn(ctx, "Unable to delete missing User Team. Ignoring since is desired state.", map[string]any{
+				"username": state.Username.ValueString(),
+				"team":     state.TeamID.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete user team membership",
-			"Error with username: "+username+", for team: "+team.String()+", in original error: "+err.Error(),
+			"Error with username: "+username+", for team: "+team.String()+", in original error: "+err,
 		)
 		return
 	}

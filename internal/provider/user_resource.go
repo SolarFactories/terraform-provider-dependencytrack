@@ -334,9 +334,16 @@ func (r *userResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	})
 	err := r.client.User.DeleteManaged(ctx, user)
 	if err != nil {
+		err := err.Error()
+		if err == "The user could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing User. Ignoring since is desired state.", map[string]any{
+				"username": state.Username.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete managed user",
-			"Error for user: "+user.Username+", from original error: "+err.Error(),
+			"Error for user: "+user.Username+", from original error: "+err,
 		)
 		return
 	}

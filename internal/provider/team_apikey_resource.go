@@ -318,9 +318,17 @@ func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 	})
 	err := r.client.Team.DeleteAPIKey(ctx, publicIDOrKey)
 	if err != nil {
+		err := err.Error()
+		if err == "The API key could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Team API Key. Ignoring since is desired state.", map[string]any{
+				"team":   state.TeamID.ValueString(),
+				"masked": state.Masked.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete Team API Key",
-			"Unexpected error when trying to delete Team API Key: "+team.String()+", from error: "+err.Error(),
+			"Unexpected error when trying to delete Team API Key: "+team.String()+", from error: "+err,
 		)
 		return
 	}

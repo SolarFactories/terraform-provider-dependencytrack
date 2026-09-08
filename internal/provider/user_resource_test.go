@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccUserResource(t *testing.T) {
@@ -58,6 +59,67 @@ resource "dependencytrack_user" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_user.test", "force_password_change", "false"),
 					resource.TestCheckResourceAttr("dependencytrack_user.test", "password_expires", "true"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccUserResourceRegression236(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial User.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_user" "test" {
+	username = "Test_User_236"
+	fullname = "Test_User_236"
+	email = "Test_Email_236@example.com"
+	password = "Test_User_236"
+}
+`,
+			},
+			// Duplicate reference to User.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_user" "test" {
+	username = "Test_User_236"
+	fullname = "Test_User_236"
+	email = "Test_Email_236@example.com"
+}
+resource "dependencytrack_user" "test2" {
+	username = "Test_User_236"
+	fullname = "Test_User_236"
+	email = "Test_Email_236@example.com"
+}
+import {
+	to = dependencytrack_user.test2
+	id = dependencytrack_user.test.id
+}
+`,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_user.test", "id",
+						"dependencytrack_user.test2", "id",
+					),
+				),
+			},
+			// Delete one.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_user" "test2" {
+	username = "Test_User_236"
+	fullname = "Test_User_236"
+	email = "Test_Email_236@example.com"
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("dependencytrack_user.test2", "Create"),
+					},
+				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})
