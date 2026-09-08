@@ -85,7 +85,7 @@ func TestAccComponentResourceRegression236(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create initial Component
+			// Create initial Component.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
@@ -99,7 +99,7 @@ resource "dependencytrack_component" "test" {
 }
 `,
 			},
-			// Duplicate reference to the component
+			// Duplicate reference to the component.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
@@ -129,7 +129,7 @@ import {
 					),
 				),
 			},
-			// Delete one
+			// Delete one.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {

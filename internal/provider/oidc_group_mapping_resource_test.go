@@ -81,7 +81,7 @@ func TestAccOIDCGroupMappingResourceRegression236(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create initial OIDC Group Mapping
+			// Create initial OIDC Group Mapping.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {
@@ -96,7 +96,7 @@ resource "dependencytrack_oidc_group_mapping" "test" {
 }
 `,
 			},
-			// Duplicate reference to OIDC Group Mapping
+			// Duplicate reference to OIDC Group Mapping.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_team" "test" {

@@ -58,7 +58,7 @@ resource "dependencytrack_ldap_user" "test" {
 }
 `,
 			},
-			// Duplicate reference to LDAP User
+			// Duplicate reference to LDAP User.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_ldap_user" "test" {
@@ -79,7 +79,7 @@ import {
 					),
 				),
 			},
-			// Delete one
+			// Delete one.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_ldap_user" "test2" {

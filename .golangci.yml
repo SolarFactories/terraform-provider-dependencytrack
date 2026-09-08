@@ -626,6 +626,20 @@ linters:
       - path: internal/provider/vulnerability_policy_resource_test.go
         linters:
           - cyclop
+      - path: internal/provider/ldap_team_mapping_resource.go
+        linters:
+          - godox
+      - path: internal/provider/policy_project_resource.go
+        linters:
+          - godox
+      - path: internal/provider/tag_resource.go
+        linters:
+          - godox
+          - revive
+          - lll
+      - path: internal/provider/user_team_resource.go
+        linters:
+          - godox
 
 formatters:
   enable:

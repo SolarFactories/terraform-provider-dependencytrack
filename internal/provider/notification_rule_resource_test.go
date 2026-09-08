@@ -178,7 +178,7 @@ func TestAccNotificationRuleResourceRegression236(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create initial Notification Rule
+			// Create initial Notification Rule.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_notification_publisher" "test" {
@@ -193,7 +193,7 @@ resource "dependencytrack_notification_rule" "test" {
 }
 `,
 			},
-			// Duplicate reference to Notification Rule
+			// Duplicate reference to Notification Rule.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_notification_publisher" "test" {

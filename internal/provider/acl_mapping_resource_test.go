@@ -81,7 +81,7 @@ func TestAccAclMappingResourceRegression236(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
-			// Create initial ACL
+			// Create initial ACL.
 			{
 				Config: providerConfig + `
 resource "dependencytrack_project" "test" {
