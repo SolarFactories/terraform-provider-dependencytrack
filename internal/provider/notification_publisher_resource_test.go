@@ -113,11 +113,12 @@ resource "dependencytrack_notification_publisher" "test2" {
 	name = "Test_Notification_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
 	template_mime_type = "text/plain"
+	template = "Test"
 }
 `,
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PostApplyPostRefresh: []plancheck.PlanCheck{
-						plancheck.ExpectResourceAction("dependencytrack_notification_publisher.test", "Create"),
+						plancheck.ExpectResourceAction("dependencytrack_notification_publisher.test2", "Create"),
 					},
 				},
 				ExpectNonEmptyPlan: true,

@@ -633,9 +633,18 @@ func (r *notificationRuleResource) Delete(ctx context.Context, req resource.Dele
 		TriggerType: dtrack.NotificationRuleTriggerTypeEvent,
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the notification rule could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Notification Rule. Ignoring since is desired state.", map[string]any{
+				"id":        state.ID.ValueString(),
+				"name":      state.Name.ValueString(),
+				"publisher": state.PublisherID.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete Notification Rule",
-			"Error in id: "+id.String()+", in original error: "+err.Error(),
+			"Error in id: "+id.String()+", in original error: "+err,
 		)
 		return
 	}

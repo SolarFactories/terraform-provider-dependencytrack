@@ -673,8 +673,9 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	err := r.client.Project.Delete(ctx, id)
 	if err != nil {
 		err := err.Error()
-		if r.semver.Major == 4 && err == "The UUID of the project could not be found. (status: 404)" ||
-			r.semver.Major == 5 && err == "{\"status\":404,\"title\":\"Resource does not exist\",\"detail\":\"Project could not be found\"} (status: 404)" {
+		if (r.semver.Major == 4 || (r.semver.Major == 5 && r.semver.Minor < 1)) && err == "The UUID of the project could not be found. (status: 404)" ||
+			r.semver.Major == 5 && r.semver.Minor >= 1 &&
+				err == "{\"status\":404,\"title\":\"Resource does not exist\",\"detail\":\"Project could not be found\"} (status: 404)" {
 			tflog.Warn(ctx, "Unable to delete missing Property. Ignoring since is desired state.", map[string]any{
 				"id":      state.ID.ValueString(),
 				"name":    state.Name.ValueString(),

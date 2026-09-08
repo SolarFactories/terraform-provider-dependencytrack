@@ -206,8 +206,7 @@ func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	err := r.client.Tag.Delete(ctx, []string{tagID})
 	if err != nil {
 		err := err.Error()
-		// TODO: Check what happens in API v4.
-		if r.semver.Major == 5 && err == fmt.Sprintf(
+		if err == fmt.Sprintf(
 			"{\"status\":400,\"title\":\"Tag operation failed\",\"detail\":\"The tag(s) %s could not be deleted\",\"errors\":{\"%s\":\"Tag does not exist\"}} (status: 400)",
 			tagID, tagID,
 		) {

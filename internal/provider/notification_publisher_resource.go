@@ -326,9 +326,17 @@ func (r *notificationPublisherResource) Delete(ctx context.Context, req resource
 	})
 	err := r.client.Notification.DeletePublisher(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the notification rule could not be found. (status: 404)" { // Mismatch is caused by bug in API returning the incorrect response.
+			tflog.Warn(ctx, "Unable to delete missing Notification Publisher. Ignoring since is desired state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete Notification Publisher",
-			"Unexpected error when trying to delete Notification Publisher: "+id.String()+", from error: "+err.Error(),
+			"Unexpected error when trying to delete Notification Publisher: "+id.String()+", from error: "+err,
 		)
 		return
 	}

@@ -178,9 +178,19 @@ func (r *notificationRuleProjectResource) Read(ctx context.Context, req resource
 		return project.UUID == projectID
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Notification Rule Project Mapping. Will be removed from state.", map[string]any{
+				"id":      state.ID.ValueString(),
+				"rule":    state.Rule.ValueString(),
+				"project": state.Project.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to locate Notification Rule Project Mapping when reading",
-			"Error for rule with id: "+ruleID.String()+", and project with id: "+projectID.String()+", in original error: "+err.Error(),
+			"Error for rule with id: "+ruleID.String()+", and project with id: "+projectID.String()+", in original error: "+err,
 		)
 		return
 	}
@@ -281,9 +291,18 @@ func (r *notificationRuleProjectResource) Delete(ctx context.Context, req resour
 	})
 	_, err := r.client.Notification.RemoveProjectFromRule(ctx, ruleID, projectID)
 	if err != nil {
+		err := err.Error()
+		if err == "api error (status: 304)" {
+			tflog.Warn(ctx, "Unable to delete missing Notification Rule Project Mapping. Ignoring since is desired state.", map[string]any{
+				"id":      state.ID.ValueString(),
+				"rule":    state.Rule.ValueString(),
+				"project": state.Project.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete Notification Rule Project Mapping",
-			"Error for rule with id: "+ruleID.String()+", and project with id: "+projectID.String()+", in original error: "+err.Error(),
+			"Error for rule with id: "+ruleID.String()+", and project with id: "+projectID.String()+", in original error: "+err,
 		)
 		return
 	}

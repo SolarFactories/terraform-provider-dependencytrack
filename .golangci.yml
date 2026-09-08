@@ -640,6 +640,12 @@ linters:
       - path: internal/provider/user_team_resource.go
         linters:
           - godox
+      - path: internal/provider/notification_rule_project_resource.go
+        linters:
+          - gocognit
+      - path: internal/provider/notification_rule_team_resource.go
+        linters:
+          - gocognit
 
 formatters:
   enable:
