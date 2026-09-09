@@ -56,7 +56,7 @@ resource "dependencytrack_team_permission" "test" {
 
 // NOTE: Since `dependencytrack_team_permission` does not implement `Import`, cannot duplicate reference in state.
 // Removing a Permission from a Team is a 200 OK response regardless of whether it was applied, in both API v4, v5.
-// So `Delete` works seemlessly, manually verified after artificially inserting multiple `dependencytrack_team_permission`'s into tfstate.
+// So `Delete` works seamlessly, manually verified after artificially inserting multiple `dependencytrack_team_permission`'s into tfstate against v5.1.0.
 func TestAccTeamPermissionResourceRegression236(t *testing.T) {
 	t.SkipNow()
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236

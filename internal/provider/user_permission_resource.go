@@ -119,7 +119,7 @@ func (r *userPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 	if err != nil {
 		err := err.Error()
 		if err == "could not find user" {
-			tflog.Warn(ctx, "Unable to read User Missing due to missing User. Will be removed from state.", map[string]any{
+			tflog.Warn(ctx, "Unable to read User Permission due to missing User. Will be removed from state.", map[string]any{
 				"username":   state.Username.ValueString(),
 				"permission": state.Permission.ValueString(),
 			})
@@ -212,9 +212,18 @@ func (r *userPermissionResource) Delete(ctx context.Context, req resource.Delete
 	})
 	_, err := r.client.Permission.RemovePermissionFromUser(ctx, permission, username)
 	if err != nil {
+		err := err.Error()
+		// TODO: Not covered by test - due to not implementing `Import`, based on static src review (v4.14.3, v5.1.0).
+		if err == "api error (status: 304)" {
+			tflog.Warn(ctx, "Unable to delete missing User Permission. Ignoring since is desired state.", map[string]any{
+				"username":   state.Username.ValueString(),
+				"permission": state.Permission.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete user permission",
-			"Unexpected error when trying to delete user permission: "+username+", error: "+err.Error(),
+			"Unexpected error when trying to delete user permission: "+username+", error: "+err,
 		)
 		return
 	}

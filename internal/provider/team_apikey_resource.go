@@ -321,6 +321,7 @@ func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 		err := err.Error()
 		if err == "The API key could not be found. (status: 404)" {
 			tflog.Warn(ctx, "Unable to delete missing Team API Key. Ignoring since is desired state.", map[string]any{
+				"id":     state.ID.ValueString(),
 				"team":   state.TeamID.ValueString(),
 				"masked": state.Masked.ValueString(),
 			})

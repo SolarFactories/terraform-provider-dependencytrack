@@ -329,7 +329,10 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		err := err.Error()
 		if err == "The project property could not be found. (status: 404)" {
 			tflog.Warn(ctx, "Unable to delete missing Project Property. Ignoring, since is desired state.", map[string]any{
-				"id": state.ID.ValueString(),
+				"project": state.Project.ValueString(),
+				"group":   state.Group.ValueString(),
+				"name":    state.Name.ValueString(),
+				"type":    state.Type.ValueString(),
 			})
 			return
 		}
