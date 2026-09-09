@@ -1,3 +1,15 @@
+## 1.25
+
+#### FIXES
+- Add handling of resources that have been deleted outside of Terraform.
+	- Thanks to [@pkerspe](https://github.com/pkerspe) for reporting.
+	- https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	- Removes from state if it does not exist when reading, as well as handling a non-existant response from DependencyTrack when deleting.
+- Incorrect log messages within `dependencytrack_config_property` for importing.
+
+#### DEPENDENCIES
+- `google.golang.org/grpc` `1.83.1` -> `1.83.2`
+
 ## 1.24.1
 
 #### DEPENDENCIES
