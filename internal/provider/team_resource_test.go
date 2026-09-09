@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccTeamResource(t *testing.T) {
@@ -39,6 +40,59 @@ resource "dependencytrack_team" "test" {
 					resource.TestCheckResourceAttrSet("dependencytrack_team.test", "id"),
 					resource.TestCheckResourceAttr("dependencytrack_team.test", "name", "Test_Team_2"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccTeamResourceRegression236(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial team.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_Team_236"
+}
+`,
+			},
+			// Duplicate reference to team.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_Team_236"
+}
+resource "dependencytrack_team" "test2" {
+	name = "Test_Team_236"
+}
+import {
+	to = dependencytrack_team.test2
+	id = dependencytrack_team.test.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_team.test", "id",
+						"dependencytrack_team.test2", "id",
+					),
+				),
+			},
+			// Remove one `dependencytrack_team`, removing Team within DT.
+			// Causing other when attempting to be deleted, to account for it's absence without error.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test2" {
+	name = "Test_Team_236"
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("dependencytrack_team.test2", "Create"),
+					},
+				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

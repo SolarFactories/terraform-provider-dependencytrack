@@ -123,9 +123,18 @@ func (r *oidcGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 	oidcGroup, err := Find(oidcGroups, func(group dtrack.OIDCGroup) bool { return group.UUID == id })
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing OIDC Group. Will be removed from state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to locate updated oidc group",
-			"Error with locating oidc group: "+id.String()+", in original error: "+err.Error(),
+			"Error with locating oidc group: "+id.String()+", in original error: "+err,
 		)
 		return
 	}
@@ -222,9 +231,17 @@ func (r *oidcGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	})
 	err := r.client.OIDC.DeleteGroup(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "An OpenID Connect group with the specified UUID could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing OIDC Group. Ignoring since in desired state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete oidc group",
-			"Unexpected error when trying to delete oidc group: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete oidc group: "+id.String()+", error: "+err,
 		)
 		return
 	}

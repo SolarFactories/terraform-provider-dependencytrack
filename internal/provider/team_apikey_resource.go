@@ -211,9 +211,19 @@ func (r *teamAPIKeyResource) Read(ctx context.Context, req resource.ReadRequest,
 		}
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Team API Key. Will be removed from state.", map[string]any{
+				"id":     state.ID.ValueString(),
+				"team":   state.TeamID.ValueString(),
+				"masked": state.Masked.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to find API Key",
-			"Unexpected error: "+err.Error(),
+			"Unexpected error: "+err,
 		)
 		return
 	}
@@ -308,9 +318,18 @@ func (r *teamAPIKeyResource) Delete(ctx context.Context, req resource.DeleteRequ
 	})
 	err := r.client.Team.DeleteAPIKey(ctx, publicIDOrKey)
 	if err != nil {
+		err := err.Error()
+		if err == "The API key could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Team API Key. Ignoring since is desired state.", map[string]any{
+				"id":     state.ID.ValueString(),
+				"team":   state.TeamID.ValueString(),
+				"masked": state.Masked.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete Team API Key",
-			"Unexpected error when trying to delete Team API Key: "+team.String()+", from error: "+err.Error(),
+			"Unexpected error when trying to delete Team API Key: "+team.String()+", from error: "+err,
 		)
 		return
 	}

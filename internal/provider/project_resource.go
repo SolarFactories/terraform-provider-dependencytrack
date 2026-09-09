@@ -353,9 +353,20 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 	})
 	project, err := r.client.Project.Get(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The project could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to read missing Project. Will be removed from state.", map[string]any{
+				"id":      state.ID.ValueString(),
+				"name":    state.Name.ValueString(),
+				"version": state.Version.ValueString(),
+				"parent":  state.Parent.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get updated project",
-			"Error with reading project: "+id.String()+", in original error: "+err.Error(),
+			"Error with reading project: "+id.String()+", in original error: "+err,
 		)
 		return
 	}
@@ -661,9 +672,24 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	})
 	err := r.client.Project.Delete(ctx, id)
 	if err != nil {
+		err := err.Error()
+		missing := r.semver.Major == 4 && err == "The UUID of the project could not be found. (status: 404)"
+		missing = missing || (r.semver.Major == 5 && r.semver.Minor == 0 && err == "The UUID of the project could not be found. (status: 404)")
+		missing = missing || (r.semver.Major == 5 && r.semver.Minor >= 1 &&
+			err == "{\"status\":404,\"title\":\"Resource does not exist\",\"detail\":\"Project could not be found\"} (status: 404)")
+
+		if missing {
+			tflog.Warn(ctx, "Unable to delete missing Project. Ignoring since is desired state.", map[string]any{
+				"id":      state.ID.ValueString(),
+				"name":    state.Name.ValueString(),
+				"version": state.Version,
+			})
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Unable to delete project",
-			"Unexpected error when trying to delete project: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete project: "+id.String()+", error: "+err,
 		)
 		return
 	}

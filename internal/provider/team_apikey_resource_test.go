@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccTeamApiKeyResource(t *testing.T) {
@@ -114,6 +115,67 @@ resource "dependencytrack_team_apikey" "test" {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample Update Comment"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccAPIKeyResourceRegression236(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial API Key.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_API_Key_236"
+}
+resource "dependencytrack_team_apikey" "test" {
+	team = dependencytrack_team.test.id
+}
+`,
+			},
+			// Duplicate reference to API Key.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_API_Key_236"
+}
+resource "dependencytrack_team_apikey" "test" {
+	team = dependencytrack_team.test.id
+}
+resource "dependencytrack_team_apikey" "test2" {
+	team = dependencytrack_team.test.id
+}
+import {
+	to = dependencytrack_team_apikey.test2
+	id = dependencytrack_team_apikey.test.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_team_apikey.test", "id",
+						"dependencytrack_team_apikey.test2", "id",
+					),
+				),
+			},
+			// Delete one.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_team" "test" {
+	name = "Test_API_Key_236"
+}
+resource "dependencytrack_team_apikey" "test2" {
+	team = dependencytrack_team.test.id
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("dependencytrack_team_apikey.test2", "Create"),
+					},
+				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccNotificationRuleProjectResource(t *testing.T) {
@@ -82,6 +83,102 @@ resource "dependencytrack_notification_rule_project" "test" {
 					),
 				),
 				// NOTE: Can check to expect no change to plan.
+			},
+		},
+	})
+}
+
+func TestAccNotificationRuleProjectResourceRegression236(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial Notification Rule Project.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_notification_publisher" "test" {
+	name = "Test_Rule_Project_Publisher_236"
+	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	template_mime_type = "text/plain"
+}
+resource "dependencytrack_notification_rule" "test" {
+	name = "Test_Rule_Project_Name_236"
+	trigger_type = "EVENT"
+	publisher_id = dependencytrack_notification_publisher.test.id
+}
+resource "dependencytrack_project" "test" {
+	name = "Test_Rule_Project_236"
+}
+resource "dependencytrack_notification_rule_project" "test" {
+	rule = dependencytrack_notification_rule.test.id
+	project = dependencytrack_project.test.id
+}
+`,
+			},
+			// Duplicate reference to Notification Rule Project.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_notification_publisher" "test" {
+	name = "Test_Rule_Project_Publisher_236"
+	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	template_mime_type = "text/plain"
+}
+resource "dependencytrack_notification_rule" "test" {
+	name = "Test_Rule_Project_Name_236"
+	trigger_type = "EVENT"
+	publisher_id = dependencytrack_notification_publisher.test.id
+}
+resource "dependencytrack_project" "test" {
+	name = "Test_Rule_Project_236"
+}
+resource "dependencytrack_notification_rule_project" "test" {
+	rule = dependencytrack_notification_rule.test.id
+	project = dependencytrack_project.test.id
+}
+resource "dependencytrack_notification_rule_project" "test2" {
+	rule = dependencytrack_notification_rule.test.id
+	project = dependencytrack_project.test.id
+}
+import {
+	to = dependencytrack_notification_rule_project.test2
+	id = dependencytrack_notification_rule_project.test.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_notification_rule_project.test", "id",
+						"dependencytrack_notification_rule_project.test2", "id",
+					),
+				),
+			},
+			// Delete one.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_notification_publisher" "test" {
+	name = "Test_Rule_Project_Publisher_236"
+	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	template_mime_type = "text/plain"
+}
+resource "dependencytrack_notification_rule" "test" {
+	name = "Test_Rule_Project_Name_236"
+	trigger_type = "EVENT"
+	publisher_id = dependencytrack_notification_publisher.test.id
+}
+resource "dependencytrack_project" "test" {
+	name = "Test_Rule_Project_236"
+}
+resource "dependencytrack_notification_rule_project" "test2" {
+	rule = dependencytrack_notification_rule.test.id
+	project = dependencytrack_project.test.id
+}
+
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("dependencytrack_notification_rule_project.test2", "Create"),
+					},
+				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

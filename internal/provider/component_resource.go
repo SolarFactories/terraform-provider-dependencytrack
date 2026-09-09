@@ -283,9 +283,19 @@ func (r *componentResource) Read(ctx context.Context, req resource.ReadRequest, 
 	tflog.Debug(ctx, "Reading Component", state.debug())
 	component, err := r.client.Component.Get(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The component could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Missing Component when reading. Will be removed from state.", map[string]any{
+				"id":      id.String(),
+				"project": state.Project.ValueString(),
+				"name":    state.Name.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to get Component",
-			"Error in Component: "+id.String()+", from error: "+err.Error(),
+			"Error in Component: "+id.String()+", from error: "+err,
 		)
 		return
 	}
@@ -349,9 +359,18 @@ func (r *componentResource) Delete(ctx context.Context, req resource.DeleteReque
 	tflog.Debug(ctx, "Deleting Component", state.debug())
 	err := r.client.Component.Delete(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the component could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Component. Will be removed from state", map[string]any{
+				"id":      id.String(),
+				"project": state.Project.ValueString(),
+				"name":    state.Name.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete component",
-			"Unexpected error when trying to delete component with id: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete component with id: "+id.String()+", error: "+err,
 		)
 		return
 	}

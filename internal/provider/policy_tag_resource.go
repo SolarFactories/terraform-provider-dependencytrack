@@ -137,9 +137,18 @@ func (r *policyTagResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return tag.Name == tagName
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Policy Tag. Will be removed from state.", map[string]any{
+				"policy": state.PolicyID.ValueString(),
+				"tag":    state.Tag.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to locate Policy Tag Mapping",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}
@@ -218,9 +227,17 @@ func (r *policyTagResource) Delete(ctx context.Context, req resource.DeleteReque
 	})
 	_, err := r.client.Policy.DeleteTag(ctx, policyID, tagName)
 	if err != nil {
+		err := err.Error()
+		if err == "api error (status: 304)" {
+			tflog.Warn(ctx, "Unable to delete missing Policy Tag. Ignoring since is desired state.", map[string]any{
+				"policy": state.PolicyID.ValueString(),
+				"tag":    state.Tag.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete Policy Tag Mapping",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 	}
 	tflog.Debug(ctx, "Deleted Policy Tag Mapping", map[string]any{

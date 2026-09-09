@@ -139,9 +139,18 @@ func (r *policyResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	policy, err := r.client.Policy.Get(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The policy could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to read missing Policy. Will be removed from state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get updated policy",
-			"Error with reading policy: "+id.String()+", from: "+err.Error(),
+			"Error with reading policy: "+id.String()+", from: "+err,
 		)
 		return
 	}
@@ -250,9 +259,17 @@ func (r *policyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	})
 	err := r.client.Policy.Delete(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the policy could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Policy. Ignoring since is desired state.", map[string]any{
+				"id":   state.ID.ValueString(),
+				"name": state.Name.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete policy",
-			"Unexpected error when trying to delete policy: "+id.String()+", from error: "+err.Error(),
+			"Unexpected error when trying to delete policy: "+id.String()+", from error: "+err,
 		)
 		return
 	}

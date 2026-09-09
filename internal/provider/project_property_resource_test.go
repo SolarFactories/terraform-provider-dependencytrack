@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccProjectPropertyResource(t *testing.T) {
@@ -119,6 +120,83 @@ resource "dependencytrack_project_property" "testencrypted" {
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "type", "ENCRYPTEDSTRING"),
 					resource.TestCheckResourceAttr("dependencytrack_project_property.testencrypted", "description", "D-Enc"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccProjectPropertyResourceRegression236(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial Project Property.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_ProjectProperty_236"
+}
+resource "dependencytrack_project_property" "test" {
+	project = dependencytrack_project.test.id
+	group = "A"
+	name = "B"
+	value = "2"
+	type = "INTEGER"
+}
+`,
+			},
+			// Duplicate reference to Project Property.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_ProjectProperty_236"
+}
+resource "dependencytrack_project_property" "test" {
+	project = dependencytrack_project.test.id
+	group = "A"
+	name = "B"
+	value = "2"
+	type = "INTEGER"
+}
+resource "dependencytrack_project_property" "test2" {
+	project = dependencytrack_project.test.id
+	group = "A"
+	name = "B"
+	value = "2"
+	type = "INTEGER"
+}
+import {
+	to = dependencytrack_project_property.test2
+	id = dependencytrack_project_property.test.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_project_property.test", "id",
+						"dependencytrack_project_property.test2", "id",
+					),
+				),
+			},
+			// Delete one.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_ProjectProperty_236"
+}
+resource "dependencytrack_project_property" "test2" {
+	project = dependencytrack_project.test.id
+	group = "A"
+	name = "B"
+	value = "2"
+	type = "INTEGER"
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("dependencytrack_project_property.test2", "Create"),
+					},
+				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

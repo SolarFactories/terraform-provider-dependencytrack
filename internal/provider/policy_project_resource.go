@@ -147,9 +147,18 @@ func (r *policyProjectResource) Read(ctx context.Context, req resource.ReadReque
 		return project.UUID == projectID
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Policy Project Mapping. Will be removed from state.", map[string]any{
+				"policy":  state.PolicyID.ValueString(),
+				"project": state.ProjectID.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to locate project-policy mapping",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}
@@ -241,9 +250,17 @@ func (r *policyProjectResource) Delete(ctx context.Context, req resource.DeleteR
 	})
 	_, err := r.client.Policy.DeleteProject(ctx, policyID, projectID)
 	if err != nil {
+		err := err.Error()
+		if err == "api error (status: 304)" { // TODO: Not covered by test, due to resource no implementing `Import`. Same for check within `Read`.
+			tflog.Warn(ctx, "Unable to delete missing Project Policy Mapping. Ignoring, since is desired state.", map[string]any{
+				"policy":  state.PolicyID.ValueString(),
+				"project": state.ProjectID.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete project-policy mapping",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 	}
 	tflog.Debug(ctx, "Deleted Policy Project Mapping", map[string]any{

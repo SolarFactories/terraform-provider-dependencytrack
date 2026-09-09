@@ -190,8 +190,9 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 	tflog.Debug(ctx, "Reading Repository", map[string]any{
-		"id":   id.String(),
-		"type": repoType,
+		"id":         id.String(),
+		"type":       repoType,
+		"identifier": state.Identifier.ValueString(),
 	})
 
 	repository, err := FindPaged(
@@ -204,9 +205,19 @@ func (r *repositoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	)
 
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Repository. Will be removed from state.", map[string]any{
+				"id":         state.ID.ValueString(),
+				"type":       state.Type.ValueString(),
+				"identifier": state.Identifier.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get updated repository",
-			"Error with reading repository: "+id.String()+", in original error: "+err.Error(),
+			"Error with reading repository: "+id.String()+", in original error: "+err,
 		)
 		return
 	}
@@ -344,9 +355,18 @@ func (r *repositoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	})
 	err := r.client.Repository.Delete(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the repository could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Repository. Ignoring since is desired state.", map[string]any{
+				"id":         state.ID.ValueString(),
+				"type":       state.Type.ValueString(),
+				"identifier": state.Identifier.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete repository",
-			"Unexpected error when trying to delete repository: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete repository: "+id.String()+", error: "+err,
 		)
 		return
 	}

@@ -158,9 +158,18 @@ func (r *aclMappingResource) Read(ctx context.Context, req resource.ReadRequest,
 	})
 
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to get missing ACL mapping when attempting to read. Will be removed from state.", map[string]any{
+				"team":    teamID.String(),
+				"project": projectID.String(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to get ACL mapping within Read",
-			"Error with reading acl mapping for team: "+teamID.String()+", and project: "+projectID.String()+", in original error: "+err.Error(),
+			"Error with reading acl mapping for team: "+teamID.String()+", and project: "+projectID.String()+", in original error: "+err,
 		)
 		return
 	}
@@ -254,9 +263,18 @@ func (r *aclMappingResource) Delete(ctx context.Context, req resource.DeleteRequ
 	})
 	err := r.client.ACL.RemoveProjectMapping(ctx, team, project)
 	if err != nil {
+		err := err.Error()
+		// Deletion of non-existent ACL mapping is 200 OK within API v5.x.
+		if r.semver.Major == 4 && err == "The UUID of the team or project could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing ACL Mapping. Ignoring since in desired state.", map[string]any{
+				"project": state.Project.ValueString(),
+				"team":    state.Team.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete acl mapping",
-			"Unexpected error when trying to delete acl mapping, from error: "+err.Error(),
+			"Unexpected error when trying to delete acl mapping, from error: "+err,
 		)
 		return
 	}

@@ -135,9 +135,18 @@ func (r *teamPermissionResource) Read(ctx context.Context, req resource.ReadRequ
 		return permission.Name == state.Permission.ValueString()
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Team Permission. Will be removed from state.", map[string]any{
+				"team":       state.TeamID.ValueString(),
+				"permission": state.Permission.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to identify team permission",
-			"Unexpected Error from: "+err.Error(),
+			"Unexpected Error from: "+err,
 		)
 		return
 	}

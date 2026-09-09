@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccNotificationPublisherResource(t *testing.T) {
@@ -57,6 +58,70 @@ resource "dependencytrack_notification_publisher" "test" {
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template_mime_type", "text/plain"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "default_publisher", "false"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccNotificationPublisherResourceRegression236(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial Notification Publisher.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_notification_publisher" "test" {
+	name = "Test_Notification_Publisher_236"
+	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	template_mime_type = "text/plain"
+	template = "Test"
+}
+`,
+			},
+			// Duplicate reference to Notification Publisher.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_notification_publisher" "test" {
+	name = "Test_Notification_Publisher_236"
+	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	template_mime_type = "text/plain"
+	template = "Test"
+}
+resource "dependencytrack_notification_publisher" "test2" {
+	name = "Test_Notification_Publisher_236"
+	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	template_mime_type = "text/plain"
+	template = "Test"
+}
+import {
+	to = dependencytrack_notification_publisher.test2
+	id = dependencytrack_notification_publisher.test.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_notification_publisher.test", "id",
+						"dependencytrack_notification_publisher.test2", "id",
+					),
+				),
+			},
+			// Delete one.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_notification_publisher" "test2" {
+	name = "Test_Notification_Publisher_236"
+	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	template_mime_type = "text/plain"
+	template = "Test"
+}
+`,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("dependencytrack_notification_publisher.test2", "Create"),
+					},
+				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

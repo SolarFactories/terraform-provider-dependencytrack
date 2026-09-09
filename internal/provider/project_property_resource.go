@@ -187,19 +187,24 @@ func (r *projectPropertyResource) Read(ctx context.Context, req resource.ReadReq
 			return r.client.ProjectProperty.GetAll(ctx, project, po)
 		},
 		func(property dtrack.ProjectProperty) bool {
-			if property.Group != state.Group.ValueString() {
-				return false
-			}
-			if property.Name != state.Name.ValueString() {
-				return false
-			}
-			return true
+			return property.Group == state.Group.ValueString() && property.Name == state.Name.ValueString()
 		},
 	)
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Project Property. Will be removed from state.", map[string]any{
+				"project": state.Project.ValueString(),
+				"group":   state.Group.ValueString(),
+				"name":    state.Name.ValueString(),
+				"type":    state.Type.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to locate Project Property.",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 	}
 	propertyState := projectPropertyResourceModel{
@@ -319,12 +324,21 @@ func (r *projectPropertyResource) Delete(ctx context.Context, req resource.Delet
 		"type":        state.Type.ValueString(),
 		"description": state.Description.ValueString(),
 	})
-	// NOTE: Has a patch applied in `http_client.go`.
 	err := r.client.ProjectProperty.Delete(ctx, project, groupName, propertyName)
 	if err != nil {
+		err := err.Error()
+		if err == "The project property could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Project Property. Ignoring, since is desired state.", map[string]any{
+				"project": state.Project.ValueString(),
+				"group":   state.Group.ValueString(),
+				"name":    state.Name.ValueString(),
+				"type":    state.Type.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete project property.",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}

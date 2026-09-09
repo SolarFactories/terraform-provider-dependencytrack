@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
 func TestAccProjectResource(t *testing.T) {
@@ -497,6 +498,59 @@ resource "dependencytrack_project" "example" {
 					resource.TestCheckResourceAttr("dependencytrack_project.example", "tags.0", "collection-example"),
 					resource.TestCheckResourceAttr("dependencytrack_project.example", "tags.1", "environment-test"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccProjectResourceRegression236(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial Project.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_Project_236"
+}
+`,
+			},
+			// Duplicate reference to Project.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_Project_236"
+}
+resource "dependencytrack_project" "test2" {
+	name = "Test_Project_236"
+}
+import {
+	to = dependencytrack_project.test2
+	id = dependencytrack_project.test.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_project.test", "id",
+						"dependencytrack_project.test2", "id",
+					),
+				),
+			},
+			// Delete one.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test2" {
+	name = "Test_Project_236"
+}
+`,
+
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PostApplyPostRefresh: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("dependencytrack_project.test2", "Create"),
+					},
+				},
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

@@ -161,9 +161,19 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 		return r.client.Policy.GetAll(ctx, po)
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Policy Condition. Will be removed from state.", map[string]any{
+				"id":      state.ID.ValueString(),
+				"policy":  state.PolicyID.ValueString(),
+				"subject": state.Subject.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to identify policy condition",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}
@@ -287,11 +297,18 @@ func (r *policyConditionResource) Delete(ctx context.Context, req resource.Delet
 		"value":    state.Value.ValueString(),
 	})
 	err := r.client.PolicyCondition.Delete(ctx, id)
-
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the policy condition could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing Policy Condition. Ignoring since in desired state.", map[string]any{
+				"id":     state.ID.ValueString(),
+				"policy": state.PolicyID.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete policy condition",
-			"Unexpected error when trying to delete policy condition: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete policy condition: "+id.String()+", error: "+err,
 		)
 		return
 	}

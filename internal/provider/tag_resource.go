@@ -120,9 +120,17 @@ func (r *tagResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return tag.Name == tagID
 	})
 	if err != nil {
+		err := err.Error()
+		if err == "did not find item" {
+			tflog.Warn(ctx, "Unable to read missing Tag. Will be removed from state.", map[string]any{
+				"id": state.ID.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to get updated tag",
-			"Error with reading tag: "+tagID+", from: "+err.Error(),
+			"Error with reading tag: "+tagID+", from: "+err,
 		)
 		return
 	}
@@ -197,9 +205,19 @@ func (r *tagResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	})
 	err := r.client.Tag.Delete(ctx, []string{tagID})
 	if err != nil {
+		err := err.Error()
+		if err == fmt.Sprintf(
+			"{\"status\":400,\"title\":\"Tag operation failed\",\"detail\":\"The tag(s) %s could not be deleted\",\"errors\":{\"%s\":\"Tag does not exist\"}} (status: 400)",
+			tagID, tagID,
+		) {
+			tflog.Warn(ctx, "Unable to delete missing tag. Ignoring since is desired state.", map[string]any{
+				"id": state.ID.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete tag",
-			"Unexpected error when trying to delete tag: "+tagID+", from error: "+err.Error(),
+			"Unexpected error when trying to delete tag: "+tagID+", from error: "+err,
 		)
 		return
 	}
