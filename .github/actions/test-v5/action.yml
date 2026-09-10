@@ -12,6 +12,7 @@ runs:
   using: "composite"
   steps:
     - name: Start API Container
+      shell: bash
       run: |
         docker run --detach \
         --env 'DT_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/dtrack' \
@@ -58,6 +59,7 @@ runs:
         --rm \
         ghcr.io/dependencytrack/apiserver:${{ inputs.api_version }}
     - name: Wait for Healthy
+      shell: bash
       run: |
         while [ "$(docker inspect -f {{.State.Health.Status}} api)" != "healthy" ]; do sleep 1; done
     - uses: ./.github/actions/test
@@ -66,5 +68,6 @@ runs:
         tests_skip_regex: ${{ inputs.tests_skip }}
         provider_config_key: 'v5'
     - name: API Container Logs
+      shell: bash
       run: docker logs api
       if: ${{ always() }}
