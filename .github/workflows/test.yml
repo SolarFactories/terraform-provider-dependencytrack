@@ -161,7 +161,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        terraform: '1.15.*'
+        terraform:
+         - '1.15.*'
         api:
           - version: "4.11.7"
             skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)|(TestAccProjectCollection)|(TestAccProjectIsLatest)|(TestAccProjectDataSourceIsLatest)|(TestAccNotificationRuleScheduleResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
@@ -321,7 +322,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        terraform: '1.15.*'
+        terraform:
+         - '1.15.*'
         api:
           - version: "5.0.2"
             # Currently failing tests, which will require adjusting implementation to properly fix.
