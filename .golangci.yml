@@ -495,6 +495,7 @@ linters:
       ignore-names: # Default []
         - r
         - d
+        - p
       ignore-decls: # Default []
         - t *transport
         - id uuid.UUID
@@ -555,6 +556,7 @@ linters:
       - path: internal/provider/provider_test.go
         linters:
           - gochecknoglobals
+          - exhaustruct_v5
       - path: internal/provider/project_resource.go
         linters:
           - gocyclo

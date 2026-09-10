@@ -143,7 +143,7 @@ func (*dependencyTrackProvider) Schema(_ context.Context, _ provider.SchemaReque
 	}
 }
 
-func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+func (p *dependencyTrackProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	// Get provider data from config.
 	var config dependencyTrackProviderModel
 	diags := req.Config.Get(ctx, &config)
@@ -152,56 +152,14 @@ func (*dependencyTrackProvider) Configure(ctx context.Context, req provider.Conf
 		return
 	}
 
-	host := config.Host.ValueString()
-	if host == "" {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("host"),
-			"Missing DependencyTrack Host",
-			"Host for DependencyTrack was provided, but it was empty.",
-		)
-	}
-	authClientOption := getAuthClientOption(config, &resp.Diagnostics)
-	httpClient := getHTTPClient(config, &resp.Diagnostics)
-
+	info := p.configureImpl(ctx, config, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	tflog.Debug(ctx, "Creating DependencyTrack client")
-	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(httpClient), authClientOption)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Create DependencyTrack API Client",
-			"An Unexpected error occurred when creating the DependencyTrack API Client. "+err.Error(),
-		)
-		return
-	}
+	resp.DataSourceData = *info
+	resp.ResourceData = *info
 
-	version, err := client.About.Get(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to retrieve DependencyTrack API Version",
-			"Error from: "+err.Error(),
-		)
-		return
-	}
-	semver, err := ParseSemver(version.Version)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to parse DependencyTrack API Version",
-			"Error from: "+err.Error(),
-		)
-		return
-	}
-
-	resp.DataSourceData = clientInfo{
-		client: client,
-		semver: semver,
-	}
-	resp.ResourceData = clientInfo{
-		client: client,
-		semver: semver,
-	}
 	tflog.Debug(ctx, "Configured DependencyTrack client", map[string]any{
 		"success": true,
 	})
@@ -269,6 +227,56 @@ func New(version string) func() provider.Provider {
 			version: version,
 		}
 	}
+}
+
+func (*dependencyTrackProvider) configureImpl(ctx context.Context, config dependencyTrackProviderModel, diags *diag.Diagnostics) *clientInfo {
+	host := config.Host.ValueString()
+	if host == "" {
+		diags.AddAttributeError(
+			path.Root("host"),
+			"Missing DependencyTrack Host",
+			"Host for DependencyTrack was provided, but it was empty.",
+		)
+	}
+	authClientOption := getAuthClientOption(config, diags)
+	httpClient := getHTTPClient(config, diags)
+
+	if diags.HasError() {
+		return nil
+	}
+
+	tflog.Debug(ctx, "Creating DependencyTrack client")
+	client, err := dtrack.NewClient(host, dtrack.WithHttpClient(httpClient), authClientOption)
+	if err != nil {
+		diags.AddError(
+			"Unable to Create DependencyTrack API Client",
+			"An Unexpected error occurred when creating the DependencyTrack API Client. "+err.Error(),
+		)
+		return nil
+	}
+
+	version, err := client.About.Get(ctx)
+	if err != nil {
+		diags.AddError(
+			"Unable to retrieve DependencyTrack API Version",
+			"Error from: "+err.Error(),
+		)
+		return nil
+	}
+	semver, err := ParseSemver(version.Version)
+	if err != nil {
+		diags.AddError(
+			"Unable to parse DependencyTrack API Version",
+			"Error from: "+err.Error(),
+		)
+		return nil
+	}
+
+	info := clientInfo{
+		client: client,
+		semver: semver,
+	}
+	return &info
 }
 
 func getHTTPClient(config dependencyTrackProviderModel, diagnostics *diag.Diagnostics) *http.Client {
