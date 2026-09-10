@@ -11,7 +11,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Start API Container
       run: |
         docker run --detach \
@@ -61,11 +60,6 @@ runs:
     - name: Wait for Healthy
       run: |
         while [ "$(docker inspect -f {{.State.Health.Status}} api)" != "healthy" ]; do sleep 1; done
-    - name: Setup OIDC
-      run: |
-        set -euo pipefail
-        token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
-        echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
     - uses: ./.github/actions/test
       with:
         terraform_version: ${{ inputs.terraform_version }}

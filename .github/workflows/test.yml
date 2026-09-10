@@ -191,11 +191,6 @@ jobs:
             skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Setup OIDC
-        run: |
-          set -euo pipefail
-          token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
-          echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}
@@ -295,11 +290,6 @@ jobs:
           - '1.14.*'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Setup OIDC
-        run: |
-          set -euo pipefail
-          token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
-          echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}
@@ -343,6 +333,7 @@ jobs:
             # Currently failing tests, which will require adjusting implementation to properly fix.
             skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/test-v5
         with:
           terraform_version: ${{ matrix.terraform }}
@@ -403,6 +394,7 @@ jobs:
           - '1.13.*'
           - '1.14.*'
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/test-v5
         with:
           terraform_version: ${{ matrix.terraform }}
