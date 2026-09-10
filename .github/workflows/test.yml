@@ -67,6 +67,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       contents: "read"
+      id-token: "write"
     services:
       api:
         image: dependencytrack/apiserver:${{ matrix.api }}
@@ -204,6 +205,7 @@ jobs:
     name: Terraform Provider Comprehensive Acceptance Tests API v4
     needs:
       - test_v4
+      - test_v5
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
@@ -346,6 +348,7 @@ jobs:
     # Test across range of Terraform versions.
     name: Terraform Provider Comprehensive Acceptance Tests API v5
     needs:
+      - test_v4
       - test_v5
     runs-on: ubuntu-latest
     timeout-minutes: 15
