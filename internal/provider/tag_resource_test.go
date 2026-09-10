@@ -51,6 +51,9 @@ resource "dependencytrack_tag" "test" {
 
 func TestAccTagResourceRegression236(t *testing.T) {
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 13) {
+		t.SkipNow()
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
