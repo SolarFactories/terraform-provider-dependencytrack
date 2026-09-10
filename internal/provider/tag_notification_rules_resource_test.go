@@ -10,6 +10,9 @@ func TestAccTagNotificationRulesResource(t *testing.T) {
 	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
 		t.SkipNow()
 	}
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Notification Publisher API schema changed in v5.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -127,6 +130,9 @@ resource "dependencytrack_tag_notification_rules" "test" {
 func TestAccTagNotificationRulesResourceNotificationRulesUnordered(t *testing.T) {
 	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
 		t.SkipNow()
+	}
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Notification Publisher API schema changed in v5.")
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

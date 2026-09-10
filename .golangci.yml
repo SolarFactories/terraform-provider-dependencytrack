@@ -651,6 +651,12 @@ linters:
       - path: internal/provider/user_permission_resource.go
         linters:
           - godox
+      - path: internal/provider/config_properties_resource_test.go
+        linters:
+          - godox
+      - path: internal/provider/config_property_resource_test.go
+        linters:
+          - godox
 
 formatters:
   enable:

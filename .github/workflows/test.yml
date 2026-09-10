@@ -226,16 +226,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api:
-          - version: "5.0.2"
-            # Currently failing tests, which will require adjusting implementation to properly fix.
-            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
-          - version: "5.0.5"
-            # Currently failing tests, which will require adjusting implementation to properly fix.
-            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
-          - version: "5.1.0"
-            # Currently failing tests, which will require adjusting implementation to properly fix.
-            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
+        api_version:
+          - "5.0.2"
+          - "5.0.5"
+          - "5.1.0"
         terraform:
           - '1.0.*'
           - '1.1.*'
@@ -300,7 +294,7 @@ jobs:
           --name 'api' \
           --read-only \
           --rm \
-          ghcr.io/dependencytrack/apiserver:${{ matrix.api.version }}
+          ghcr.io/dependencytrack/apiserver:${{ matrix.api_version }}
       - name: Wait for Healthy
         run: |
           while [ "$(docker inspect -f {{.State.Health.Status}} api)" != "healthy" ]; do sleep 1; done
@@ -312,7 +306,6 @@ jobs:
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}
-          tests_skip_regex: ${{ matrix.api.skip }}
           provider_config_key: 'v5'
       - name: API Container Logs
         run: docker logs api

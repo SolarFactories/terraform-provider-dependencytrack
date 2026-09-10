@@ -322,6 +322,9 @@ func TestAccProjectCollection(t *testing.T) {
 	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 13) {
 		t.SkipNow()
 	}
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Explicit logic of NONE is not valid in v5. Split into two tests.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

@@ -8,6 +8,9 @@ import (
 )
 
 func TestAccNotificationPublisherResource(t *testing.T) {
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Notification Publisher API schema changed in v5.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
