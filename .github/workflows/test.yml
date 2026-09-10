@@ -61,10 +61,13 @@ jobs:
     needs:
       - build
       - generate
+      - test_v4
+      - test_v5
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: "read"
+      id-token: "write"
     services:
       api:
         image: dependencytrack/apiserver:${{ matrix.api }}
@@ -113,6 +116,8 @@ jobs:
 
   # Run acceptance tests in a matrix with Terraform CLI versions
   test_v4:
+    # Test with just the latest testing version of Terraform, so that have one matrix with one instance per API version, to allow for easier navigating of jobs.
+    # Also ensures that if tests are going to fail against an API version, it only does so once, rather than e.g. 16 times.
     name: Terraform Provider Acceptance Tests API v4
     needs:
       - build
@@ -121,7 +126,7 @@ jobs:
     timeout-minutes: 15
     services:
       api:
-        image: dependencytrack/apiserver:${{ matrix.api_version }}
+        image: dependencytrack/apiserver:${{ matrix.api.version }}
         env:
           # TODO: Use external (to DT) DB
           #ALPINE_DATABASE_MODE: external
@@ -159,7 +164,78 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api_version:
+        terraform:
+         - '1.15.*'
+        api:
+          - "4.11.7"
+          - "4.12.7"
+          - "4.13.0"
+          - "4.13.1"
+          - "4.13.2"
+          - "4.13.3"
+          - "4.13.4"
+          - "4.13.5"
+          - "4.13.6-alpine"
+          - "4.14.0-alpine"
+          - "4.14.1-alpine"
+          - "4.14.2-alpine"
+          - "4.14.3-alpine"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/test
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          tests_skip_regex: ${{ matrix.api.skip }}
+
+  test_v4_comprehensive:
+    # Test across range of Terraform versions.
+    name: Terraform Provider Comprehensive Acceptance Tests API v4
+    needs:
+      - test_v4
+      - test_v5
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      api:
+        image: dependencytrack/apiserver:${{ matrix.api.version }}
+        env:
+          # TODO: Use external (to DT) DB
+          #ALPINE_DATABASE_MODE: external
+          #ALPINE_DATABASE_URL: "jdbc:postgresql://db:5432/dtrack"
+          #ALPINE_DATABASE_DRIVER: "org.postgresql.Driver"
+          #ALPINE_DATABASE_USERNAME: dtrack
+          #ALPINE_DATABASE_PASSWORD: dtrack
+          TELEMETRY_SUBMISSION_ENABLED_DEFAULT: false
+          # OIDC
+          # Alpine requires Sub, Username. Groups claim is only required if team_sync is enabled.
+          # Since able to reduce requirements down to info in ID Token, then can ignore absence of `/userinfo` endpoint.
+          # Client_ID should match aud in token - when requesting.
+          ALPINE_OIDC_ENABLED: true
+          ALPINE_OIDC_CLIENT_ID: "terraform-provider-dependencytrack"
+          ALPINE_OIDC_ISSUER: "https://token.actions.githubusercontent.com"
+          ALPINE_OIDC_USERNAME_CLAIM: "sub"
+          ALPINE_OIDC_USER_PROVISIONING: true
+          ALPINE_OIDC_TEAM_SYNCHRONIZATION: false
+        ports:
+          - 8081:8080
+#      db:
+#        image: postgres:17-alpine
+#        env:
+#          POSTGRES_DB: dtrack
+#          POSTGRES_USER: dtrack
+#          POSTGRES_PASSWORD: dtrack
+#        options: >-
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
+#        ports:
+#          - 5432:5432
+
+    strategy:
+      fail-fast: false
+      matrix:
+        api:
           - "4.11.7"
           - "4.12.7"
           - "4.13.0"
@@ -189,19 +265,16 @@ jobs:
           - '1.12.*'
           - '1.13.*'
           - '1.14.*'
-          - '1.15.*'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Setup OIDC
-        run: |
-          set -euo pipefail
-          token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
-          echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}
+          tests_skip_regex: ${{ matrix.api.skip }}
 
   test_v5:
+    # Test with just the latest testing version of Terraform, so that have one matrix with one instance per API version, to allow for easier navigating of jobs.
+    # Also ensures that if tests are going to fail against an API version, it only does so once, rather than e.g. 16 times.
     name: Terraform Provider Acceptance Tests API v5
     needs:
       - build
@@ -222,11 +295,50 @@ jobs:
           --health-retries 5
         ports:
           - 5432:5432
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform:
+         - '1.15.*'
+        api:
+          - "5.0.2"
+          - "5.0.5"
+          - "5.1.0"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/test-v5
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          api_version: ${{ matrix.api.version }}
+          tests_skip: ${{ matrix.api.skip }}
+
+  test_v5_comprehensive:
+    # Test across range of Terraform versions.
+    name: Terraform Provider Comprehensive Acceptance Tests API v5
+    needs:
+      - test_v4
+      - test_v5
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      db:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_DB: dtrack
+          POSTGRES_USER: dtrack
+          POSTGRES_PASSWORD: dtrack
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     strategy:
       fail-fast: false
       matrix:
-        api_version:
+        api:
           - "5.0.2"
           - "5.0.5"
           - "5.1.0"
@@ -246,67 +358,10 @@ jobs:
           - '1.12.*'
           - '1.13.*'
           - '1.14.*'
-          - '1.15.*'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Start API Container
-        run: |
-          docker run --detach \
-          --env 'DT_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/dtrack' \
-          --env 'DT_DATASOURCE_USERNAME=dtrack' \
-          --env 'DT_DATASOURCE_PASSWORD=dtrack' \
-          --env 'DT_TELEMETRY_SUBMISSION_ENABLED=false' \
-          --env 'DT_OIDC_ENABLED=true' \
-          --env 'DT_OIDC_ISSUER=https://token.actions.githubusercontent.com' \
-          --env 'DT_OIDC_CLIENT_ID=terraform-provider-dependencytrack' \
-          --env 'DT_OIDC_USERNAME_CLAIM=sub' \
-          --env 'DT_OIDC_USER_PROVISIONING=true' \
-          --env 'DT_OIDC_TEAM_SYNCHRONIZATION=false' \
-          --publish '9081:8080' \
-          --publish '8081:8080' \
-          --add-host 'host.docker.internal:host-gateway' \
-          --add-host 'api.github.com:0.0.0.0' \
-          --add-host 'api.nuget.org:0.0.0.0' \
-          --add-host 'api.snyk.io:0.0.0.0' \
-          --add-host 'channels.nixos.org:0.0.0.0' \
-          --add-host 'crates.io:0.0.0.0' \
-          --add-host 'epss.empiricalsecurity.com:0.0.0.0' \
-          --add-host 'fastapi.metacpan.org:0.0.0.0' \
-          --add-host 'hackage.haskell.org:0.0.0.0' \
-          --add-host 'hex.pem:0.0.0.0' \
-          --add-host 'maven.google.com:0.0.0.0' \
-          --add-host 'metrics.dependencytrack.org:0.0.0.0' \
-          --add-host 'nvd.nist.gov:0.0.0.0' \
-          --add-host 'ossindex.sonatype.org:0.0.0.0' \
-          --add-host 'osv-vulnerabilities.storage.googleapis.com:0.0.0.0' \
-          --add-host 'packages.atlassian.com:0.0.0.0' \
-          --add-host 'proxy.golang.org:0.0.0.0' \
-          --add-host 'pypi.org:0.0.0.0' \
-          --add-host 'registry.npmjs.org:0.0.0.0' \
-          --add-host 'repo1.maven.org:0.0.0.0' \
-          --add-host 'repo.clojars.org:0.0.0.0' \
-          --add-host 'repo.packagist.org:0.0.0.0' \
-          --add-host 'repository.jboss.org:0.0.0.0' \
-          --add-host 'rubygems.org:0.0.0.0' \
-          --add-host 'vulndb.cyberriskanalytics.com:0.0.0.0' \
-          --volume 'data:/data' \
-          --volume '/tmp:/tmp' \
-          --name 'api' \
-          --read-only \
-          --rm \
-          ghcr.io/dependencytrack/apiserver:${{ matrix.api_version }}
-      - name: Wait for Healthy
-        run: |
-          while [ "$(docker inspect -f {{.State.Health.Status}} api)" != "healthy" ]; do sleep 1; done
-      - name: Setup OIDC
-        run: |
-          set -euo pipefail
-          token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
-          echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
-      - uses: ./.github/actions/test
+      - uses: ./.github/actions/test-v5
         with:
           terraform_version: ${{ matrix.terraform }}
-          provider_config_key: 'v5'
-      - name: API Container Logs
-        run: docker logs api
-        if: ${{ always() }}
+          api_version: ${{ matrix.api.version }}
+          tests_skip: ${{ matrix.api.skip }}
