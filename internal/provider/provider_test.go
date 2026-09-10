@@ -125,7 +125,7 @@ var (
 		}
 	}
 
-	getClientSemver = func(option string) Semver {
+	getAPISemver = func(option string) Semver {
 		config := getClientConfig(option)
 		prov := dependencyTrackProvider{version: "test"}
 		diags := diag.Diagnostics{}
@@ -139,7 +139,7 @@ var (
 		return *clientInfo.semver
 	}
 
-	clientSemver = getClientSemver(os.Getenv("DEPENDENCYTRACK_TEST_PROVIDER"))
+	apiSemver = getAPISemver(os.Getenv("DEPENDENCYTRACK_TEST_PROVIDER"))
 
 	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 		"dependencytrack": providerserver.NewProtocol6WithError(New("test")()),
