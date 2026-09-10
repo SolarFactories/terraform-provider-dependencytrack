@@ -1,0 +1,76 @@
+name: "Tests for API v5.x"
+
+inputs:
+  terraform_version:
+    required: true
+  api_version:
+    required: true
+  tests_skip:
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+    - name: Start API Container
+      run: |
+        docker run --detach \
+        --env 'DT_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/dtrack' \
+        --env 'DT_DATASOURCE_USERNAME=dtrack' \
+        --env 'DT_DATASOURCE_PASSWORD=dtrack' \
+        --env 'DT_TELEMETRY_SUBMISSION_ENABLED=false' \
+        --env 'DT_OIDC_ENABLED=true' \
+        --env 'DT_OIDC_ISSUER=https://token.actions.githubusercontent.com' \
+        --env 'DT_OIDC_CLIENT_ID=terraform-provider-dependencytrack' \
+        --env 'DT_OIDC_USERNAME_CLAIM=sub' \
+        --env 'DT_OIDC_USER_PROVISIONING=true' \
+        --env 'DT_OIDC_TEAM_SYNCHRONIZATION=false' \
+        --publish '9081:8080' \
+        --publish '8081:8080' \
+        --add-host 'host.docker.internal:host-gateway' \
+        --add-host 'api.github.com:0.0.0.0' \
+        --add-host 'api.nuget.org:0.0.0.0' \
+        --add-host 'api.snyk.io:0.0.0.0' \
+        --add-host 'channels.nixos.org:0.0.0.0' \
+        --add-host 'crates.io:0.0.0.0' \
+        --add-host 'epss.empiricalsecurity.com:0.0.0.0' \
+        --add-host 'fastapi.metacpan.org:0.0.0.0' \
+        --add-host 'hackage.haskell.org:0.0.0.0' \
+        --add-host 'hex.pem:0.0.0.0' \
+        --add-host 'maven.google.com:0.0.0.0' \
+        --add-host 'metrics.dependencytrack.org:0.0.0.0' \
+        --add-host 'nvd.nist.gov:0.0.0.0' \
+        --add-host 'ossindex.sonatype.org:0.0.0.0' \
+        --add-host 'osv-vulnerabilities.storage.googleapis.com:0.0.0.0' \
+        --add-host 'packages.atlassian.com:0.0.0.0' \
+        --add-host 'proxy.golang.org:0.0.0.0' \
+        --add-host 'pypi.org:0.0.0.0' \
+        --add-host 'registry.npmjs.org:0.0.0.0' \
+        --add-host 'repo1.maven.org:0.0.0.0' \
+        --add-host 'repo.clojars.org:0.0.0.0' \
+        --add-host 'repo.packagist.org:0.0.0.0' \
+        --add-host 'repository.jboss.org:0.0.0.0' \
+        --add-host 'rubygems.org:0.0.0.0' \
+        --add-host 'vulndb.cyberriskanalytics.com:0.0.0.0' \
+        --volume 'data:/data' \
+        --volume '/tmp:/tmp' \
+        --name 'api' \
+        --read-only \
+        --rm \
+        ghcr.io/dependencytrack/apiserver:${{ inputs.api_version }}
+    - name: Wait for Healthy
+      run: |
+        while [ "$(docker inspect -f {{.State.Health.Status}} api)" != "healthy" ]; do sleep 1; done
+    - name: Setup OIDC
+      run: |
+        set -euo pipefail
+        token=$(curl --fail -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=terraform-provider-dependencytrack" | jq -r '.value')
+        echo "TF_VAR_oidc_id_token=$token" >> $GITHUB_ENV
+    - uses: ./.github/actions/test
+      with:
+        terraform_version: ${{ inputs.terraform_version }}
+        tests_skip_regex: ${{ inputs.tests_skip }}
+        provider_config_key: 'v5'
+    - name: API Container Logs
+      run: docker logs api
+      if: ${{ always() }}
