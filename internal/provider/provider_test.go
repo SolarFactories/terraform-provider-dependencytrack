@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 
@@ -74,11 +75,10 @@ var (
 			if err != nil {
 				panic("Root CA file is unable to be read: " + err.Error())
 			}
-			rootCaStr := strings.ReplaceAll(string(rootCa), "\n", "\\n")
 			return dependencyTrackProviderModel{
 				Host:   types.StringValue("https://localhost:8082"),
 				Key:    types.StringValue("OS_ENV"),
-				RootCA: types.StringValue(rootCaStr),
+				RootCA: types.StringValue(string(rootCa)),
 			}
 		}
 		if option == "mtls" {
@@ -99,14 +99,13 @@ var (
 			if err != nil {
 				panic("Root CA file is unable to be read: " + err.Error())
 			}
-			rootCaStr := strings.ReplaceAll(string(rootCa), "\n", "\\n")
 			return dependencyTrackProviderModel{
 				Host: types.StringValue("https://localhost:8084"),
 				Auth: &providerAuthModel{
 					Type: types.StringValue("KEY"),
 					Key:  types.StringValue("OS_ENV"),
 				},
-				RootCA: types.StringValue(rootCaStr),
+				RootCA: types.StringValue(string(rootCa)),
 				MTLS: &dependencyTrackProviderMtlsModel{
 					KeyPath:  types.StringValue("/opt/client_key.pem"),
 					CertPath: types.StringValue("/opt/client_cert.pem"),
@@ -131,6 +130,9 @@ var (
 		diags := diag.Diagnostics{}
 		clientInfo := prov.configureImpl(context.Background(), config, &diags)
 		if diags.HasError() {
+			for _, diagnostic := range diags {
+				fmt.Printf("Diagnostic error: %v\n", diagnostic)
+			}
 			panic("Test Provider has diagnostic errors, when creating.")
 		}
 		if clientInfo == nil {

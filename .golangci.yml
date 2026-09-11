@@ -557,6 +557,9 @@ linters:
         linters:
           - gochecknoglobals
           - exhaustruct_v5
+          - errcheck
+          - revive
+          - forbidigo
       - path: internal/provider/project_resource.go
         linters:
           - gocyclo
