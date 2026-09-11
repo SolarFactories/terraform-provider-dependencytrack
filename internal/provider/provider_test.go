@@ -1,10 +1,14 @@
 package provider
 
 import (
+	"context"
+	"fmt"
 	"os"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 )
 
@@ -64,6 +68,80 @@ var (
 			key = "OS_ENV"
 		}`
 	}()
+
+	getClientConfig = func(option string) dependencyTrackProviderModel {
+		if option == "rootCA" {
+			rootCa, err := os.ReadFile("/opt/server_cert.pem")
+			if err != nil {
+				panic("Root CA file is unable to be read: " + err.Error())
+			}
+			return dependencyTrackProviderModel{
+				Host:   types.StringValue("https://localhost:8082"),
+				Key:    types.StringValue("OS_ENV"),
+				RootCA: types.StringValue(string(rootCa)),
+			}
+		}
+		if option == "mtls" {
+			return dependencyTrackProviderModel{
+				Host: types.StringValue("http://localhost:8083"),
+				Auth: &providerAuthModel{
+					Type: types.StringValue("KEY"),
+					Key:  types.StringValue("OS_ENV"),
+				},
+				MTLS: &dependencyTrackProviderMtlsModel{
+					KeyPath:  types.StringValue("/opt/client_key.pem"),
+					CertPath: types.StringValue("/opt/client_cert.pem"),
+				},
+			}
+		}
+		if option == "rootCA+mtls" {
+			rootCa, err := os.ReadFile("/opt/server_cert.pem")
+			if err != nil {
+				panic("Root CA file is unable to be read: " + err.Error())
+			}
+			return dependencyTrackProviderModel{
+				Host: types.StringValue("https://localhost:8084"),
+				Auth: &providerAuthModel{
+					Type: types.StringValue("KEY"),
+					Key:  types.StringValue("OS_ENV"),
+				},
+				RootCA: types.StringValue(string(rootCa)),
+				MTLS: &dependencyTrackProviderMtlsModel{
+					KeyPath:  types.StringValue("/opt/client_key.pem"),
+					CertPath: types.StringValue("/opt/client_cert.pem"),
+				},
+			}
+		}
+		if option == "v5" {
+			return dependencyTrackProviderModel{
+				Host: types.StringValue("http://localhost:9081"),
+				Key:  types.StringValue("OS_ENV"),
+			}
+		}
+		return dependencyTrackProviderModel{
+			Host: types.StringValue("http://localhost:8081"),
+			Key:  types.StringValue("OS_ENV"),
+		}
+	}
+
+	getAPISemver = func(option string) Semver {
+		config := getClientConfig(option)
+		prov := dependencyTrackProvider{version: "test"}
+		diags := diag.Diagnostics{}
+		clientInfo := prov.configureImpl(context.Background(), config, &diags)
+		if diags.HasError() {
+			for _, diagnostic := range diags {
+				fmt.Printf("Diagnostic error: %v\n", diagnostic)
+			}
+			panic("Test Provider has diagnostic errors, when creating.")
+		}
+		if clientInfo == nil {
+			panic("Test Provider creation returned nil clientInfo.")
+		}
+		return *clientInfo.semver
+	}
+
+	apiSemver = getAPISemver(os.Getenv("DEPENDENCYTRACK_TEST_PROVIDER"))
 
 	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
 		"dependencytrack": providerserver.NewProtocol6WithError(New("test")()),

@@ -7,6 +7,9 @@ import (
 )
 
 func TestAccTagPoliciesResource(t *testing.T) {
+	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
+		t.SkipNow()
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -100,6 +103,9 @@ resource "dependencytrack_tag_policies" "test" {
 }
 
 func TestAccTagPoliciesResourcePoliciesUnordered(t *testing.T) {
+	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
+		t.SkipNow()
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

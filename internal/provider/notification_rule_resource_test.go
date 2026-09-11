@@ -8,6 +8,9 @@ import (
 )
 
 func TestAccNotificationRuleEventResource(t *testing.T) {
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Notification Publisher API schema changed in v5.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -91,8 +94,14 @@ resource "dependencytrack_notification_rule" "test" {
 	})
 }
 
+// API 4.13+.
 func TestAccNotificationRuleScheduleResource(t *testing.T) {
-	// API 4.13+.
+	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 13) {
+		t.SkipNow()
+	}
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Notification Publisher API schema changed in v5.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -175,6 +184,9 @@ resource "dependencytrack_notification_rule" "test" {
 
 func TestAccNotificationRuleResourceRegression236(t *testing.T) {
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Notification Publisher API schema changed in v5.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

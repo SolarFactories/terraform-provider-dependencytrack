@@ -126,7 +126,7 @@ jobs:
     timeout-minutes: 15
     services:
       api:
-        image: dependencytrack/apiserver:${{ matrix.api.version }}
+        image: dependencytrack/apiserver:${{ matrix.api_version }}
         env:
           # TODO: Use external (to DT) DB
           #ALPINE_DATABASE_MODE: external
@@ -166,39 +166,25 @@ jobs:
       matrix:
         terraform:
          - '1.15.*'
-        api:
-          - version: "4.11.7"
-            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)|(TestAccProjectCollection)|(TestAccProjectIsLatest)|(TestAccProjectDataSourceIsLatest)|(TestAccNotificationRuleScheduleResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.12.7"
-            skip: "^(TestAccTagResource)|(TestAccProjectCollection)|(TestAccNotificationRuleScheduleResource)|(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.0"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.1"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.2"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.3"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.4"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.5"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.6-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.14.0-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.14.1-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.14.2-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.14.3-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
+        api_version:
+          - "4.11.7"
+          - "4.12.7"
+          - "4.13.0"
+          - "4.13.1"
+          - "4.13.2"
+          - "4.13.3"
+          - "4.13.4"
+          - "4.13.5"
+          - "4.13.6-alpine"
+          - "4.14.0-alpine"
+          - "4.14.1-alpine"
+          - "4.14.2-alpine"
+          - "4.14.3-alpine"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}
-          tests_skip_regex: ${{ matrix.api.skip }}
 
   test_v4_comprehensive:
     # Test across range of Terraform versions.
@@ -210,7 +196,7 @@ jobs:
     timeout-minutes: 15
     services:
       api:
-        image: dependencytrack/apiserver:${{ matrix.api.version }}
+        image: dependencytrack/apiserver:${{ matrix.api_version }}
         env:
           # TODO: Use external (to DT) DB
           #ALPINE_DATABASE_MODE: external
@@ -248,33 +234,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api:
-          - version: "4.11.7"
-            skip: "^(TestAccTagResource)|(TestAccProjectTagsRead)|(TestAccTagPoliciesResource)|(TestAccTagProjectsResource)|(TestAccProjectCollection)|(TestAccProjectIsLatest)|(TestAccProjectDataSourceIsLatest)|(TestAccNotificationRuleScheduleResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.12.7"
-            skip: "^(TestAccTagResource)|(TestAccProjectCollection)|(TestAccNotificationRuleScheduleResource)|(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.0"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.1"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.2"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.3"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.4"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.5"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.13.6-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.14.0-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.14.1-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.14.2-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
-          - version: "4.14.3-alpine"
-            skip: "^(TestAccVulnerabilityPolicyResource)|(TestAccVulnerabilityPolicyResourceRegression236)$"
+        api_version:
+          - "4.11.7"
+          - "4.12.7"
+          - "4.13.0"
+          - "4.13.1"
+          - "4.13.2"
+          - "4.13.3"
+          - "4.13.4"
+          - "4.13.5"
+          - "4.13.6-alpine"
+          - "4.14.0-alpine"
+          - "4.14.1-alpine"
+          - "4.14.2-alpine"
+          - "4.14.3-alpine"
         terraform:
           - '1.0.*'
           - '1.1.*'
@@ -296,7 +269,6 @@ jobs:
       - uses: ./.github/actions/test
         with:
           terraform_version: ${{ matrix.terraform }}
-          tests_skip_regex: ${{ matrix.api.skip }}
 
   test_v5:
     # Test with just the latest testing version of Terraform, so that have one matrix with one instance per API version, to allow for easier navigating of jobs.
@@ -326,23 +298,16 @@ jobs:
       matrix:
         terraform:
          - '1.15.*'
-        api:
-          - version: "5.0.2"
-            # Currently failing tests, which will require adjusting implementation to properly fix.
-            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
-          - version: "5.0.5"
-            # Currently failing tests, which will require adjusting implementation to properly fix.
-            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
-          - version: "5.1.0"
-            # Currently failing tests, which will require adjusting implementation to properly fix.
-            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
+        api_version:
+          - "5.0.2"
+          - "5.0.5"
+          - "5.1.0"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/test-v5
         with:
           terraform_version: ${{ matrix.terraform }}
-          api_version: ${{ matrix.api.version }}
-          tests_skip: ${{ matrix.api.skip }}
+          api_version: ${{ matrix.api_version }}
 
   test_v5_comprehensive:
     # Test across range of Terraform versions.
@@ -370,16 +335,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api:
-          - version: "5.0.2"
-            # Currently failing tests, which will require adjusting implementation to properly fix.
-            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
-          - version: "5.0.5"
-            # Currently failing tests, which will require adjusting implementation to properly fix.
-            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
-          - version: "5.1.0"
-            # Currently failing tests, which will require adjusting implementation to properly fix.
-            skip: "^(TestAccConfigPropertiesResource)|(TestAccConfigPropertiesResourceRegression149)|(TestAccConfigPropertyResource)|(TestAccConfigPropertyResourceRegression149)|(TestAccNotificationPublisherDataSource)|(TestAccNotificationPublisherResource)|(TestAccNotificationRuleProjectResource)|(TestAccNotificationRuleEventResource)|(TestAccNotificationRuleScheduleResource)|(TestAccNotificationRuleTeamResource)|(TestAccProjectDataSource)|(TestAccProjectPropertyResource)|(TestAccProjectCollection)|(TestAccRepositoryResource)|(TestAccTagNotificationRulesResource)|(TestAccTagNotificationRulesResourceNotificationRulesUnordered)|(TestAccNotificationRuleResourceRegression236)$"
+        api_version:
+          - "5.0.2"
+          - "5.0.5"
+          - "5.1.0"
         terraform:
           - '1.0.*'
           - '1.1.*'
@@ -401,5 +360,4 @@ jobs:
       - uses: ./.github/actions/test-v5
         with:
           terraform_version: ${{ matrix.terraform }}
-          api_version: ${{ matrix.api.version }}
-          tests_skip: ${{ matrix.api.skip }}
+          api_version: ${{ matrix.api_version }}

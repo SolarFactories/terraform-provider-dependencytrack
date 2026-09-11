@@ -227,6 +227,9 @@ resource "dependencytrack_project" "test" {
 }
 
 func TestAccProjectTagsRead(t *testing.T) {
+	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
+		t.SkipNow()
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -316,6 +319,12 @@ data "dependencytrack_project" "project2" {
 
 // API 4.13+.
 func TestAccProjectCollection(t *testing.T) {
+	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 13) {
+		t.SkipNow()
+	}
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Explicit logic of NONE is not valid in v5. Split into two tests.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -409,6 +418,9 @@ resource "dependencytrack_project" "test3" {
 
 // API 4.12+.
 func TestAccProjectIsLatest(t *testing.T) {
+	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
+		t.SkipNow()
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

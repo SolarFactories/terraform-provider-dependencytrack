@@ -8,6 +8,9 @@ import (
 )
 
 func TestAccRepositoryResource(t *testing.T) {
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: password field has changed from value, to being a name of a managed secret. Will need Secrets Management resource, and splitting into two tests.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

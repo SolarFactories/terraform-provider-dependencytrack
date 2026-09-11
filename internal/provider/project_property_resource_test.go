@@ -8,6 +8,9 @@ import (
 )
 
 func TestAccProjectPropertyResource(t *testing.T) {
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: ENCRYPTEDSTRING was removed, and replaced with dedicated secrets management. Split into two tests.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{

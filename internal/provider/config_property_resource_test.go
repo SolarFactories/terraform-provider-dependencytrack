@@ -7,6 +7,10 @@ import (
 )
 
 func TestAccConfigPropertyResource(t *testing.T) {
+	if apiSemver.Major > 4 {
+		// TODO: Email is just an example config, so can be changed to something else that did not get removed.
+		t.Skip("TODO: Email config was removed from config properties, and moved to an extension point.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -126,6 +130,10 @@ resource "dependencytrack_config_property" "testencrypted" {
 
 func TestAccConfigPropertyResourceRegression149(t *testing.T) {
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/149
+	if apiSemver.Major > 4 {
+		// NOTE: Will need similar test when relevant extension-point is added to re-enable this management in v5.
+		t.Skip("TODO: OSV configuration was removed from config properties, and moved to an extension point.")
+	}
 	//	Default return value for `google.osv.enabled` is a sorted list, e.g. `Debian;Alpine;NuGet` / `Debian;Go;Alpine;NuGet`.
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

@@ -8,6 +8,9 @@ import (
 )
 
 func TestAccNotificationPublisherResource(t *testing.T) {
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Notification Publisher API schema changed in v5.")
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -64,6 +67,9 @@ resource "dependencytrack_notification_publisher" "test" {
 }
 
 func TestAccNotificationPublisherResourceRegression236(t *testing.T) {
+	if apiSemver.Major > 4 {
+		t.Skip("TODO: Notification Publisher API schema changed in v5.")
+	}
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
