@@ -30,7 +30,8 @@ type (
 		ID               types.String `tfsdk:"id"`
 		Name             types.String `tfsdk:"name"`
 		Description      types.String `tfsdk:"description"`
-		PublisherClass   types.String `tfsdk:"publisher_class"`
+		PublisherClass   types.String `tfsdk:"publisher_class"` // v4
+		ExtensionName    types.String `tfsdk:"extension_name"`
 		Template         types.String `tfsdk:"template"`
 		TemplateMimeType types.String `tfsdk:"template_mime_type"`
 		DefaultPublisher types.Bool   `tfsdk:"default_publisher"`
@@ -67,7 +68,11 @@ func (*notificationPublisherResource) Schema(_ context.Context, _ resource.Schem
 			},
 			"publisher_class": schema.StringAttribute{
 				Description: "Name of Java Class that provides Publisher.",
-				Required:    true,
+				Optional:    true, // Required in v4
+			},
+			"extension_name": schema.StringAttribute{
+				Description: "Name of extension that provides Publisher. API v5+.",
+				Optional:    true,
 			},
 			"template": schema.StringAttribute{
 				Description: "Template string value for Publisher Payload.",
@@ -98,6 +103,7 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 		Name:             plan.Name.ValueString(),
 		Description:      plan.Description.ValueString(),
 		PublisherClass:   plan.PublisherClass.ValueString(),
+		ExtensionName:    plan.ExtensionName.ValueString(),
 		Template:         plan.Template.ValueString(),
 		TemplateMIMEType: plan.TemplateMimeType.ValueString(),
 	}
@@ -106,6 +112,7 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 		"name":               publisherReq.Name,
 		"description":        publisherReq.Description,
 		"publisher_class":    publisherReq.PublisherClass,
+		"extension_name":     publisherReq.ExtensionName,
 		"template":           publisherReq.Template,
 		"template_mime_type": publisherReq.TemplateMIMEType,
 	})
@@ -124,6 +131,7 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 		Name:             types.StringValue(publisherRes.Name),
 		Description:      types.StringValue(publisherRes.Description),
 		PublisherClass:   types.StringValue(publisherRes.PublisherClass),
+		ExtensionName:    types.StringValue(publisherRes.ExtensionName),
 		Template:         types.StringValue(publisherRes.Template),
 		TemplateMimeType: types.StringValue(publisherRes.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisherRes.DefaultPublisher),
@@ -140,6 +148,7 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 		"name":               newState.Name.ValueString(),
 		"description":        newState.Description.ValueString(),
 		"publisher_class":    newState.PublisherClass.ValueString(),
+		"extension_name":     newState.ExtensionName.ValueString(),
 		"template":           newState.Template.ValueString(),
 		"template_mime_type": newState.TemplateMimeType.ValueString(),
 		"default_publisher":  newState.DefaultPublisher.ValueBool(),
@@ -166,6 +175,7 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),
@@ -205,6 +215,7 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 		Name:             types.StringValue(publisher.Name),
 		Description:      types.StringValue(publisher.Description),
 		PublisherClass:   types.StringValue(publisher.PublisherClass),
+		ExtensionName:    types.StringValue(publisher.ExtensionName),
 		Template:         types.StringValue(publisher.Template),
 		TemplateMimeType: types.StringValue(publisher.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisher.DefaultPublisher),
@@ -221,6 +232,7 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),
@@ -247,6 +259,7 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		Name:             plan.Name.ValueString(),
 		Description:      plan.Description.ValueString(),
 		PublisherClass:   plan.PublisherClass.ValueString(),
+		ExtensionName:    plan.ExtensionName.ValueString(),
 		Template:         plan.Template.ValueString(),
 		TemplateMIMEType: plan.TemplateMimeType.ValueString(),
 		DefaultPublisher: plan.DefaultPublisher.ValueBool(),
@@ -257,6 +270,7 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		"name":               publisherReq.Name,
 		"description":        publisherReq.Description,
 		"publisher_class":    publisherReq.PublisherClass,
+		"extension_name":     publisherReq.ExtensionName,
 		"template":           publisherReq.Template,
 		"template_mime_type": publisherReq.TemplateMIMEType,
 		"default_publisher":  publisherReq.DefaultPublisher,
@@ -276,6 +290,7 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		Name:             types.StringValue(publisherRes.Name),
 		Description:      types.StringValue(publisherRes.Description),
 		PublisherClass:   types.StringValue(publisherRes.PublisherClass),
+		ExtensionName:    types.StringValue(publisherRes.ExtensionName),
 		Template:         types.StringValue(publisherRes.Template),
 		TemplateMimeType: types.StringValue(publisherRes.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisherRes.DefaultPublisher),
@@ -292,6 +307,7 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),
@@ -320,6 +336,7 @@ func (r *notificationPublisherResource) Delete(ctx context.Context, req resource
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),
@@ -346,6 +363,7 @@ func (r *notificationPublisherResource) Delete(ctx context.Context, req resource
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),
