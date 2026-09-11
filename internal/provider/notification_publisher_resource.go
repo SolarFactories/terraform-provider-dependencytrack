@@ -30,8 +30,8 @@ type (
 		ID               types.String `tfsdk:"id"`
 		Name             types.String `tfsdk:"name"`
 		Description      types.String `tfsdk:"description"`
-		PublisherClass   types.String `tfsdk:"publisher_class"` // v4
-		ExtensionName    types.String `tfsdk:"extension_name"`
+		PublisherClass   types.String `tfsdk:"publisher_class"` // API v4.
+		ExtensionName    types.String `tfsdk:"extension_name"`  // API v5+.
 		Template         types.String `tfsdk:"template"`
 		TemplateMimeType types.String `tfsdk:"template_mime_type"`
 		DefaultPublisher types.Bool   `tfsdk:"default_publisher"`
@@ -67,12 +67,14 @@ func (*notificationPublisherResource) Schema(_ context.Context, _ resource.Schem
 				Computed:    true,
 			},
 			"publisher_class": schema.StringAttribute{
-				Description: "Name of Java Class that provides Publisher.",
-				Optional:    true, // Required in v4
+				Description: "Name of Java Class that provides Publisher. Required for API v4.",
+				Optional:    true, // Required in v4. Not valid in v5. Checked in `Create`.
+				Computed:    true,
 			},
 			"extension_name": schema.StringAttribute{
-				Description: "Name of extension that provides Publisher. API v5+.",
-				Optional:    true,
+				Description: "Name of extension that provides Publisher. Required for API v5+.",
+				Optional:    true, // Required in v5. Not valid in v4. Checked in `Create`.
+				Computed:    true,
 			},
 			"template": schema.StringAttribute{
 				Description: "Template string value for Publisher Payload.",
@@ -106,6 +108,38 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 		ExtensionName:    plan.ExtensionName.ValueString(),
 		Template:         plan.Template.ValueString(),
 		TemplateMIMEType: plan.TemplateMimeType.ValueString(),
+	}
+
+	if r.semver.Major == 4 && (plan.PublisherClass.IsNull() || plan.PublisherClass.IsUnknown()) {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("publisher_class"),
+			"Missing required attribute",
+			"publisher_class attribute is required for API v4, but was not provided",
+		)
+	}
+	if r.semver.Major == 5 && (plan.ExtensionName.IsNull() || plan.ExtensionName.IsUnknown()) {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("extension_name"),
+			"Missing required attribute",
+			"extension_name attribute is required for API v5, but was not provided",
+		)
+	}
+	if r.semver.Major == 4 && !(plan.ExtensionName.IsNull() || plan.ExtensionName.IsUnknown()) {
+		resp.Diagnostics.AddAttributeWarning(
+			path.Root("extension_name"),
+			"Provided unused attribute",
+			"extension-name attribute is unused for API v4, but was provided",
+		)
+	}
+	if r.semver.Major == 5 && !(plan.PublisherClass.IsNull() || plan.PublisherClass.IsUnknown()) {
+		resp.Diagnostics.AddAttributeWarning(
+			path.Root("publisher_class"),
+			"Provided unused attribute",
+			"publisher_class attribute is unused for API v5, but was provided",
+		)
+	}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	tflog.Debug(ctx, "Creating Notification Publisher", map[string]any{
