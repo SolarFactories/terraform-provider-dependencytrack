@@ -27,11 +27,12 @@ type (
 	}
 
 	policyConditionResourceModel struct {
-		ID       types.String `tfsdk:"id"`
-		PolicyID types.String `tfsdk:"policy"`
-		Subject  types.String `tfsdk:"subject"`
-		Operator types.String `tfsdk:"operator"`
-		Value    types.String `tfsdk:"value"`
+		ID            types.String `tfsdk:"id"`
+		PolicyID      types.String `tfsdk:"policy"`
+		Subject       types.String `tfsdk:"subject"`
+		Operator      types.String `tfsdk:"operator"`
+		Value         types.String `tfsdk:"value"`
+		ViolationType types.String `tfsdk:"violation_type"`
 	}
 )
 
@@ -73,6 +74,10 @@ func (*policyConditionResource) Schema(_ context.Context, _ resource.SchemaReque
 				Description: "Value against which to compare Subject.",
 				Required:    true,
 			},
+			"violation_type": schema.StringAttribute{
+				Description: "Violation Type raised by the Policy Condition. Required when Subject is `EXPRESSION`, and must be omitted otherwise, as every other Subject implies its own Violation Type. One of `LICENSE`, `SECURITY`, `OPERATIONAL`. Requires API >= 5.0.",
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -95,6 +100,8 @@ func (r *policyConditionResource) Create(ctx context.Context, req resource.Creat
 		Operator: dtrack.PolicyConditionOperator(plan.Operator.ValueString()),
 		Subject:  dtrack.PolicyConditionSubject(plan.Subject.ValueString()),
 		Value:    plan.Value.ValueString(),
+
+		ViolationType: dtrack.PolicyConditionViolationType(plan.ViolationType.ValueString()),
 	}
 
 	tflog.Debug(ctx, "Creating Policy Condition", map[string]any{
@@ -119,6 +126,11 @@ func (r *policyConditionResource) Create(ctx context.Context, req resource.Creat
 		Subject:  types.StringValue(string(conditionRes.Subject)),
 		Operator: types.StringValue(string(conditionRes.Operator)),
 		Value:    types.StringValue(conditionRes.Value),
+
+		ViolationType: types.StringNull(),
+	}
+	if conditionRes.ViolationType != "" {
+		plan.ViolationType = types.StringValue(string(conditionRes.ViolationType))
 	}
 
 	diags = resp.State.Set(ctx, plan)
@@ -184,6 +196,11 @@ func (r *policyConditionResource) Read(ctx context.Context, req resource.ReadReq
 		Subject:  types.StringValue(string(condition.Subject)),
 		Operator: types.StringValue(string(condition.Operator)),
 		Value:    types.StringValue(condition.Value),
+
+		ViolationType: types.StringNull(),
+	}
+	if condition.ViolationType != "" {
+		state.ViolationType = types.StringValue(string(condition.ViolationType))
 	}
 
 	// Update state.
@@ -228,6 +245,8 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 		Operator: dtrack.PolicyConditionOperator(plan.Operator.ValueString()),
 		Subject:  dtrack.PolicyConditionSubject(plan.Subject.ValueString()),
 		Value:    plan.Value.ValueString(),
+
+		ViolationType: dtrack.PolicyConditionViolationType(plan.ViolationType.ValueString()),
 	}
 
 	// Execute.
@@ -255,6 +274,11 @@ func (r *policyConditionResource) Update(ctx context.Context, req resource.Updat
 		Subject:  types.StringValue(string(conditionRes.Subject)),
 		Operator: types.StringValue(string(conditionRes.Operator)),
 		Value:    types.StringValue(conditionRes.Value),
+
+		ViolationType: types.StringNull(),
+	}
+	if conditionRes.ViolationType != "" {
+		plan.ViolationType = types.StringValue(string(conditionRes.ViolationType))
 	}
 
 	// Update State.
