@@ -1,3 +1,10 @@
+## Unreleased
+
+#### FEATURES
+- Add `violation_type` to `dependencytrack_policy_condition`, required by DependencyTrack for conditions with `subject = "EXPRESSION"`.
+	- Expression conditions are otherwise rejected with `Expression conditions must define a violation type`.
+	- Requires API `>= 5.0`.
+
 ## 1.25
 
 #### FIXES

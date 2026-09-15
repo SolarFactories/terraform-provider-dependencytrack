@@ -151,3 +151,87 @@ resource "dependencytrack_policy_condition" "test2" {
 		},
 	})
 }
+
+func TestAccPolicyConditionResourceExpression(t *testing.T) {
+	if apiSemver.Major < 5 {
+		t.Skip("Expression policy conditions require API >= 5.0.")
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+resource "dependencytrack_policy" "test" {
+	name = "Test_PolicyCondition_Expression"
+	operator = "ANY"
+	violation = "FAIL"
+}
+resource "dependencytrack_policy_condition" "test" {
+	policy = dependencytrack_policy.test.id
+	subject = "EXPRESSION"
+	operator = "MATCHES"
+	value = "component.is_internal == false"
+	violation_type = "OPERATIONAL"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_policy_condition.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "subject", "EXPRESSION"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "value", "component.is_internal == false"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "violation_type", "OPERATIONAL"),
+				),
+			},
+			{
+				ResourceName:      "dependencytrack_policy_condition.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: providerConfig + `
+resource "dependencytrack_policy" "test" {
+	name = "Test_PolicyCondition_Expression"
+	operator = "ANY"
+	violation = "FAIL"
+}
+resource "dependencytrack_policy_condition" "test" {
+	policy = dependencytrack_policy.test.id
+	subject = "EXPRESSION"
+	operator = "MATCHES"
+	value = "component.is_internal == true"
+	violation_type = "LICENSE"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "value", "component.is_internal == true"),
+					resource.TestCheckResourceAttr("dependencytrack_policy_condition.test", "violation_type", "LICENSE"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccPolicyConditionResourceViolationTypeOmitted(t *testing.T) {
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+resource "dependencytrack_policy" "test" {
+	name = "Test_PolicyCondition_NoViolationType"
+	operator = "ANY"
+	violation = "FAIL"
+}
+resource "dependencytrack_policy_condition" "test" {
+	policy = dependencytrack_policy.test.id
+	subject = "AGE"
+	operator = "NUMERIC_GREATER_THAN"
+	value = "P1Y"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("dependencytrack_policy_condition.test", "violation_type"),
+				),
+			},
+		},
+	})
+}
