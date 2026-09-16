@@ -1,3 +1,9 @@
+## Unreleased
+
+#### FEATURES
+- Add `filter_expression` to `dependencytrack_notification_rule`, a CEL expression evaluated against each notification before it is sent.
+	- Requires API `>= 5.0`.
+
 ## 1.25
 
 #### FIXES

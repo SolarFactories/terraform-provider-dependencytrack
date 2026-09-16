@@ -46,6 +46,7 @@ type (
 		ScheduleCron          types.String `tfsdk:"schedule_cron"`
 		ScheduleSkipUnchanged types.Bool   `tfsdk:"schedule_skip_unchanged"`
 		PublisherConfig       types.String `tfsdk:"publisher_config"`
+		FilterExpression      types.String `tfsdk:"filter_expression"`
 		PublisherID           types.String `tfsdk:"publisher_id"`
 	}
 )
@@ -141,6 +142,10 @@ func (*notificationRuleResource) Schema(_ context.Context, _ resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 			},
+			"filter_expression": schema.StringAttribute{
+				Description: "CEL expression evaluated against each notification, which must return true for the notification to be sent. Available variables are `level`, `scope`, `group`, `title`, `content`, `timestamp` and `subject`. Requires API >= 5.0.",
+				Optional:    true,
+			},
 			"publisher_id": schema.StringAttribute{
 				Description:   "UUID of the Publisher to use for this alert rule.",
 				Required:      true,
@@ -184,6 +189,7 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 		ScheduleCron:          plan.ScheduleCron.ValueString(),
 		ScheduleSkipUnchanged: plan.ScheduleSkipUnchanged.ValueBool(),
 		PublisherConfig:       plan.PublisherConfig.ValueString(),
+		FilterExpression:      plan.FilterExpression.ValueString(),
 		Publisher: dtrack.NotificationPublisher{
 			UUID: publisherID,
 		},
@@ -281,7 +287,11 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 		ScheduleCron:          types.StringValue(ruleRes.ScheduleCron),
 		ScheduleSkipUnchanged: types.BoolValue(ruleRes.ScheduleSkipUnchanged),
 		PublisherConfig:       types.StringValue(ruleRes.PublisherConfig),
+		FilterExpression:      types.StringNull(),
 		PublisherID:           types.StringValue(ruleRes.Publisher.UUID.String()),
+	}
+	if ruleRes.FilterExpression != "" {
+		newState.FilterExpression = types.StringValue(ruleRes.FilterExpression)
 	}
 	if hasNotificationChildrenFeature(*r.semver) {
 		newState.NotifyChildren = types.BoolValue(ruleRes.NotifyChildren)
@@ -414,7 +424,11 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 		ScheduleCron:          types.StringValue(rule.ScheduleCron),
 		ScheduleSkipUnchanged: types.BoolValue(rule.ScheduleSkipUnchanged),
 		PublisherConfig:       types.StringValue(rule.PublisherConfig),
+		FilterExpression:      types.StringNull(),
 		PublisherID:           types.StringValue(rule.Publisher.UUID.String()),
+	}
+	if rule.FilterExpression != "" {
+		newState.FilterExpression = types.StringValue(rule.FilterExpression)
 	}
 	if hasNotificationChildrenFeature(*r.semver) {
 		newState.NotifyChildren = types.BoolValue(rule.NotifyChildren)
@@ -492,6 +506,7 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 		ScheduleCron:          plan.ScheduleCron.ValueString(),
 		ScheduleSkipUnchanged: plan.ScheduleSkipUnchanged.ValueBool(),
 		PublisherConfig:       plan.PublisherConfig.ValueString(),
+		FilterExpression:      plan.FilterExpression.ValueString(),
 		Publisher: dtrack.NotificationPublisher{
 			UUID: publisherID,
 		},
@@ -555,7 +570,11 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 		ScheduleCron:          types.StringValue(ruleRes.ScheduleCron),
 		ScheduleSkipUnchanged: types.BoolValue(ruleRes.ScheduleSkipUnchanged),
 		PublisherConfig:       types.StringValue(ruleRes.PublisherConfig),
+		FilterExpression:      types.StringNull(),
 		PublisherID:           types.StringValue(ruleRes.Publisher.UUID.String()),
+	}
+	if ruleRes.FilterExpression != "" {
+		newState.FilterExpression = types.StringValue(ruleRes.FilterExpression)
 	}
 	if hasNotificationChildrenFeature(*r.semver) {
 		newState.NotifyChildren = types.BoolValue(ruleRes.NotifyChildren)
