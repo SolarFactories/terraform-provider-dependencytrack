@@ -259,3 +259,64 @@ resource "dependencytrack_notification_rule" "test2" {
 		},
 	})
 }
+
+func TestAccNotificationRuleFilterExpressionResource(t *testing.T) {
+	if apiSemver.Major < 5 {
+		t.Skip("Notification filter expressions require API >= 5.0.")
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+data "dependencytrack_notification_publisher" "test" {
+	name = "Outbound Webhook"
+}
+resource "dependencytrack_notification_rule" "test" {
+	name = "Test_NotificationRule_FilterExpression"
+	publisher_id = data.dependencytrack_notification_publisher.test.id
+	trigger_type = "EVENT"
+	scope = "PORTFOLIO"
+	notification_level = "INFORMATIONAL"
+	notify_on = ["POLICY_VIOLATION"]
+	filter_expression = "subject.policy_violation.condition.policy.violation_state == \"FAIL\""
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_notification_rule.test", "id"),
+					resource.TestCheckResourceAttr(
+						"dependencytrack_notification_rule.test", "filter_expression",
+						`subject.policy_violation.condition.policy.violation_state == "FAIL"`,
+					),
+				),
+			},
+			{
+				ResourceName:      "dependencytrack_notification_rule.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				Config: providerConfig + `
+data "dependencytrack_notification_publisher" "test" {
+	name = "Outbound Webhook"
+}
+resource "dependencytrack_notification_rule" "test" {
+	name = "Test_NotificationRule_FilterExpression"
+	publisher_id = data.dependencytrack_notification_publisher.test.id
+	trigger_type = "EVENT"
+	scope = "PORTFOLIO"
+	notification_level = "INFORMATIONAL"
+	notify_on = ["POLICY_VIOLATION"]
+	filter_expression = "group != Group.GROUP_POLICY_VIOLATION"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(
+						"dependencytrack_notification_rule.test", "filter_expression",
+						"group != Group.GROUP_POLICY_VIOLATION",
+					),
+				),
+			},
+		},
+	})
+}

@@ -53,6 +53,7 @@ resource "dependencytrack_notification_rule" "example_schedule" {
 ### Optional
 
 - `enabled` (Boolean) Whether the rule is enabled.
+- `filter_expression` (String) CEL expression evaluated against each notification, which must return true for the notification to be sent. Available variables are `level`, `scope`, `group`, `title`, `content`, `timestamp` and `subject`. Requires API >= 5.0.
 - `log_successful_publish` (Boolean) Whether to log each time a rule is successfully notified.
 - `message` (String) Alert Rule Message.
 - `notification_level` (String) Notification Level to set for Alert. Supports "INFORMATIONAL", "WARNING", "ERROR".
