@@ -3,8 +3,10 @@ package provider
 import (
 	"cmp"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -288,6 +290,26 @@ func SliceUnorderedEqual[T any](a, b []T, compare func(a, b T) int) bool {
 	sortedA := slices.SortedStableFunc(slices.Values(a), compare)
 	sortedB := slices.SortedStableFunc(slices.Values(b), compare)
 	return slices.EqualFunc(sortedA, sortedB, func(a, b T) bool { return compare(a, b) == 0 })
+}
+
+// JSONSemanticallyEqual returns true when both strings are valid JSON documents with equal content, ignoring whitespace and key order.
+func JSONSemanticallyEqual(a, b string) bool {
+	var aValue, bValue any
+	if err := json.Unmarshal([]byte(a), &aValue); err != nil {
+		return false
+	}
+	if err := json.Unmarshal([]byte(b), &bValue); err != nil {
+		return false
+	}
+	return reflect.DeepEqual(aValue, bValue)
+}
+
+// PreferConfiguredJSON returns the configured value when the API value is semantically equal, to avoid diffs from API reformatting.
+func PreferConfiguredJSON(configured types.String, apiValue string) types.String {
+	if !configured.IsNull() && !configured.IsUnknown() && JSONSemanticallyEqual(configured.ValueString(), apiValue) {
+		return configured
+	}
+	return types.StringValue(apiValue)
 }
 
 func FindUserPrincipal(ctx context.Context, client dtrack.Client, username string) (*dtrack.UserPrincipal, error) {

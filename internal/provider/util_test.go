@@ -64,6 +64,25 @@ func TestParseSemver(t *testing.T) {
 	}
 }
 
+func TestJSONSemanticallyEqual(t *testing.T) {
+	{
+		equal := JSONSemanticallyEqual(`{"destinationUrl":"https://example.com/hook"}`, "{\n  \"destinationUrl\": \"https://example.com/hook\"\n}")
+		requireEqual(t, equal, true)
+	}
+	{
+		equal := JSONSemanticallyEqual(`{"a":1,"b":2}`, `{"b":2,"a":1}`)
+		requireEqual(t, equal, true)
+	}
+	{
+		equal := JSONSemanticallyEqual(`{"destinationUrl":"https://example.com/a"}`, `{"destinationUrl":"https://example.com/b"}`)
+		requireEqual(t, equal, false)
+	}
+	{
+		equal := JSONSemanticallyEqual(`not json`, `not json`)
+		requireEqual(t, equal, false)
+	}
+}
+
 func TestSliceUnorderedEqual(t *testing.T) {
 	{
 		a := []int{1, 20, 15, 18}

@@ -1,3 +1,10 @@
+## Unreleased
+
+#### FIXES
+- `dependencytrack_notification_rule` planned an in-place update on every run when `publisher_config` was semantically equal to the API value, but formatted differently (e.g. `jsonencode` output vs. the API's pretty-printed JSON).
+	- The configured value is now kept in state when the API value is equal JSON, ignoring whitespace and key order.
+	- Existing state that holds the API formatting is converged by one further update.
+
 ## 1.25
 
 #### FIXES
