@@ -28,12 +28,13 @@ resource "dependencytrack_notification_publisher" "example" {
 ### Required
 
 - `name` (String) Name of the Notification Publisher.
-- `publisher_class` (String) Name of Java Class that provides Publisher.
 - `template_mime_type` (String) MIME type set when sending a notification, for template.
 
 ### Optional
 
 - `description` (String) Publisher Description.
+- `extension_name` (String) Name of extension that provides Publisher. Required for API v5+.
+- `publisher_class` (String) Name of Java Class that provides Publisher. Required for API v4.
 - `template` (String) Template string value for Publisher Payload.
 
 ### Read-Only

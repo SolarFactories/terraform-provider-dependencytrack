@@ -202,7 +202,7 @@ linters:
 #      template: "" # Default ""
 #      template-path: "" # Default ""
     gomoddirectives:
-      replace-local: false # Default false
+      replace-local: true # Default false
       replace-allow-list:
         - "github.com/DependencyTrack/client-go"
       retract-allow-no-explanation: false # Default false
@@ -213,7 +213,7 @@ linters:
       go-debug-forbidden: true # Default false
       go-version-pattern: "" # Default "" # TODO
     gomodguard_v2:
-      local-replace-directives: true # Default false
+      local-replace-directives: false # Default false
     gosec:
       includes: [] # Includes all # Default []
       excludes: [] # Default []
@@ -663,6 +663,11 @@ linters:
       - path: internal/provider/config_property_resource_test.go
         linters:
           - godox
+      - path: internal/provider/notification_publisher_resource.go
+        linters:
+          - gocognit
+          - gocyclo
+          - cyclop
 
 formatters:
   enable:

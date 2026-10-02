@@ -33,7 +33,8 @@ output "dependencytrack_notification_publisher_id" {
 
 - `default_publisher` (Boolean) Whether this is a default publisher.
 - `description` (String) Publisher Description.
+- `extension_name` (String) Name of extension that provides Publisher. API v5+.
 - `id` (String) UUID of the Notification Publisher located.
-- `publisher_class` (String) Name of Java Class that provides Publisher.
+- `publisher_class` (String) Name of Java Class that provides Publisher. API v4.
 - `template` (String) Template string value for Publisher Payload.
 - `template_mime_type` (String) MIME type set when sending a notification, for template.
