@@ -104,10 +104,13 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 	publisherReq := dtrack.NotificationPublisher{
 		Name:             plan.Name.ValueString(),
 		Description:      plan.Description.ValueString(),
-		PublisherClass:   plan.PublisherClass.ValueString(),
-		ExtensionName:    plan.ExtensionName.ValueString(),
 		Template:         plan.Template.ValueString(),
 		TemplateMIMEType: plan.TemplateMimeType.ValueString(),
+	}
+	if r.semver.Major == 4 {
+		publisherReq.PublisherClass = plan.PublisherClass.ValueString()
+	} else if r.semver.Major >= 5 {
+		publisherReq.ExtensionName = plan.ExtensionName.ValueString()
 	}
 
 	if r.semver.Major == 4 && (plan.PublisherClass.IsNull() || plan.PublisherClass.IsUnknown()) {
@@ -315,11 +318,14 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		UUID:             id,
 		Name:             plan.Name.ValueString(),
 		Description:      plan.Description.ValueString(),
-		PublisherClass:   plan.PublisherClass.ValueString(),
-		ExtensionName:    plan.ExtensionName.ValueString(),
 		Template:         plan.Template.ValueString(),
 		TemplateMIMEType: plan.TemplateMimeType.ValueString(),
 		DefaultPublisher: plan.DefaultPublisher.ValueBool(),
+	}
+	if r.semver.Major == 4 {
+		publisherReq.PublisherClass = plan.PublisherClass.ValueString()
+	} else if r.semver.Major >= 5 {
+		publisherReq.ExtensionName = plan.ExtensionName.ValueString()
 	}
 	// Execute.
 	tflog.Debug(ctx, "Updating Notification Publisher", map[string]any{
