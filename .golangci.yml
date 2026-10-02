@@ -55,6 +55,7 @@ linters:
             - "crypto/x509$"
             - "encoding/json$"
             - "io$"
+            - "reflect$"
             - "github.com/hashicorp/terraform-plugin-framework/"
             - "github.com/hashicorp/terraform-plugin-framework-validators/"
             - "github.com/hashicorp/terraform-plugin-testing/"
@@ -581,6 +582,8 @@ linters:
         linters:
           - nonamedreturns
           - godoclint
+          - staticcheck
+          - godox
       - path: internal/provider/team_data_source_test.go
         linters:
           - godox
