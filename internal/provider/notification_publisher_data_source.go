@@ -27,7 +27,8 @@ type (
 		ID               types.String `tfsdk:"id"`
 		Name             types.String `tfsdk:"name"`
 		Description      types.String `tfsdk:"description"`
-		PublisherClass   types.String `tfsdk:"publisher_class"`
+		PublisherClass   types.String `tfsdk:"publisher_class"` // API v4.
+		ExtensionName    types.String `tfsdk:"extension_name"`  // API v5+.
 		Template         types.String `tfsdk:"template"`
 		TemplateMimeType types.String `tfsdk:"template_mime_type"`
 		DefaultPublisher types.Bool   `tfsdk:"default_publisher"`
@@ -59,7 +60,11 @@ func (*notificationPublisherDataSource) Schema(_ context.Context, _ datasource.S
 				Computed:    true,
 			},
 			"publisher_class": schema.StringAttribute{
-				Description: "Name of Java Class that provides Publisher.",
+				Description: "Name of Java Class that provides Publisher. API v4.",
+				Computed:    true,
+			},
+			"extension_name": schema.StringAttribute{
+				Description: "Name of extension that provides Publisher. API v5+.",
 				Computed:    true,
 			},
 			"template": schema.StringAttribute{
@@ -117,6 +122,7 @@ func (d *notificationPublisherDataSource) Read(ctx context.Context, req datasour
 		Name:             types.StringValue(publisher.Name),
 		Description:      types.StringValue(publisher.Description),
 		PublisherClass:   types.StringValue(publisher.PublisherClass),
+		ExtensionName:    types.StringValue(publisher.ExtensionName),
 		Template:         types.StringValue(publisher.Template),
 		TemplateMimeType: types.StringValue(publisher.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisher.DefaultPublisher),
@@ -133,6 +139,7 @@ func (d *notificationPublisherDataSource) Read(ctx context.Context, req datasour
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template.#":         len(state.Template.ValueString()),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),

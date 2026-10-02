@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
-func TestAccNotificationPublisherDataSource(t *testing.T) {
+func TestAccNotificationPublisherDataSource_v4(t *testing.T) {
 	if apiSemver.Major > 4 {
-		t.Skip("TODO: Notification Publisher API schema has changed in v5.")
+		t.SkipNow()
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -47,6 +47,64 @@ data "dependencytrack_notification_publisher" "console" {
 					resource.TestCheckResourceAttrPair(
 						"data.dependencytrack_notification_publisher.test", "publisher_class",
 						"dependencytrack_notification_publisher.test", "publisher_class",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_notification_publisher.test", "template_mime_type",
+						"dependencytrack_notification_publisher.test", "template_mime_type",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_notification_publisher.test", "template",
+						"dependencytrack_notification_publisher.test", "template",
+					),
+					resource.TestCheckResourceAttr("data.dependencytrack_notification_publisher.test", "default_publisher", "false"),
+					resource.TestCheckResourceAttr("data.dependencytrack_notification_publisher.console", "default_publisher", "true"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNotificationPublisherDataSource_v5(t *testing.T) {
+	if apiSemver.Major < 5 {
+		t.SkipNow()
+	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+resource "dependencytrack_notification_publisher" "test" {
+  name               = "Data Source Test Publisher"
+  description        = "Publisher for testing data source"
+  extension_name     = "console"
+  template_mime_type = "application/json"
+  template           = "{}"
+}
+
+data "dependencytrack_notification_publisher" "test" {
+  name = dependencytrack_notification_publisher.test.name
+}
+
+data "dependencytrack_notification_publisher" "console" {
+	name = "Console"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_notification_publisher.test", "id",
+						"dependencytrack_notification_publisher.test", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_notification_publisher.test", "name",
+						"dependencytrack_notification_publisher.test", "name",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_notification_publisher.test", "description",
+						"dependencytrack_notification_publisher.test", "description",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.dependencytrack_notification_publisher.test", "extension_name",
+						"dependencytrack_notification_publisher.test", "extension_name",
 					),
 					resource.TestCheckResourceAttrPair(
 						"data.dependencytrack_notification_publisher.test", "template_mime_type",

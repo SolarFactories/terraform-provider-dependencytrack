@@ -164,11 +164,23 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 		ID:               types.StringValue(publisherRes.UUID.String()),
 		Name:             types.StringValue(publisherRes.Name),
 		Description:      types.StringValue(publisherRes.Description),
-		PublisherClass:   types.StringValue(publisherRes.PublisherClass),
-		ExtensionName:    types.StringValue(publisherRes.ExtensionName),
+		PublisherClass:   plan.PublisherClass, // Keep current, updating if v4.
+		ExtensionName:    plan.ExtensionName,  // Keep current, updating if v5.
 		Template:         types.StringValue(publisherRes.Template),
 		TemplateMimeType: types.StringValue(publisherRes.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisherRes.DefaultPublisher),
+	}
+	// Gracefully handle both, for a transition.
+	if r.semver.Major == 4 {
+		newState.PublisherClass = types.StringValue(publisherRes.PublisherClass)
+		if newState.ExtensionName.IsUnknown() {
+			newState.ExtensionName = types.StringNull()
+		}
+	} else if r.semver.Major >= 5 {
+		newState.ExtensionName = types.StringValue(publisherRes.ExtensionName)
+		if newState.PublisherClass.IsUnknown() {
+			newState.PublisherClass = types.StringNull()
+		}
 	}
 
 	diags = resp.State.Set(ctx, newState)
@@ -248,11 +260,22 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 		ID:               types.StringValue(publisher.UUID.String()),
 		Name:             types.StringValue(publisher.Name),
 		Description:      types.StringValue(publisher.Description),
-		PublisherClass:   types.StringValue(publisher.PublisherClass),
-		ExtensionName:    types.StringValue(publisher.ExtensionName),
+		PublisherClass:   state.PublisherClass, // Keep current, updating if v4.
+		ExtensionName:    state.ExtensionName,  // Keep current, updating if v5.
 		Template:         types.StringValue(publisher.Template),
 		TemplateMimeType: types.StringValue(publisher.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisher.DefaultPublisher),
+	}
+	if r.semver.Major == 4 {
+		state.PublisherClass = types.StringValue(publisher.PublisherClass)
+		if state.ExtensionName.IsUnknown() {
+			state.ExtensionName = types.StringNull()
+		}
+	} else if r.semver.Major >= 5 {
+		state.ExtensionName = types.StringValue(publisher.ExtensionName)
+		if state.PublisherClass.IsUnknown() {
+			state.PublisherClass = types.StringNull()
+		}
 	}
 
 	// Update state.
@@ -323,11 +346,23 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		ID:               types.StringValue(publisherRes.UUID.String()),
 		Name:             types.StringValue(publisherRes.Name),
 		Description:      types.StringValue(publisherRes.Description),
-		PublisherClass:   types.StringValue(publisherRes.PublisherClass),
-		ExtensionName:    types.StringValue(publisherRes.ExtensionName),
+		PublisherClass:   plan.PublisherClass, // Keep current, updating if v4.
+		ExtensionName:    plan.ExtensionName,  // Keep current, updating if v5.
 		Template:         types.StringValue(publisherRes.Template),
 		TemplateMimeType: types.StringValue(publisherRes.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisherRes.DefaultPublisher),
+	}
+
+	if r.semver.Major == 4 {
+		state.PublisherClass = types.StringValue(publisherRes.PublisherClass)
+		if state.ExtensionName.IsUnknown() {
+			state.ExtensionName = types.StringNull()
+		}
+	} else if r.semver.Major >= 5 {
+		state.ExtensionName = types.StringValue(publisherRes.ExtensionName)
+		if state.PublisherClass.IsUnknown() {
+			state.PublisherClass = types.StringNull()
+		}
 	}
 
 	// Update State.
