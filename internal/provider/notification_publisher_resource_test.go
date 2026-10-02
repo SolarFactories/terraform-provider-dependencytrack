@@ -128,9 +128,6 @@ resource "dependencytrack_notification_publisher" "test" {
 }
 
 func TestAccNotificationPublisherResourceRegression236(t *testing.T) {
-	if apiSemver.Major > 4 {
-		t.Skip("TODO: Notification Publisher API schema changed in v5.")
-	}
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -141,6 +138,7 @@ func TestAccNotificationPublisherResourceRegression236(t *testing.T) {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Notification_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 	template = "Test"
 }
@@ -152,12 +150,14 @@ resource "dependencytrack_notification_publisher" "test" {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Notification_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 	template = "Test"
 }
 resource "dependencytrack_notification_publisher" "test2" {
 	name = "Test_Notification_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 	template = "Test"
 }
@@ -179,6 +179,7 @@ import {
 resource "dependencytrack_notification_publisher" "test2" {
 	name = "Test_Notification_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 	template = "Test"
 }

@@ -10,9 +10,6 @@ func TestAccTagNotificationRulesResource(t *testing.T) {
 	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
 		t.SkipNow()
 	}
-	if apiSemver.Major > 4 {
-		t.Skip("TODO: Notification Publisher API schema changed in v5.")
-	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -27,6 +24,7 @@ resource "dependencytrack_project" "test" {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Rule_Publisher_Tag"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test_a" {
@@ -78,6 +76,7 @@ resource "dependencytrack_project" "test" {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Rule_Publisher_Tag"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test_a" {
@@ -131,9 +130,6 @@ func TestAccTagNotificationRulesResourceNotificationRulesUnordered(t *testing.T)
 	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
 		t.SkipNow()
 	}
-	if apiSemver.Major > 4 {
-		t.Skip("TODO: Notification Publisher API schema changed in v5.")
-	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -148,6 +144,7 @@ resource "dependencytrack_project" "test" {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Rule_Publisher_Tag_Unordered"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test_a" {
@@ -191,6 +188,7 @@ resource "dependencytrack_project" "test" {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Rule_Publisher_Tag_Unordered"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test_a" {
