@@ -30,7 +30,8 @@ type (
 		ID               types.String `tfsdk:"id"`
 		Name             types.String `tfsdk:"name"`
 		Description      types.String `tfsdk:"description"`
-		PublisherClass   types.String `tfsdk:"publisher_class"`
+		PublisherClass   types.String `tfsdk:"publisher_class"` // API v4.
+		ExtensionName    types.String `tfsdk:"extension_name"`  // API v5+.
 		Template         types.String `tfsdk:"template"`
 		TemplateMimeType types.String `tfsdk:"template_mime_type"`
 		DefaultPublisher types.Bool   `tfsdk:"default_publisher"`
@@ -66,8 +67,14 @@ func (*notificationPublisherResource) Schema(_ context.Context, _ resource.Schem
 				Computed:    true,
 			},
 			"publisher_class": schema.StringAttribute{
-				Description: "Name of Java Class that provides Publisher.",
-				Required:    true,
+				Description: "Name of Java Class that provides Publisher. Required for API v4.",
+				Optional:    true, // Required in v4. Not valid in v5. Checked in `Create`.
+				Computed:    true,
+			},
+			"extension_name": schema.StringAttribute{
+				Description: "Name of extension that provides Publisher. Required for API v5+.",
+				Optional:    true, // Required in v5. Not valid in v4. Checked in `Create`.
+				Computed:    true,
 			},
 			"template": schema.StringAttribute{
 				Description: "Template string value for Publisher Payload.",
@@ -97,15 +104,52 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 	publisherReq := dtrack.NotificationPublisher{
 		Name:             plan.Name.ValueString(),
 		Description:      plan.Description.ValueString(),
-		PublisherClass:   plan.PublisherClass.ValueString(),
 		Template:         plan.Template.ValueString(),
 		TemplateMIMEType: plan.TemplateMimeType.ValueString(),
+	}
+	if r.semver.Major == 4 {
+		publisherReq.PublisherClass = plan.PublisherClass.ValueString()
+	} else if r.semver.Major >= 5 {
+		publisherReq.ExtensionName = plan.ExtensionName.ValueString()
+	}
+
+	if r.semver.Major == 4 && (plan.PublisherClass.IsNull() || plan.PublisherClass.IsUnknown()) {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("publisher_class"),
+			"Missing required attribute",
+			"publisher_class attribute is required for API v4, but was not provided",
+		)
+	}
+	if r.semver.Major == 5 && (plan.ExtensionName.IsNull() || plan.ExtensionName.IsUnknown()) {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("extension_name"),
+			"Missing required attribute",
+			"extension_name attribute is required for API v5, but was not provided",
+		)
+	}
+	if r.semver.Major == 4 && !plan.ExtensionName.IsNull() && !plan.ExtensionName.IsUnknown() {
+		resp.Diagnostics.AddAttributeWarning(
+			path.Root("extension_name"),
+			"Provided unused attribute",
+			"extension-name attribute is unused for API v4, but was provided",
+		)
+	}
+	if r.semver.Major == 5 && !plan.PublisherClass.IsNull() && !plan.PublisherClass.IsUnknown() {
+		resp.Diagnostics.AddAttributeWarning(
+			path.Root("publisher_class"),
+			"Provided unused attribute",
+			"publisher_class attribute is unused for API v5, but was provided",
+		)
+	}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	tflog.Debug(ctx, "Creating Notification Publisher", map[string]any{
 		"name":               publisherReq.Name,
 		"description":        publisherReq.Description,
 		"publisher_class":    publisherReq.PublisherClass,
+		"extension_name":     publisherReq.ExtensionName,
 		"template":           publisherReq.Template,
 		"template_mime_type": publisherReq.TemplateMIMEType,
 	})
@@ -123,10 +167,23 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 		ID:               types.StringValue(publisherRes.UUID.String()),
 		Name:             types.StringValue(publisherRes.Name),
 		Description:      types.StringValue(publisherRes.Description),
-		PublisherClass:   types.StringValue(publisherRes.PublisherClass),
+		PublisherClass:   plan.PublisherClass, // Keep current, updating if v4.
+		ExtensionName:    plan.ExtensionName,  // Keep current, updating if v5.
 		Template:         types.StringValue(publisherRes.Template),
 		TemplateMimeType: types.StringValue(publisherRes.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisherRes.DefaultPublisher),
+	}
+	// Gracefully handle both, for a transition.
+	if r.semver.Major == 4 {
+		newState.PublisherClass = types.StringValue(publisherRes.PublisherClass)
+		if newState.ExtensionName.IsUnknown() {
+			newState.ExtensionName = types.StringNull()
+		}
+	} else if r.semver.Major >= 5 {
+		newState.ExtensionName = types.StringValue(publisherRes.ExtensionName)
+		if newState.PublisherClass.IsUnknown() {
+			newState.PublisherClass = types.StringNull()
+		}
 	}
 
 	diags = resp.State.Set(ctx, newState)
@@ -140,6 +197,7 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 		"name":               newState.Name.ValueString(),
 		"description":        newState.Description.ValueString(),
 		"publisher_class":    newState.PublisherClass.ValueString(),
+		"extension_name":     newState.ExtensionName.ValueString(),
 		"template":           newState.Template.ValueString(),
 		"template_mime_type": newState.TemplateMimeType.ValueString(),
 		"default_publisher":  newState.DefaultPublisher.ValueBool(),
@@ -166,6 +224,7 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),
@@ -204,10 +263,22 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 		ID:               types.StringValue(publisher.UUID.String()),
 		Name:             types.StringValue(publisher.Name),
 		Description:      types.StringValue(publisher.Description),
-		PublisherClass:   types.StringValue(publisher.PublisherClass),
+		PublisherClass:   state.PublisherClass, // Keep current, updating if v4.
+		ExtensionName:    state.ExtensionName,  // Keep current, updating if v5.
 		Template:         types.StringValue(publisher.Template),
 		TemplateMimeType: types.StringValue(publisher.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisher.DefaultPublisher),
+	}
+	if r.semver.Major == 4 {
+		state.PublisherClass = types.StringValue(publisher.PublisherClass)
+		if state.ExtensionName.IsUnknown() {
+			state.ExtensionName = types.StringNull()
+		}
+	} else if r.semver.Major >= 5 {
+		state.ExtensionName = types.StringValue(publisher.ExtensionName)
+		if state.PublisherClass.IsUnknown() {
+			state.PublisherClass = types.StringNull()
+		}
 	}
 
 	// Update state.
@@ -221,6 +292,7 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),
@@ -246,10 +318,14 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		UUID:             id,
 		Name:             plan.Name.ValueString(),
 		Description:      plan.Description.ValueString(),
-		PublisherClass:   plan.PublisherClass.ValueString(),
 		Template:         plan.Template.ValueString(),
 		TemplateMIMEType: plan.TemplateMimeType.ValueString(),
 		DefaultPublisher: plan.DefaultPublisher.ValueBool(),
+	}
+	if r.semver.Major == 4 {
+		publisherReq.PublisherClass = plan.PublisherClass.ValueString()
+	} else if r.semver.Major >= 5 {
+		publisherReq.ExtensionName = plan.ExtensionName.ValueString()
 	}
 	// Execute.
 	tflog.Debug(ctx, "Updating Notification Publisher", map[string]any{
@@ -257,6 +333,7 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		"name":               publisherReq.Name,
 		"description":        publisherReq.Description,
 		"publisher_class":    publisherReq.PublisherClass,
+		"extension_name":     publisherReq.ExtensionName,
 		"template":           publisherReq.Template,
 		"template_mime_type": publisherReq.TemplateMIMEType,
 		"default_publisher":  publisherReq.DefaultPublisher,
@@ -275,10 +352,23 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		ID:               types.StringValue(publisherRes.UUID.String()),
 		Name:             types.StringValue(publisherRes.Name),
 		Description:      types.StringValue(publisherRes.Description),
-		PublisherClass:   types.StringValue(publisherRes.PublisherClass),
+		PublisherClass:   plan.PublisherClass, // Keep current, updating if v4.
+		ExtensionName:    plan.ExtensionName,  // Keep current, updating if v5.
 		Template:         types.StringValue(publisherRes.Template),
 		TemplateMimeType: types.StringValue(publisherRes.TemplateMIMEType),
 		DefaultPublisher: types.BoolValue(publisherRes.DefaultPublisher),
+	}
+
+	if r.semver.Major == 4 {
+		state.PublisherClass = types.StringValue(publisherRes.PublisherClass)
+		if state.ExtensionName.IsUnknown() {
+			state.ExtensionName = types.StringNull()
+		}
+	} else if r.semver.Major >= 5 {
+		state.ExtensionName = types.StringValue(publisherRes.ExtensionName)
+		if state.PublisherClass.IsUnknown() {
+			state.PublisherClass = types.StringNull()
+		}
 	}
 
 	// Update State.
@@ -292,6 +382,7 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),
@@ -320,6 +411,7 @@ func (r *notificationPublisherResource) Delete(ctx context.Context, req resource
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),
@@ -346,6 +438,7 @@ func (r *notificationPublisherResource) Delete(ctx context.Context, req resource
 		"name":               state.Name.ValueString(),
 		"description":        state.Description.ValueString(),
 		"publisher_class":    state.PublisherClass.ValueString(),
+		"extension_name":     state.ExtensionName.ValueString(),
 		"template":           state.Template.ValueString(),
 		"template_mime_type": state.TemplateMimeType.ValueString(),
 		"default_publisher":  state.DefaultPublisher.ValueBool(),

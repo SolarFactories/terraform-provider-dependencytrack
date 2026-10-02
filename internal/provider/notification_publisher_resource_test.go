@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 )
 
-func TestAccNotificationPublisherResource(t *testing.T) {
+func TestAccNotificationPublisherResource_v4(t *testing.T) {
 	if apiSemver.Major > 4 {
-		t.Skip("TODO: Notification Publisher API schema changed in v5.")
+		t.SkipNow()
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -19,14 +19,15 @@ func TestAccNotificationPublisherResource(t *testing.T) {
 				Config: providerConfig + `
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Notification_Publisher"
-	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
 	template_mime_type = "text/plain"
+	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("dependencytrack_notification_publisher.test", "id"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "name", "Test_Notification_Publisher"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "description", ""),
+					resource.TestCheckNoResourceAttr("dependencytrack_notification_publisher.test", "extension_name"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "publisher_class",
 						"org.dependencytrack.notification.publisher.ConsolePublisher"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template", ""),
@@ -55,6 +56,7 @@ resource "dependencytrack_notification_publisher" "test" {
 					resource.TestCheckResourceAttrSet("dependencytrack_notification_publisher.test", "id"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "name", "Test_Notification_Publisher_With_Changes"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "description", "Test Description"),
+					resource.TestCheckNoResourceAttr("dependencytrack_notification_publisher.test", "extension_name"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "publisher_class",
 						"org.dependencytrack.notification.publisher.ConsolePublisher"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template", "Test Template"),
@@ -66,10 +68,66 @@ resource "dependencytrack_notification_publisher" "test" {
 	})
 }
 
-func TestAccNotificationPublisherResourceRegression236(t *testing.T) {
-	if apiSemver.Major > 4 {
-		t.Skip("TODO: Notification Publisher API schema changed in v5.")
+func TestAccNotificationPublisherResource_v5(t *testing.T) {
+	if apiSemver.Major < 5 {
+		t.SkipNow()
 	}
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_notification_publisher" "test" {
+	name = "Test_Notification_Publisher"
+	template_mime_type = "text/plain"
+	extension_name = "console"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_notification_publisher.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "name", "Test_Notification_Publisher"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "description", ""),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "extension_name", "console"),
+					resource.TestCheckNoResourceAttr("dependencytrack_notification_publisher.test", "publisher_class"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template", ""),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template_mime_type", "text/plain"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "default_publisher", "false"),
+				),
+			},
+			// ImportState testing.
+			{
+				ResourceName:      "dependencytrack_notification_publisher.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			// Update and Read testing.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_notification_publisher" "test" {
+	name = "Test_Notification_Publisher_With_Changes"
+	extension_name = "console"
+	description = "Test Description"
+	template_mime_type = "text/plain"
+	template = "Test Template"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrSet("dependencytrack_notification_publisher.test", "id"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "name", "Test_Notification_Publisher_With_Changes"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "description", "Test Description"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "extension_name", "console"),
+					resource.TestCheckNoResourceAttr("dependencytrack_notification_publisher.test", "publisher_class"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template", "Test Template"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "template_mime_type", "text/plain"),
+					resource.TestCheckResourceAttr("dependencytrack_notification_publisher.test", "default_publisher", "false"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccNotificationPublisherResourceRegression236(t *testing.T) {
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -80,6 +138,7 @@ func TestAccNotificationPublisherResourceRegression236(t *testing.T) {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Notification_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 	template = "Test"
 }
@@ -91,12 +150,14 @@ resource "dependencytrack_notification_publisher" "test" {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Notification_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 	template = "Test"
 }
 resource "dependencytrack_notification_publisher" "test2" {
 	name = "Test_Notification_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 	template = "Test"
 }
@@ -118,6 +179,7 @@ import {
 resource "dependencytrack_notification_publisher" "test2" {
 	name = "Test_Notification_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.ConsolePublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 	template = "Test"
 }

@@ -15,6 +15,11 @@ services:
       DT_DATASOURCE_USERNAME: "dtrack"
       DT_DATASOURCE_PASSWORD: "dtrack"
       DT_TELEMETRY_SUBMISSION_DEEFAULT_ENABLED: false
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent localhost:9000/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
     ports:
       - "127.0.0.1:9081:8080"
     volumes:

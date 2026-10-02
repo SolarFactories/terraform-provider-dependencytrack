@@ -663,6 +663,11 @@ linters:
       - path: internal/provider/config_property_resource_test.go
         linters:
           - godox
+      - path: internal/provider/notification_publisher_resource.go
+        linters:
+          - gocognit
+          - gocyclo
+          - cyclop
 
 formatters:
   enable:

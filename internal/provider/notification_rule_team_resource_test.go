@@ -8,9 +8,6 @@ import (
 )
 
 func TestAccNotificationRuleTeamResource(t *testing.T) {
-	if apiSemver.Major > 4 {
-		t.Skip("TODO: Notification Publisher API schema changed in v5.")
-	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -20,6 +17,7 @@ func TestAccNotificationRuleTeamResource(t *testing.T) {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Rule_Team_Publisher"
 	publisher_class = "org.dependencytrack.notification.publisher.SendMailPublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test" {
@@ -59,6 +57,7 @@ resource "dependencytrack_notification_rule_team" "test" {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Rule_Team_Publisher"
 	publisher_class = "org.dependencytrack.notification.publisher.SendMailPublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test" {
@@ -93,9 +92,6 @@ resource "dependencytrack_notification_rule_team" "test" {
 
 func TestAccNotificationRuleTeamResourceRegression236(t *testing.T) {
 	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/236
-	if apiSemver.Major > 4 {
-		t.Skip("TODO: Notification Publisher API schema changed in v5.")
-	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -105,6 +101,7 @@ func TestAccNotificationRuleTeamResourceRegression236(t *testing.T) {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Rule_Team_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.SendMailPublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test" {
@@ -127,6 +124,7 @@ resource "dependencytrack_notification_rule_team" "test" {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Rule_Team_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.SendMailPublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test" {
@@ -163,6 +161,7 @@ import {
 resource "dependencytrack_notification_publisher" "test" {
 	name = "Test_Rule_Team_Publisher_236"
 	publisher_class = "org.dependencytrack.notification.publisher.SendMailPublisher"
+	extension_name = "console"
 	template_mime_type = "text/plain"
 }
 resource "dependencytrack_notification_rule" "test" {

@@ -171,6 +171,7 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	notifyOnReq := Map(notifyOn, func(on string) dtrack.NotificationRuleNotifyOn { return dtrack.NotificationRuleNotifyOn(on) })
 
 	ruleReq := dtrack.NotificationRule{
 		Name:                  plan.Name.ValueString(),
@@ -178,7 +179,7 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 		LogSuccessfulPublish:  plan.LogSuccessfulPublish.ValueBool(),
 		Scope:                 dtrack.NotificationRuleScope(plan.Scope.ValueString()),
 		NotificationLevel:     dtrack.NotificationRuleLevel(plan.NotificationLevel.ValueString()),
-		NotifyOn:              Map(notifyOn, func(on string) dtrack.NotificationRuleNotifyOn { return dtrack.NotificationRuleNotifyOn(on) }),
+		NotifyOn:              &notifyOnReq,
 		TriggerType:           dtrack.NotificationRuleTriggerType(plan.TriggerType.ValueString()),
 		Message:               plan.Message.ValueString(),
 		ScheduleCron:          plan.ScheduleCron.ValueString(),
@@ -256,7 +257,7 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	newNotifyOnStrings := Map(ruleRes.NotifyOn, func(notify dtrack.NotificationRuleNotifyOn) string { return string(notify) })
+	newNotifyOnStrings := Map(*ruleRes.NotifyOn, func(notify dtrack.NotificationRuleNotifyOn) string { return string(notify) })
 	if SliceUnorderedEqual(notifyOn, newNotifyOnStrings, strings.Compare) {
 		newNotifyOnStrings = notifyOn
 	}
@@ -388,7 +389,7 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 		)
 		return
 	}
-	newNotifyOnStrings := Map(rule.NotifyOn, func(notify dtrack.NotificationRuleNotifyOn) string { return string(notify) })
+	newNotifyOnStrings := Map(*rule.NotifyOn, func(notify dtrack.NotificationRuleNotifyOn) string { return string(notify) })
 	if SliceUnorderedEqual(notifyOn, newNotifyOnStrings, strings.Compare) {
 		newNotifyOnStrings = notifyOn
 	}
@@ -478,6 +479,7 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	notifyOnReq := Map(notifyOn, func(on string) dtrack.NotificationRuleNotifyOn { return dtrack.NotificationRuleNotifyOn(on) })
 
 	ruleReq := dtrack.NotificationRule{
 		UUID:                  id,
@@ -486,7 +488,7 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 		LogSuccessfulPublish:  plan.LogSuccessfulPublish.ValueBool(),
 		Scope:                 dtrack.NotificationRuleScope(plan.Scope.ValueString()),
 		NotificationLevel:     dtrack.NotificationRuleLevel(plan.NotificationLevel.ValueString()),
-		NotifyOn:              Map(notifyOn, func(on string) dtrack.NotificationRuleNotifyOn { return dtrack.NotificationRuleNotifyOn(on) }),
+		NotifyOn:              &notifyOnReq,
 		TriggerType:           dtrack.NotificationRuleTriggerType(plan.TriggerType.ValueString()),
 		Message:               plan.Message.ValueString(),
 		ScheduleCron:          plan.ScheduleCron.ValueString(),
@@ -526,7 +528,7 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 		)
 		return
 	}
-	newNotifyOnStrings := Map(ruleRes.NotifyOn, func(notify dtrack.NotificationRuleNotifyOn) string {
+	newNotifyOnStrings := Map(*ruleRes.NotifyOn, func(notify dtrack.NotificationRuleNotifyOn) string {
 		return string(notify)
 	})
 	if SliceUnorderedEqual(notifyOn, newNotifyOnStrings, strings.Compare) {
