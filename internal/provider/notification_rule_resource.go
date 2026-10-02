@@ -280,7 +280,7 @@ func (r *notificationRuleResource) Create(ctx context.Context, req resource.Crea
 		Message:               types.StringValue(ruleRes.Message),
 		ScheduleCron:          types.StringValue(ruleRes.ScheduleCron),
 		ScheduleSkipUnchanged: types.BoolValue(ruleRes.ScheduleSkipUnchanged),
-		PublisherConfig:       PreferConfiguredJSON(plan.PublisherConfig, ruleRes.PublisherConfig),
+		PublisherConfig:       PreferConfiguredValue(plan.PublisherConfig, ruleRes.PublisherConfig),
 		PublisherID:           types.StringValue(ruleRes.Publisher.UUID.String()),
 	}
 	if hasNotificationChildrenFeature(*r.semver) {
@@ -413,7 +413,7 @@ func (r *notificationRuleResource) Read(ctx context.Context, req resource.ReadRe
 		Message:               types.StringValue(rule.Message),
 		ScheduleCron:          types.StringValue(rule.ScheduleCron),
 		ScheduleSkipUnchanged: types.BoolValue(rule.ScheduleSkipUnchanged),
-		PublisherConfig:       PreferConfiguredJSON(state.PublisherConfig, rule.PublisherConfig),
+		PublisherConfig:       PreferConfiguredValue(state.PublisherConfig, rule.PublisherConfig),
 		PublisherID:           types.StringValue(rule.Publisher.UUID.String()),
 	}
 	if hasNotificationChildrenFeature(*r.semver) {
@@ -554,7 +554,7 @@ func (r *notificationRuleResource) Update(ctx context.Context, req resource.Upda
 		Message:               types.StringValue(ruleRes.Message),
 		ScheduleCron:          types.StringValue(ruleRes.ScheduleCron),
 		ScheduleSkipUnchanged: types.BoolValue(ruleRes.ScheduleSkipUnchanged),
-		PublisherConfig:       PreferConfiguredJSON(plan.PublisherConfig, ruleRes.PublisherConfig),
+		PublisherConfig:       PreferConfiguredValue(plan.PublisherConfig, ruleRes.PublisherConfig),
 		PublisherID:           types.StringValue(ruleRes.Publisher.UUID.String()),
 	}
 	if hasNotificationChildrenFeature(*r.semver) {

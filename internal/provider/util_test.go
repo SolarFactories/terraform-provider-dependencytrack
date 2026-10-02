@@ -66,19 +66,27 @@ func TestParseSemver(t *testing.T) {
 
 func TestJSONSemanticallyEqual(t *testing.T) {
 	{
-		equal := JSONSemanticallyEqual(`{"destinationUrl":"https://example.com/hook"}`, "{\n  \"destinationUrl\": \"https://example.com/hook\"\n}")
+		equal := StringsSemanticallyEqual(`{"destinationUrl":"https://example.com/hook"}`, "{\n  \"destinationUrl\": \"https://example.com/hook\"\n}")
 		requireEqual(t, equal, true)
 	}
 	{
-		equal := JSONSemanticallyEqual(`{"a":1,"b":2}`, `{"b":2,"a":1}`)
+		equal := StringsSemanticallyEqual(`{"a":1,"b":2}`, `{"b":2,"a":1}`)
 		requireEqual(t, equal, true)
 	}
 	{
-		equal := JSONSemanticallyEqual(`{"destinationUrl":"https://example.com/a"}`, `{"destinationUrl":"https://example.com/b"}`)
+		equal := StringsSemanticallyEqual(`{"destinationUrl":"https://example.com/a"}`, `{"destinationUrl":"https://example.com/b"}`)
 		requireEqual(t, equal, false)
 	}
 	{
-		equal := JSONSemanticallyEqual(`not json`, `not json`)
+		equal := StringsSemanticallyEqual("not json", "not json")
+		requireEqual(t, equal, true)
+	}
+	{
+		equal := StringsSemanticallyEqual("", "")
+		requireEqual(t, equal, true)
+	}
+	{
+		equal := StringsSemanticallyEqual("not json", "")
 		requireEqual(t, equal, false)
 	}
 }

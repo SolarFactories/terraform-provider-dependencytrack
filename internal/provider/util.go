@@ -292,21 +292,31 @@ func SliceUnorderedEqual[T any](a, b []T, compare func(a, b T) int) bool {
 	return slices.EqualFunc(sortedA, sortedB, func(a, b T) bool { return compare(a, b) == 0 })
 }
 
-// JSONSemanticallyEqual returns true when both strings are valid JSON documents with equal content, ignoring whitespace and key order.
-func JSONSemanticallyEqual(a, b string) bool {
-	var aValue, bValue any
-	if err := json.Unmarshal([]byte(a), &aValue); err != nil {
-		return false
+func StringsSemanticallyEqual(aStr, bStr string) bool {
+	if aStr == bStr {
+		// Identical strings are trivially semantically equal.
+		return true
 	}
-	if err := json.Unmarshal([]byte(b), &bValue); err != nil {
-		return false
+	var aParsed, bParsed any
+	{
+		// JSON - ignoring whitespace and key order.
+		err := json.Unmarshal([]byte(aStr), &aParsed)
+		if err == nil {
+			err = json.Unmarshal([]byte(bStr), &bParsed)
+			if err == nil {
+				return reflect.DeepEqual(aParsed, bParsed)
+			}
+		}
 	}
-	return reflect.DeepEqual(aValue, bValue)
+	return false
 }
 
-// PreferConfiguredJSON returns the configured value when the API value is semantically equal, to avoid diffs from API reformatting.
-func PreferConfiguredJSON(configured types.String, apiValue string) types.String {
-	if !configured.IsNull() && !configured.IsUnknown() && JSONSemanticallyEqual(configured.ValueString(), apiValue) {
+// Returns `configured` when `apiValue` is semantically equal, to avoid diffs from API reformatting.
+// TODO: `StringsSemanticallyEqual` is covered in unit tests,
+// but could not identify a `TF_ACC` test for issue raised in [#246](https://github.com/SolarFactories/terraform-provider-dependencytrack/pull/246),
+// neither could replicate issue with manual experimentation.
+func PreferConfiguredValue(configured types.String, apiValue string) types.String {
+	if !configured.IsNull() && !configured.IsUnknown() && StringsSemanticallyEqual(configured.ValueString(), apiValue) {
 		return configured
 	}
 	return types.StringValue(apiValue)
