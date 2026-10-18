@@ -131,7 +131,7 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 		resp.Diagnostics.AddAttributeWarning(
 			path.Root("extension_name"),
 			"Provided unused attribute",
-			"extension-name attribute is unused for API v4, but was provided",
+			"extension_name attribute is unused for API v4, but was provided",
 		)
 	}
 	if r.semver.Major == 5 && !plan.PublisherClass.IsNull() && !plan.PublisherClass.IsUnknown() {

@@ -14,7 +14,7 @@ services:
       DT_DATASOURCE_URL: "jdbc:postgresql://postgres:5432/dtrack"
       DT_DATASOURCE_USERNAME: "dtrack"
       DT_DATASOURCE_PASSWORD: "dtrack"
-      DT_TELEMETRY_SUBMISSION_DEEFAULT_ENABLED: false
+      DT_TELEMETRY_SUBMISSION_DEFAULT_ENABLED: false
     healthcheck:
       test: ["CMD-SHELL", "curl --silent localhost:9000/health"]
       interval: 5s
