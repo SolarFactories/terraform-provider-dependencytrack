@@ -89,13 +89,11 @@ linters:
     exhaustive:
       check:
         - switch
-        - map
+        - mapliteral
+        - typeswitch
       default-signifies-exhaustive: true # Default false
-      ignore-enum-members: ""
-      ignore-enum-types: ""
       package-scope-only: false # Default false
-      explicit-exhaustive-switch: false # Default false
-      explicit-exhaustive-map: false # Default false
+      explicit-exhaustive: false # Default false
       default-case-required: false # Default false
     exhaustruct_v5:
       ignore-patterns:
