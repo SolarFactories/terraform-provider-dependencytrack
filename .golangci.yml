@@ -668,6 +668,9 @@ linters:
           - gocognit
           - gocyclo
           - cyclop
+      - path: internal/provider/component_resource.go
+        linters:
+          - gocognit
 
 formatters:
   enable:

@@ -360,7 +360,13 @@ func (r *componentResource) Delete(ctx context.Context, req resource.DeleteReque
 	err := r.client.Component.Delete(ctx, id)
 	if err != nil {
 		err := err.Error()
-		if err == "The UUID of the component could not be found. (status: 404)" {
+		missing := false
+		if r.semver.Major <= 4 || (r.semver.Major == 5 && r.semver.Minor <= 1) {
+			missing = err == "The UUID of the component could not be found. (status: 404)"
+		} else if r.semver.Major == 5 && r.semver.Minor >= 2 {
+			missing = err == "{\"status\":404,\"title\":\"Resource does not exist\",\"detail\":\"Component could not be found\"} (status: 404)"
+		}
+		if missing {
 			tflog.Warn(ctx, "Unable to delete missing Component. Will be removed from state", map[string]any{
 				"id":      id.String(),
 				"project": state.Project.ValueString(),
