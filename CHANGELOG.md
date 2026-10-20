@@ -1,9 +1,30 @@
-## Unreleased
+## 1.26
+
+#### FEATURES
+- Address incompatibility in `dependencytrack_notification_publisher` for API 5.x, where the API had replaced `publisher_class` with `extension_name`.
+  - Designed to handle suitable use against either v4 or v5, issuing warnings for unused attributes.
+  - Enabled enabling Notification acceptance tests for v5.
 
 #### FIXES
 - `dependencytrack_notification_rule` planned an in-place update on every run when `publisher_config` was semantically equal to the API value, but formatted differently (e.g. `jsonencode` output vs. the API's pretty-printed JSON).
 	- The configured value is now kept in state when the API value is equal JSON, ignoring whitespace and key order.
 	- Existing state that holds the API formatting is converged by one further update.
+	- Thanks to [@cschindlbeck](https://github.com/cschindlbeck) for reporting and providing a fix.
+	- https://github.com/SolarFactories/terraform-provider-dependencytrack/pull/246
+- Fix typo in disabling telemetry in Docker Compose container for v5.
+
+#### DEPENDENCIES
+- Update override for `github.com/DependencyTrack/client-go` within `github.com/SolarFactories/client-go`
+- `goreleaser/goreleaser-action` from `7.2.3` -> `7.3.0`
+
+#### MISC
+- Rearrange ordering of tests in pipeline, to run initial preliminary tests before running comprehensive test suite.
+- Move disabled API tests from pipeline, in to individual tests, enabling more easily identifying those disabled due to minimum API versions, and those not yet working on v5.
+  - Add access to API version within acceptance tests, to be used for conditional tests.
+- Add documented support and automated testing for API `4.14.4`, `4.14.4-alpine`, `4.14.5`, `4.14.5-alpine`.
+- Add automated testing for API `5.1.1`, `5.1.2`, `5.2.0`.
+- Add health check to Docker Compose container for v5.
+- Add automated testing and support for Terraform `1.16`.
 
 ## 1.25
 
