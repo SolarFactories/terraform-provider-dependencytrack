@@ -110,7 +110,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	configPropertiesReq := make([]dtrack.ConfigProperty, 0, len(plan.Properties))
-	// Used to retain EncryptesStrings, and values that are ordered lists, encoded as strings.
+	// Used to retain EncryptedStrings (API < 5), and values that are ordered lists, encoded as strings.
 	valueStringRetention := map[Identity]string{}
 
 	for _, propertyReq := range plan.Properties {
@@ -120,13 +120,13 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			Value:     propertyReq.Value.ValueString(),
 			Type:      propertyReq.Type.ValueString(),
 		}
-		if configProperty.Type == PropertyTypeEncryptedString {
+		if r.semver.Major < 5 && configProperty.Type == PropertyTypeEncryptedString {
 			valueStringRetention[Identity{
 				group: configProperty.GroupName,
 				name:  configProperty.Name,
 			}] = configProperty.Value
 		}
-		if configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
+		if r.semver.Major < 5 && configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
 			valueStringRetention[Identity{
 				group: configProperty.GroupName,
 				name:  configProperty.Name,
@@ -158,7 +158,29 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		Properties: []configPropertiesElementResourceModel{},
 	}
 
-	for _, propertyRes := range configPropertiesRes {
+	for _, propertyResItem := range configPropertiesRes {
+		var propertyRes dtrack.ConfigProperty
+		if r.semver.Major < 5 {
+			// Inline errors was only added in v5. Prior was simply `[]ConfigProperty`.
+			propertyRes = *propertyResItem.Response
+		} else if propertyResItem.Response != nil {
+			propertyRes = *propertyResItem.Response
+		} else if propertyResItem.Error != nil {
+			resp.Diagnostics.AddAttributeWarning(
+				path.Root("properties"),
+				"Error when setting config property",
+				*propertyResItem.Error,
+			)
+			continue
+		} else {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("properties"),
+				"Missing ConfigProperty / error within response",
+				"This is a bug in interaction between Provider and SDK, and should be reported to the Provider developers.",
+			)
+			continue
+		}
+
 		model := configPropertiesElementResourceModel{
 			Group:       types.StringValue(propertyRes.GroupName),
 			Name:        types.StringValue(propertyRes.Name),
@@ -166,13 +188,15 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			Type:        types.StringValue(propertyRes.Type),
 			Description: types.StringValue(propertyRes.Description),
 		}
-		if propertyRes.Type == PropertyTypeEncryptedString {
+		// API v5 replaced `EncryptedString` with a Secrets Management system.
+		if r.semver.Major < 5 && propertyRes.Type == PropertyTypeEncryptedString {
 			model.Value = types.StringValue(valueStringRetention[Identity{
 				group: propertyRes.GroupName,
 				name:  propertyRes.Name,
 			}])
 		}
-		if propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
+		// API v5 moved this to an extension point.
+		if r.semver.Major < 5 && propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
 			retained := valueStringRetention[Identity{
 				group: propertyRes.GroupName,
 				name:  propertyRes.Name,
@@ -191,6 +215,10 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			"value": propertyRes.Value,
 			"type":  propertyRes.Type,
 		})
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	diags = resp.State.Set(ctx, &configPropertiesState)
@@ -259,10 +287,10 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 			Type:        types.StringValue(configProperty.Type),
 			Description: types.StringValue(configProperty.Description),
 		}
-		if configProperty.Type == PropertyTypeEncryptedString {
+		if r.semver.Major < 5 && configProperty.Type == PropertyTypeEncryptedString {
 			state.Properties[idx].Value = value
 		}
-		if configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
+		if r.semver.Major < 5 && configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
 			retained := configPropertyModel.Value.ValueString()
 			retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
 			responseSorted := slices.SortedStableFunc(strings.SplitSeq(configProperty.Value, ";"), strings.Compare)
@@ -315,13 +343,13 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Value:     propertyReq.Value.ValueString(),
 			Type:      propertyReq.Type.ValueString(),
 		}
-		if configProperty.Type == PropertyTypeEncryptedString {
+		if r.semver.Major < 5 && configProperty.Type == PropertyTypeEncryptedString {
 			valueStringRetention[Identity{
 				group: configProperty.GroupName,
 				name:  configProperty.Name,
 			}] = configProperty.Value
 		}
-		if configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
+		if r.semver.Major < 5 && configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
 			valueStringRetention[Identity{
 				group: configProperty.GroupName,
 				name:  configProperty.Name,
@@ -353,7 +381,28 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 		Properties: []configPropertiesElementResourceModel{},
 	}
 
-	for _, propertyRes := range configPropertiesRes {
+	for _, propertyResItem := range configPropertiesRes {
+		var propertyRes dtrack.ConfigProperty
+		if r.semver.Major < 5 {
+			propertyRes = *propertyResItem.Response
+		} else if propertyResItem.Response != nil {
+			propertyRes = *propertyResItem.Response
+		} else if propertyResItem.Error != nil {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("properties"),
+				"Error within updating config property",
+				*propertyResItem.Error,
+			)
+			continue
+		} else {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("properties"),
+				"Missing ConfigProperty / error within response",
+				"This is a bug in interaction between Provider and SDK, and should be reported to the Provider developers.",
+			)
+			continue
+		}
+
 		model := configPropertiesElementResourceModel{
 			Group:       types.StringValue(propertyRes.GroupName),
 			Name:        types.StringValue(propertyRes.Name),
@@ -361,13 +410,13 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Type:        types.StringValue(propertyRes.Type),
 			Description: types.StringValue(propertyRes.Description),
 		}
-		if propertyRes.Type == PropertyTypeEncryptedString {
+		if r.semver.Major < 5 && propertyRes.Type == PropertyTypeEncryptedString {
 			model.Value = types.StringValue(valueStringRetention[Identity{
 				group: propertyRes.GroupName,
 				name:  propertyRes.Name,
 			}])
 		}
-		if propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
+		if r.semver.Major < 5 && propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
 			requested := valueStringRetention[Identity{
 				group: propertyRes.GroupName,
 				name:  propertyRes.Name,

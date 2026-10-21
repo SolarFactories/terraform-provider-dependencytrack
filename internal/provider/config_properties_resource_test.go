@@ -9,7 +9,7 @@ import (
 func TestAccConfigPropertiesResource(t *testing.T) {
 	if apiSemver.Major > 4 {
 		// TODO: Email is just an example, so can be moved to a config property that was not removed.
-		t.Skip("TODO: Email config was removed from config properties, and moved to an extension point.")
+		//t.Skip("TODO: Email config was removed from config properties, and moved to an extension point.")
 	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
