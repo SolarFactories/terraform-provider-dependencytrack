@@ -38,6 +38,11 @@ type (
 		Type        types.String `tfsdk:"type"`
 		Description types.String `tfsdk:"description"`
 	}
+
+	configPropertyIdentity struct {
+		group string
+		name  string
+	}
 )
 
 func NewConfigPropertiesResource() resource.Resource {
@@ -76,8 +81,8 @@ func (*configPropertiesResource) Schema(_ context.Context, _ resource.SchemaRequ
 							Required:    true,
 						},
 						"type": schema.StringAttribute{
-							Description: "Type of the Config Property. See DependencyTrack for valid enum values.",
-							Required:    true,
+							Description: "Type of the Config Property. Required in API v4. Unused in API v5. See DependencyTrack for valid enum values.",
+							Optional:    true,
 							PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
 							},
@@ -104,47 +109,52 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	type Identity struct {
-		group string
-		name  string
-	}
+	savedValues := map[configPropertyIdentity]string{}
+	savedTypes := map[configPropertyIdentity]string{}
+	createdValues := map[configPropertyIdentity]string{}
+	createdDescriptions := map[configPropertyIdentity]string{}
 
-	configPropertiesReq := make([]dtrack.ConfigProperty, 0, len(plan.Properties))
-	// Used to retain EncryptedStrings (API < 5), and values that are ordered lists, encoded as strings.
-	valueStringRetention := map[Identity]string{}
-
-	for _, propertyReq := range plan.Properties {
+	// Create SDK Request, and save values.
+	configPropertiesReq := Map(plan.Properties, func(model configPropertiesElementResourceModel) dtrack.ConfigProperty {
 		configProperty := dtrack.ConfigProperty{
-			GroupName: propertyReq.Group.ValueString(),
-			Name:      propertyReq.Name.ValueString(),
-			Value:     propertyReq.Value.ValueString(),
-			Type:      propertyReq.Type.ValueString(),
+			GroupName: model.Group.ValueString(),
+			Name:      model.Name.ValueString(),
+			Value:     model.Value.ValueString(),
 		}
-		if r.semver.Major < 5 && configProperty.Type == PropertyTypeEncryptedString {
-			valueStringRetention[Identity{
-				group: configProperty.GroupName,
-				name:  configProperty.Name,
-			}] = configProperty.Value
+		identity := configPropertyIdentity{
+			group: configProperty.GroupName,
+			name:  configProperty.GroupName,
 		}
-		if r.semver.Major < 5 && configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
-			valueStringRetention[Identity{
-				group: configProperty.GroupName,
-				name:  configProperty.Name,
-			}] = configProperty.Value
+		savedValues[identity] = configProperty.Value
+		if !model.Type.IsNull() && !model.Type.IsUnknown() {
+			savedTypes[identity] = model.Type.ValueString()
 		}
-
-		configPropertiesReq = append(configPropertiesReq, configProperty)
+		if r.semver.Major < 5 {
+			// Type is not used in request in v5.
+			configProperty.Type = model.Type.ValueString()
+			if len(configProperty.Type) == 0 {
+				resp.Diagnostics.AddError(
+					"Missing Type for config property",
+					"Config property with group: "+configProperty.GroupName+", and name: "+configProperty.Name+", is missing its defined Type.",
+				)
+			}
+		}
 		tflog.Debug(ctx, "Creating bulk config property", map[string]any{
 			"group": configProperty.GroupName,
 			"name":  configProperty.Name,
 			"value": configProperty.Value,
 			"type":  configProperty.Type,
 		})
+		return configProperty
+	})
+	if resp.Diagnostics.HasError() {
+		return
 	}
-
 	tflog.Debug(ctx, "Creating bulk config properties", map[string]any{
 		"count": len(configPropertiesReq),
 	})
+
+	// Make API Request
 	configPropertiesRes, err := r.client.Config.UpdateAll(ctx, configPropertiesReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -154,22 +164,16 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	configPropertiesState := configPropertiesResourceModel{
-		Properties: []configPropertiesElementResourceModel{},
-	}
-
-	for _, propertyResItem := range configPropertiesRes {
-		var propertyRes dtrack.ConfigProperty
-		if r.semver.Major < 5 {
-			// Inline errors was only added in v5. Prior was simply `[]ConfigProperty`.
-			propertyRes = *propertyResItem.Response
-		} else if propertyResItem.Response != nil {
-			propertyRes = *propertyResItem.Response
-		} else if propertyResItem.Error != nil {
-			resp.Diagnostics.AddAttributeWarning(
+	// Convert `[]ConfigProperty` into `map[configPropertyIdentity]string{}`'s, removing requirement for API response elements to be in the same order as request.
+	for _, configPropertyResItem := range configPropertiesRes {
+		var configProperty dtrack.ConfigProperty
+		if r.semver.Major < 5 || configPropertyResItem.Response != nil {
+			configProperty = *configPropertyResItem.Response
+		} else if configPropertyResItem.Error != nil {
+			resp.Diagnostics.AddAttributeError(
 				path.Root("properties"),
-				"Error when setting config property",
-				*propertyResItem.Error,
+				"Error when setting a config property",
+				"API error response: "+*configPropertyResItem.Error,
 			)
 			continue
 		} else {
@@ -180,48 +184,80 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			)
 			continue
 		}
-
-		model := configPropertiesElementResourceModel{
-			Group:       types.StringValue(propertyRes.GroupName),
-			Name:        types.StringValue(propertyRes.Name),
-			Value:       types.StringValue(propertyRes.Value),
-			Type:        types.StringValue(propertyRes.Type),
-			Description: types.StringValue(propertyRes.Description),
-		}
-		// API v5 replaced `EncryptedString` with a Secrets Management system.
-		if r.semver.Major < 5 && propertyRes.Type == PropertyTypeEncryptedString {
-			model.Value = types.StringValue(valueStringRetention[Identity{
-				group: propertyRes.GroupName,
-				name:  propertyRes.Name,
-			}])
-		}
-		// API v5 moved this to an extension point.
-		if r.semver.Major < 5 && propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
-			retained := valueStringRetention[Identity{
-				group: propertyRes.GroupName,
-				name:  propertyRes.Name,
-			}]
-			retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
-			responseSorted := slices.SortedStableFunc(strings.SplitSeq(propertyRes.Value, ";"), strings.Compare)
-			if slices.EqualFunc(retainedSorted, responseSorted, strings.EqualFold) {
-				model.Value = types.StringValue(retained)
-			}
+		identity := configPropertyIdentity{
+			group: configProperty.GroupName,
+			name:  configProperty.Name,
 		}
 
-		configPropertiesState.Properties = append(configPropertiesState.Properties, model)
-		tflog.Debug(ctx, "Created bulk config property", map[string]any{
-			"group": propertyRes.GroupName,
-			"name":  propertyRes.Name,
-			"value": propertyRes.Value,
-			"type":  propertyRes.Type,
-		})
+		createdValues[identity] = configProperty.Value
+		createdDescriptions[identity] = configProperty.Description
 	}
 
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	diags = resp.State.Set(ctx, &configPropertiesState)
+	// Convert from saved / created into Model, iterating through items in request, to ensure model order is retained.
+	modelProperties := Map(configPropertiesReq, func(sdkReq dtrack.ConfigProperty) configPropertiesElementResourceModel {
+		identity := configPropertyIdentity{
+			group: sdkReq.GroupName,
+			name:  sdkReq.Name,
+		}
+
+		model := configPropertiesElementResourceModel{
+			Group:       types.StringValue(identity.group),
+			Name:        types.StringValue(identity.name),
+			Type:        types.StringUnknown(), // Set Below.
+			Description: types.StringValue(createdDescriptions[identity]),
+			Value:       types.StringUnknown(), // Set Below.
+		}
+		{
+			savedType, ok := savedTypes[identity]
+			if ok {
+				model.Type = types.StringValue(savedType)
+			} else {
+				model.Type = types.StringNull()
+			}
+		}
+
+		// API v5 replaced `EncryptedString` with a Secrets Management system.
+		if r.semver.Major < 5 && sdkReq.Type == PropertyTypeEncryptedString {
+			model.Value = types.StringValue(savedValues[identity])
+		} else if r.semver.Major < 5 && identity.group == "vuln-source" && identity.name == "google.osv.enabled" {
+			// API v5 moved this from a config property to an extension point.
+			retained := savedValues[identity]
+			created := createdValues[identity]
+
+			retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
+			responseSorted := slices.SortedStableFunc(strings.SplitSeq(created, ";"), strings.Compare)
+			if slices.EqualFunc(retainedSorted, responseSorted, strings.EqualFold) {
+				model.Value = types.StringValue(retained)
+			} else {
+				model.Value = types.StringValue(created)
+			}
+		} else {
+			created, ok := createdValues[identity]
+			if ok {
+				model.Value = types.StringValue(created)
+			} else {
+				model.Value = types.StringValue(savedValues[identity])
+			}
+		}
+		tflog.Debug(ctx, "Created bulk config property", map[string]any{
+			"group": model.Group,
+			"name":  model.Name,
+			"value": model.Value,
+			"type":  model.Type,
+		})
+
+		return model
+	})
+
+	newState := configPropertiesResourceModel{
+		Properties: modelProperties,
+	}
+
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -328,13 +364,8 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	type Identity struct {
-		group string
-		name  string
-	}
-
 	configPropertiesReq := make([]dtrack.ConfigProperty, 0, len(plan.Properties))
-	valueStringRetention := map[Identity]string{}
+	valueStringRetention := map[configPropertyIdentity]string{}
 
 	for _, propertyReq := range plan.Properties {
 		configProperty := dtrack.ConfigProperty{
@@ -343,17 +374,14 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Value:     propertyReq.Value.ValueString(),
 			Type:      propertyReq.Type.ValueString(),
 		}
-		if r.semver.Major < 5 && configProperty.Type == PropertyTypeEncryptedString {
-			valueStringRetention[Identity{
-				group: configProperty.GroupName,
-				name:  configProperty.Name,
-			}] = configProperty.Value
+		identity := configPropertyIdentity{
+			group: configProperty.GroupName,
+			name:  configProperty.Name,
 		}
-		if r.semver.Major < 5 && configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
-			valueStringRetention[Identity{
-				group: configProperty.GroupName,
-				name:  configProperty.Name,
-			}] = configProperty.Value
+		if r.semver.Major < 5 && configProperty.Type == PropertyTypeEncryptedString {
+			valueStringRetention[identity] = configProperty.Value
+		} else if r.semver.Major < 5 && configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
+			valueStringRetention[identity] = configProperty.Value
 		}
 
 		configPropertiesReq = append(configPropertiesReq, configProperty)
@@ -410,17 +438,16 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			Type:        types.StringValue(propertyRes.Type),
 			Description: types.StringValue(propertyRes.Description),
 		}
+
+		identity := configPropertyIdentity{
+			group: propertyRes.GroupName,
+			name:  propertyRes.Name,
+		}
 		if r.semver.Major < 5 && propertyRes.Type == PropertyTypeEncryptedString {
-			model.Value = types.StringValue(valueStringRetention[Identity{
-				group: propertyRes.GroupName,
-				name:  propertyRes.Name,
-			}])
+			model.Value = types.StringValue(valueStringRetention[identity])
 		}
 		if r.semver.Major < 5 && propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
-			requested := valueStringRetention[Identity{
-				group: propertyRes.GroupName,
-				name:  propertyRes.Name,
-			}]
+			requested := valueStringRetention[identity]
 			requestedSorted := slices.SortedStableFunc(strings.SplitSeq(requested, ";"), strings.Compare)
 			responseSorted := slices.SortedStableFunc(strings.SplitSeq(propertyRes.Value, ";"), strings.Compare)
 			if slices.EqualFunc(requestedSorted, responseSorted, strings.EqualFold) {
