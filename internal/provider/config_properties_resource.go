@@ -286,67 +286,78 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	for idx, configPropertyModel := range state.Properties {
-		groupName := configPropertyModel.Group.ValueString()
-		propertyName := configPropertyModel.Name.ValueString()
-		propertyType := configPropertyModel.Type.ValueString()
-		value := configPropertyModel.Value
-		configProperty, err := Find(configPropertiesAll, func(configProperty dtrack.ConfigProperty) bool {
-			if configProperty.GroupName != groupName {
-				return false
+	readProperties := map[configPropertyIdentity]dtrack.ConfigProperty{}
+
+	for _, configProperty := range configPropertiesAll {
+		identity := configPropertyIdentity{
+			group: configProperty.GroupName,
+			name:  configProperty.Name,
+		}
+		readProperties[identity] = configProperty
+	}
+
+	newProperties := Map(state.Properties, func(old configPropertiesElementResourceModel) configPropertiesElementResourceModel {
+		identity := configPropertyIdentity{
+			group: old.Group.ValueString(),
+			name:  old.Name.ValueString(),
+		}
+		model := configPropertiesElementResourceModel{
+			Group:       types.StringValue(identity.group),
+			Name:        types.StringValue(identity.name),
+			Type:        types.StringUnknown(), // Set Below.
+			Description: types.StringUnknown(), // Set Below.
+			Value:       types.StringUnknown(), // Set Below.
+		}
+		{
+			read, ok := readProperties[identity]
+			if !ok {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("properties"),
+					"Within Read, cannot find property within list of all properties",
+					"Non-existent property in group: "+identity.group+", with name: "+identity.name,
+				)
+				model.Type = old.Type
+				model.Description = old.Description
+				model.Value = old.Value
+				return model
 			}
-			if configProperty.Name != propertyName {
-				return false
+			if read.Type != old.Type.ValueString() {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("properties"),
+					"Within Read, unable to match config property type",
+					"Group: "+identity.group+", Name: "+identity.name+", Type: "+read.Type,
+				)
+				return model
 			}
-			return true
-		})
-		if err != nil {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("properties"),
-				"Within Read, unable to match config properties: "+groupName+" "+propertyName,
-				"Error from: "+err.Error(),
-			)
-			continue
-		}
-		if configProperty.Type != propertyType {
-			resp.Diagnostics.AddAttributeError(
-				path.Root("properties"),
-				"Within Read, unable to match config property type",
-				"Group: "+groupName+", Name: "+propertyName+", Type: "+configProperty.Type,
-			)
-			continue
-		}
-		state.Properties[idx] = configPropertiesElementResourceModel{
-			Group:       types.StringValue(configProperty.GroupName),
-			Name:        types.StringValue(configProperty.Name),
-			Value:       types.StringValue(configProperty.Value),
-			Type:        types.StringValue(configProperty.Type),
-			Description: types.StringValue(configProperty.Description),
-		}
-		if r.semver.Major < 5 && configProperty.Type == PropertyTypeEncryptedString {
-			state.Properties[idx].Value = value
-		}
-		if r.semver.Major < 5 && configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
-			retained := configPropertyModel.Value.ValueString()
-			retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
-			responseSorted := slices.SortedStableFunc(strings.SplitSeq(configProperty.Value, ";"), strings.Compare)
-			if slices.EqualFunc(retainedSorted, responseSorted, strings.EqualFold) {
-				state.Properties[idx].Value = types.StringValue(retained)
+			model.Type = types.StringValue(read.Type)
+			model.Description = types.StringValue(read.Description)
+			if r.semver.Major < 5 && read.Type == PropertyTypeEncryptedString {
+				model.Value = old.Value
+			} else if r.semver.Major < 5 && identity.group == "vuln-source" && identity.name == "google.osv.enabled" {
+				retained := old.Value.ValueString()
+				retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
+				responseSorted := slices.SortedStableFunc(strings.SplitSeq(read.Value, ";"), strings.Compare)
+				if slices.EqualFunc(retainedSorted, responseSorted, strings.EqualFold) {
+					model.Value = old.Value
+				} else {
+					model.Value = types.StringValue(read.Value)
+				}
+			} else {
+				model.Value = types.StringValue(read.Value)
 			}
 		}
 
-		tflog.Debug(ctx, "Read bulk config property", map[string]any{
-			"group":       state.Properties[idx].Group.ValueString(),
-			"name":        state.Properties[idx].Name.ValueString(),
-			"value":       state.Properties[idx].Value.ValueString(),
-			"type":        state.Properties[idx].Type.ValueString(),
-			"description": state.Properties[idx].Description.ValueString(),
-		})
-	}
+		return model
+	})
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = resp.State.Set(ctx, &state)
+
+	newState := configPropertiesResourceModel{
+		Properties: newProperties,
+	}
+
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
