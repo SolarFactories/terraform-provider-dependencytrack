@@ -118,6 +118,17 @@ func TestSliceUnorderedEqual(t *testing.T) {
 	}
 }
 
+func TestSemverGteq(t *testing.T) {
+	semver := NewSemver(4, 12, 7)
+	requireEqual(t, semver.Gteq(NewSemver(4, 0, 0)), true)
+	requireEqual(t, semver.Gteq(NewSemver(5, 0, 0)), false)
+	requireEqual(t, semver.Gteq(NewSemver(4, 12, 0)), true)
+	requireEqual(t, semver.Gteq(NewSemver(4, 13, 0)), false)
+	requireEqual(t, semver.Gteq(NewSemver(4, 12, 6)), true)
+	requireEqual(t, semver.Gteq(NewSemver(4, 12, 7)), true)
+	requireEqual(t, semver.Gteq(NewSemver(4, 12, 8)), false)
+}
+
 func requireNoError(t *testing.T, actual error) {
 	t.Helper()
 	if actual != nil {

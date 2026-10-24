@@ -416,7 +416,6 @@ func NewSemver(major, minor, patch int) Semver {
 	}
 }
 
-// TODO: Add unit tests.
 func (semver Semver) Gteq(other Semver) bool {
 	if semver.Major > other.Major {
 		return true
