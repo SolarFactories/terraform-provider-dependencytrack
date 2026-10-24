@@ -579,9 +579,6 @@ linters:
       - path: internal/provider/http_client.go
         linters:
           - wrapcheck
-      - path: internal/provider/ldap_team_mapping_resource.go
-        linters:
-          - godox
       - path: internal/provider/notification_publisher_resource.go
         linters:
           - gocognit

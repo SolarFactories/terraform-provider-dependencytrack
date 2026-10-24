@@ -165,9 +165,6 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	if err != nil {
 		err := err.Error()
 		if err == "did not find item" {
-			// TODO: Since `dependencytrack_ldap_team_mapping` does not implement `Import`:
-			//	unable to create duplicated references in Acceptance Tests.
-			//	So, add Import, adding fields to ImportID as required.
 			tflog.Warn(ctx, "Unable to read missing LDAP Team Mapping. Will be removed from State.", map[string]any{
 				"id":                 state.ID.ValueString(),
 				"team":               state.Team.ValueString(),
@@ -276,9 +273,18 @@ func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.Delet
 	})
 	err := r.client.LDAP.RemoveMapping(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the mapping could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing LDAP Team Mapping. Will be removed from state", map[string]any{
+				"id":                 state.ID.ValueString(),
+				"team":               state.Team.ValueString(),
+				"distinguished_name": state.DistinguishedName.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete ldap mapping",
-			"Unexpected error when trying to delete ldap mapping with id: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete ldap mapping with id: "+id.String()+", error: "+err,
 		)
 		return
 	}
