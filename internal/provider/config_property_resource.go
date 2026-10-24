@@ -170,10 +170,22 @@ func (r *configPropertyResource) Read(ctx context.Context, req resource.ReadRequ
 	})
 	configProperty, err := r.client.Config.Get(ctx, groupName, propertyName)
 	if err != nil {
+		err := err.Error()
+		// TODO: Not covered by test. Same as todo within `Delete`.
+		if err == "The config property could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Missing Config Property when reading. Will be removed from state.", map[string]any{
+				"group": state.Group.ValueString(),
+				"name":  state.Name.ValueString(),
+				"type":  state.Type.ValueString(),
+				"value": state.Value.ValueString(),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddAttributeError(
 			path.Root("config"),
 			"Within Read, unable to fetch config property.",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}
@@ -296,8 +308,15 @@ func (r *configPropertyResource) Delete(ctx context.Context, req resource.Delete
 	_, err := r.client.Config.Update(ctx, propertyReq)
 	if err != nil {
 		err := err.Error()
-		if r.semver.Major == 5 && err == "" {
-			// TODO: Failed to delete non-existent. Can remove from state file.
+		// TODO: Not covered by test.
+		if err == "The config property could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing config property. Will be removed from state", map[string]any{
+				"group": state.Group.ValueString(),
+				"name":  state.Name.ValueString(),
+				"type":  state.Type.ValueString(),
+				"value": state.Value.ValueString(),
+			})
+			return
 		}
 		resp.Diagnostics.AddError(
 			"Unable to delete config property.",
