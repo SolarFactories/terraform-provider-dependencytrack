@@ -573,6 +573,8 @@ linters:
           - gocognit
           - gocyclo
           - cyclop
+          - maintidx
+          - nestif
       - path: internal/provider/repository_resource.go
         linters:
           - gosec
@@ -658,6 +660,11 @@ linters:
       - path: internal/provider/config_properties_resource_test.go
         linters:
           - godox
+      - path: internal/provider/config_property_resource.go
+        linters:
+          - godox
+          - revive
+          - staticcheck
       - path: internal/provider/config_property_resource_test.go
         linters:
           - godox

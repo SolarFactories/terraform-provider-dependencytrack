@@ -45,8 +45,11 @@ Required:
 
 - `group` (String) Group name of the Config Property.
 - `name` (String) Property name of the Config Property.
-- `type` (String) Type of the Config Property. See DependencyTrack for valid enum values.
 - `value` (String) Value of the Config Property.
+
+Optional:
+
+- `type` (String) Type of the Config Property. Required in API v4. Unused in API v5. See DependencyTrack for valid enum values.
 
 Read-Only:
 
