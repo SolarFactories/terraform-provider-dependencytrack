@@ -1,6 +1,6 @@
 volumes:
   dependency-track: {}
-  postgres-data: {}
+  postgres-data-v4: {}
 
 services:
   dtrack-apiserver:
@@ -52,5 +52,5 @@ services:
       timeout: 3s
       retries: 3
     volumes:
-      - "postgres-data:/var/lib/postgresql/data"
+      - "postgres-data-v4:/var/lib/postgresql/data"
     restart: unless-stopped

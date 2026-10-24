@@ -123,7 +123,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		}
 		identity := configPropertyIdentity{
 			group: configProperty.GroupName,
-			name:  configProperty.GroupName,
+			name:  configProperty.Name,
 		}
 		plannedValues[identity] = configProperty.Value
 		if !model.Type.IsNull() && !model.Type.IsUnknown() {
@@ -412,7 +412,7 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	// Reduce number of items sent in API request, to only be those that need updating i.e. `plan` != `state`.
-	propertiesReq := make([]dtrack.ConfigProperty, len(plannedProperties), 0)
+	propertiesReq := make([]dtrack.ConfigProperty, 0, len(plannedProperties))
 	for identity, planned := range plannedProperties {
 		{
 			state, ok := stateProperties[identity]
