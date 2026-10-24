@@ -7,7 +7,7 @@ import (
 )
 
 func TestAccTagProjectsResource(t *testing.T) {
-	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
+	if apiSemver.Lt(NewSemver(4, 12, 0)) {
 		t.SkipNow()
 	}
 	resource.Test(t, resource.TestCase{
@@ -95,7 +95,7 @@ data "dependencytrack_project" "test2" {
 }
 
 func TestAccTagProjectsResourceProjectsUnordered(t *testing.T) {
-	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
+	if apiSemver.Lt(NewSemver(4, 12, 0)) {
 		t.SkipNow()
 	}
 	resource.Test(t, resource.TestCase{

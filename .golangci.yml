@@ -584,16 +584,11 @@ linters:
           - godoclint
           - staticcheck
           - godox
-      - path: internal/provider/team_data_source_test.go
-        linters:
-          - godox
+          - revive
       - path: internal/provider/policy_tag_resource.go
         linters:
           - godox
           - godoclint
-      - path: internal/provider/team_apikey_resource_test.go
-        linters:
-          - godox
       - path: internal/provider/tag_projects_resource.go
         linters:
           - gocognit
@@ -614,9 +609,6 @@ linters:
           - exhaustruct_v5
           - gocyclo
           - cyclop
-      - path: internal/provider/notification_rule_resource_test.go
-        linters:
-          - godox
       - path: internal/provider/tag_notification_rules_resource.go
         linters:
           - gocognit
@@ -663,8 +655,6 @@ linters:
       - path: internal/provider/config_property_resource.go
         linters:
           - godox
-          - revive
-          - staticcheck
       - path: internal/provider/config_property_resource_test.go
         linters:
           - godox
@@ -673,9 +663,9 @@ linters:
           - gocognit
           - gocyclo
           - cyclop
-      - path: internal/provider/component_resource.go
+      - path: internal/provider/project_resource_test.go
         linters:
-          - gocognit
+          - godox
 
 formatters:
   enable:

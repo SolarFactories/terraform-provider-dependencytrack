@@ -15,7 +15,13 @@ func TestAccPermissionsDataSource(t *testing.T) {
 data "dependencytrack_permissions" "test" {}
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttrSet("data.dependencytrack_permissions.test", "permissions.#"),
+					Ternary2(
+						apiSemver.Gteq(NewSemver(5, 0, 0)),
+						resource.TestCheckResourceAttr("data.dependencytrack_permissions.test", "permissions.#", "42"),
+						apiSemver.Gteq(NewSemver(4, 12, 0)),
+						resource.TestCheckResourceAttr("data.dependencytrack_permissions.test", "permissions.#", "14"),
+						resource.TestCheckResourceAttr("data.dependencytrack_permissions.test", "permissions.#", "12"),
+					),
 					resource.TestCheckResourceAttr("data.dependencytrack_permissions.test", "permissions.0.name", "ACCESS_MANAGEMENT"),
 					resource.TestCheckResourceAttr(
 						"data.dependencytrack_permissions.test",

@@ -30,18 +30,16 @@ resource "dependencytrack_team_apikey" "test" {
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", ""),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "masked"),
-					// TODO: Re-enable once able to conditionally check these for API Versions
-					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "public_id"),
-					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "legacy"),.
+					Ternary(apiSemver.Gteq(NewSemver(4, 13, 0)), resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "public_id"), nil),
+					Ternary(apiSemver.Gteq(NewSemver(4, 13, 0)), resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "legacy", "false"), nil),
 				),
 			},
 			// ImportState testing.
 			{
-				ResourceName:      "dependencytrack_team_apikey.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-				// TODO: Ignore in only 4.13+ API versions.
-				ImportStateVerifyIgnore: []string{"key"},
+				ResourceName:            "dependencytrack_team_apikey.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: Ternary(apiSemver.Gteq(NewSemver(4, 13, 0)), []string{"key"}, nil),
 			},
 			// Update and Read testing.
 			{
@@ -64,9 +62,8 @@ resource "dependencytrack_team_apikey" "test" {
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "key"),
 					resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "comment", "Sample comment"),
 					resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "masked"),
-					// TODO: Re-enable once able to conditionally check these for API Versions
-					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "public_id"),
-					//resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "legacy"),.
+					Ternary(apiSemver.Gteq(NewSemver(4, 13, 0)), resource.TestCheckResourceAttrSet("dependencytrack_team_apikey.test", "public_id"), nil),
+					Ternary(apiSemver.Gteq(NewSemver(4, 13, 0)), resource.TestCheckResourceAttr("dependencytrack_team_apikey.test", "legacy", "false"), nil),
 				),
 			},
 		},
@@ -95,11 +92,10 @@ resource "dependencytrack_team_apikey" "test" {
 			},
 			// ImportState testing.
 			{
-				ResourceName:      "dependencytrack_team_apikey.test",
-				ImportState:       true,
-				ImportStateVerify: true,
-				// TODO: Ignore in only 4.13+ API versions.
-				ImportStateVerifyIgnore: []string{"key"},
+				ResourceName:            "dependencytrack_team_apikey.test",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: Ternary(apiSemver.Gteq(NewSemver(4, 13, 0)), []string{"key"}, nil),
 			},
 			// Update and Read testing.
 			{
