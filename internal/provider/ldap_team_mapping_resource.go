@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,8 +16,9 @@ import (
 )
 
 var (
-	_ resource.Resource              = &ldapTeamMappingResource{}
-	_ resource.ResourceWithConfigure = &ldapTeamMappingResource{}
+	_ resource.Resource                = &ldapTeamMappingResource{}
+	_ resource.ResourceWithConfigure   = &ldapTeamMappingResource{}
+	_ resource.ResourceWithImportState = &ldapTeamMappingResource{}
 )
 
 type (
@@ -284,6 +286,59 @@ func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.Delet
 		"id":                 state.ID.ValueString(),
 		"team":               state.Team.ValueString(),
 		"distinguished_name": state.DistinguishedName.ValueString(),
+	})
+}
+
+func (r *ldapTeamMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Debug(ctx, "Importing LDAP Team Mapping", map[string]any{
+		"id": req.ID,
+	})
+	idParts := strings.Split(req.ID, "/")
+	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
+		resp.Diagnostics.AddError(
+			"Unexpected import id",
+			"Expected id in format <Team>/<Mapping>. Received: "+req.ID,
+		)
+		return
+	}
+	teamID, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("team"))
+	resp.Diagnostics.Append(diag)
+	mappingID, diag := TryParseUUID(types.StringValue(idParts[1]), LifecycleImport, path.Root("mapping"))
+	resp.Diagnostics.Append(diag)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	mappings, err := r.client.LDAP.GetTeamMappings(ctx, teamID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Within Import, unable to fetch LDAP Team Mappings.",
+			"From team: "+teamID.String()+", with API Error: "+err.Error(),
+		)
+		return
+	}
+	mapping, err := Find(mappings, func(mapping dtrack.MappedLdapGroup) bool {
+		return mapping.UUID == mappingID
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Within Import, unable to locate LDAP Team Mapping.",
+			"From team: "+teamID.String()+", and mapping: "+mappingID.String()+", with inner error: "+err.Error(),
+		)
+		return
+	}
+	diags := resp.State.Set(ctx, &ldapTeamMappingResourceModel{
+		ID:                types.StringValue(mapping.UUID.String()),
+		Team:              types.StringValue(teamID.String()),
+		DistinguishedName: types.StringValue(mapping.DistinguishedName),
+	})
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	tflog.Debug(ctx, "Imported LDAP Team Mapping", map[string]any{
+		"id": req.ID,
 	})
 }
 

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccLDAPMappingResource(t *testing.T) {
@@ -29,6 +30,18 @@ resource "dependencytrack_ldap_team_mapping" "test" {
 						"dependencytrack_team.test", "id",
 					),
 				),
+			},
+			// ImportState testing.
+			{
+				ImportState:       true,
+				ResourceName:      "dependencytrack_ldap_team_mapping.test",
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(state *terraform.State) (string, error) {
+					resources := state.RootModule().Resources
+					teamID := resources["dependencytrack_ldap_team_mapping.test"].Primary.Attributes["team"]
+					mappingID := resources["dependencytrack_ldap_team_mapping.test"].Primary.ID
+					return teamID + "/" + mappingID, nil
+				},
 			},
 			// Update and Read testing.
 			{
