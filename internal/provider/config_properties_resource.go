@@ -109,8 +109,8 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	savedValues := map[configPropertyIdentity]string{}
-	savedTypes := map[configPropertyIdentity]string{}
+	plannedValues := map[configPropertyIdentity]string{}
+	plannedTypes := map[configPropertyIdentity]string{}
 	createdValues := map[configPropertyIdentity]string{}
 	createdDescriptions := map[configPropertyIdentity]string{}
 
@@ -125,9 +125,9 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			group: configProperty.GroupName,
 			name:  configProperty.GroupName,
 		}
-		savedValues[identity] = configProperty.Value
+		plannedValues[identity] = configProperty.Value
 		if !model.Type.IsNull() && !model.Type.IsUnknown() {
-			savedTypes[identity] = model.Type.ValueString()
+			plannedTypes[identity] = model.Type.ValueString()
 		}
 		if r.semver.Major < 5 {
 			// Type is not used in request in v5.
@@ -154,7 +154,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		"count": len(configPropertiesReq),
 	})
 
-	// Make API Request
+	// Make API Request.
 	configPropertiesRes, err := r.client.Config.UpdateAll(ctx, configPropertiesReq)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -164,15 +164,17 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	// Convert `[]ConfigProperty` into `map[configPropertyIdentity]string{}`'s, removing requirement for API response elements to be in the same order as request.
-	for _, configPropertyResItem := range configPropertiesRes {
+	// Convert `[]ConfigProperty` into `map[configPropertyIdentity]string{}`'s.
+	// Removes requirement for API response elements to be in the same order as request - even though it is.
+	for idx, configPropertyResItem := range configPropertiesRes {
 		var configProperty dtrack.ConfigProperty
 		if r.semver.Major < 5 || configPropertyResItem.Response != nil {
 			configProperty = *configPropertyResItem.Response
 		} else if configPropertyResItem.Error != nil {
+			reqItem := configPropertiesReq[idx]
 			resp.Diagnostics.AddAttributeError(
 				path.Root("properties"),
-				"Error when setting a config property",
+				"Error when setting a config property for group: "+reqItem.GroupName+", and name: "+reqItem.Name,
 				"API error response: "+*configPropertyResItem.Error,
 			)
 			continue
@@ -197,7 +199,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	// Convert from saved / created into Model, iterating through items in request, to ensure model order is retained.
+	// Convert from planned / created into Model, iterating through items in request, to ensure model order is retained.
 	modelProperties := Map(configPropertiesReq, func(sdkReq dtrack.ConfigProperty) configPropertiesElementResourceModel {
 		identity := configPropertyIdentity{
 			group: sdkReq.GroupName,
@@ -212,20 +214,20 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			Value:       types.StringUnknown(), // Set Below.
 		}
 		{
-			savedType, ok := savedTypes[identity]
+			plannedType, ok := plannedTypes[identity]
 			if ok {
-				model.Type = types.StringValue(savedType)
+				model.Type = types.StringValue(plannedType)
 			} else {
 				model.Type = types.StringNull()
 			}
 		}
 
-		// API v5 replaced `EncryptedString` with a Secrets Management system.
 		if r.semver.Major < 5 && sdkReq.Type == PropertyTypeEncryptedString {
-			model.Value = types.StringValue(savedValues[identity])
+			// API v5 replaced `EncryptedString` with a Secrets Management system.
+			model.Value = types.StringValue(plannedValues[identity])
 		} else if r.semver.Major < 5 && identity.group == "vuln-source" && identity.name == "google.osv.enabled" {
 			// API v5 moved this from a config property to an extension point.
-			retained := savedValues[identity]
+			retained := plannedValues[identity]
 			created := createdValues[identity]
 
 			retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retained, ";"), strings.Compare)
@@ -240,7 +242,7 @@ func (r *configPropertiesResource) Create(ctx context.Context, req resource.Crea
 			if ok {
 				model.Value = types.StringValue(created)
 			} else {
-				model.Value = types.StringValue(savedValues[identity])
+				model.Value = types.StringValue(plannedValues[identity])
 			}
 		}
 		tflog.Debug(ctx, "Created bulk config property", map[string]any{
@@ -368,69 +370,86 @@ func (r *configPropertiesResource) Read(ctx context.Context, req resource.ReadRe
 }
 
 func (r *configPropertiesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan configPropertiesResourceModel
+	var plan, state configPropertiesResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
+	diags = req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	configPropertiesReq := make([]dtrack.ConfigProperty, 0, len(plan.Properties))
-	valueStringRetention := map[configPropertyIdentity]string{}
+	plannedProperties := map[configPropertyIdentity]dtrack.ConfigProperty{}
+	stateProperties := map[configPropertyIdentity]dtrack.ConfigProperty{}
+	updatedProperties := map[configPropertyIdentity]dtrack.ConfigProperty{}
 
-	for _, propertyReq := range plan.Properties {
-		configProperty := dtrack.ConfigProperty{
-			GroupName: propertyReq.Group.ValueString(),
-			Name:      propertyReq.Name.ValueString(),
-			Value:     propertyReq.Value.ValueString(),
-			Type:      propertyReq.Type.ValueString(),
-		}
+	for _, property := range state.Properties {
 		identity := configPropertyIdentity{
-			group: configProperty.GroupName,
-			name:  configProperty.Name,
+			group: property.Group.ValueString(),
+			name:  property.Name.ValueString(),
 		}
-		if r.semver.Major < 5 && configProperty.Type == PropertyTypeEncryptedString {
-			valueStringRetention[identity] = configProperty.Value
-		} else if r.semver.Major < 5 && configProperty.GroupName == "vuln-source" && configProperty.Name == "google.osv.enabled" {
-			valueStringRetention[identity] = configProperty.Value
+		stateProperties[identity] = dtrack.ConfigProperty{
+			GroupName:   identity.group,
+			Name:        identity.name,
+			Type:        property.Type.ValueString(),
+			Description: property.Description.ValueString(),
+			Value:       property.Value.ValueString(),
 		}
-
-		configPropertiesReq = append(configPropertiesReq, configProperty)
-		tflog.Debug(ctx, "Updating bulk config property", map[string]any{
-			"group": configProperty.GroupName,
-			"name":  configProperty.Name,
-			"value": configProperty.Value,
-			"type":  configProperty.Type,
-		})
+	}
+	for _, property := range plan.Properties {
+		identity := configPropertyIdentity{
+			group: property.Group.ValueString(),
+			name:  property.Name.ValueString(),
+		}
+		plannedProperties[identity] = dtrack.ConfigProperty{
+			GroupName:   identity.group,
+			Name:        identity.name,
+			Type:        property.Type.ValueString(),
+			Description: property.Description.ValueString(),
+			Value:       property.Value.ValueString(),
+		}
 	}
 
-	tflog.Debug(ctx, "Updating bulk config properties", map[string]any{
-		"count": len(configPropertiesReq),
-	})
-	configPropertiesRes, err := r.client.Config.UpdateAll(ctx, configPropertiesReq)
+	// Reduce number of items sent in API request, to only be those that need updating i.e. `plan` != `state`.
+	propertiesReq := make([]dtrack.ConfigProperty, len(plannedProperties), 0)
+	for identity, planned := range plannedProperties {
+		{
+			state, ok := stateProperties[identity]
+			if ok && state.Value == planned.Value {
+				continue
+			}
+		}
+		configProperty := dtrack.ConfigProperty{
+			GroupName: identity.group,
+			Name:      identity.name,
+			Value:     planned.Value,
+		}
+		if r.semver.Major < 5 {
+			configProperty.Type = planned.Type
+		}
+		propertiesReq = append(propertiesReq, configProperty)
+	}
+
+	propertiesRes, err := r.client.Config.UpdateAll(ctx, propertiesReq)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error configuring config properties.",
-			"Unexpected error: "+err.Error(),
+		resp.Diagnostics.AddError("Error updating config properties",
+			"API Error: "+err.Error(),
 		)
 		return
 	}
 
-	configPropertiesState := configPropertiesResourceModel{
-		Properties: []configPropertiesElementResourceModel{},
-	}
-
-	for _, propertyResItem := range configPropertiesRes {
-		var propertyRes dtrack.ConfigProperty
-		if r.semver.Major < 5 {
-			propertyRes = *propertyResItem.Response
-		} else if propertyResItem.Response != nil {
-			propertyRes = *propertyResItem.Response
-		} else if propertyResItem.Error != nil {
+	// Convert API response `[]dtrack.ConfigProperty` to `map[identity]dtrack.ConfigProperty{}`.
+	for index, configPropertyResItem := range propertiesRes {
+		var configProperty dtrack.ConfigProperty
+		if r.semver.Major < 5 || configPropertyResItem.Response != nil {
+			configProperty = *configPropertyResItem.Response
+		} else if configPropertyResItem.Error != nil {
+			reqItem := propertiesReq[index]
 			resp.Diagnostics.AddAttributeError(
 				path.Root("properties"),
-				"Error within updating config property",
-				*propertyResItem.Error,
+				"Error when setting a config property for group: "+reqItem.GroupName+", and name: "+reqItem.Name,
+				"API error response: "+*configPropertyResItem.Error,
 			)
 			continue
 		} else {
@@ -441,32 +460,87 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			)
 			continue
 		}
+		identity := configPropertyIdentity{
+			group: configProperty.GroupName,
+			name:  configProperty.Name,
+		}
+		updatedProperties[identity] = configProperty
+	}
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Convert from planned / updated into model - retaining order from `plan`.
+	updatedModel := Map(plan.Properties, func(planned configPropertiesElementResourceModel) configPropertiesElementResourceModel {
+		identity := configPropertyIdentity{
+			group: planned.Group.ValueString(),
+			name:  planned.Name.ValueString(),
+		}
+		stateProperty, hasState := stateProperties[identity]
+		updatedProperty, hasUpdated := updatedProperties[identity]
 
 		model := configPropertiesElementResourceModel{
-			Group:       types.StringValue(propertyRes.GroupName),
-			Name:        types.StringValue(propertyRes.Name),
-			Value:       types.StringValue(propertyRes.Value),
-			Type:        types.StringValue(propertyRes.Type),
-			Description: types.StringValue(propertyRes.Description),
+			Group:       types.StringValue(identity.group),
+			Name:        types.StringValue(identity.name),
+			Type:        types.StringUnknown(), // Set Below.
+			Value:       types.StringUnknown(), // Set Below.
+			Description: types.StringUnknown(), // Set Below.
 		}
-
-		identity := configPropertyIdentity{
-			group: propertyRes.GroupName,
-			name:  propertyRes.Name,
+		/* Cases:
+		- `hasUpdated`: Successfully updated a new / existing property - which was not a `noop`.
+		- `hasState`: Property existed before. May not have been updated. Does not include new properties.
+		- `else`: Any new properties - which errored, so should have already been accounted for in above transformations - so `unreachable`.
+		*/
+		if hasUpdated {
+			model.Description = types.StringValue(updatedProperty.Description)
+			model.Value = types.StringValue(updatedProperty.Value)
+			if r.semver.Major < 5 || (!planned.Type.IsNull() && !planned.Type.IsUnknown()) {
+				model.Type = types.StringValue(updatedProperty.Type)
+			} else {
+				model.Type = types.StringNull()
+			}
+		} else if hasState {
+			model.Description = types.StringValue(stateProperty.Description)
+			model.Value = types.StringValue(stateProperty.Value)
+			if r.semver.Major < 5 || (!planned.Type.IsNull() && !planned.Type.IsUnknown()) {
+				model.Type = types.StringValue(stateProperty.Type)
+			} else {
+				model.Type = types.StringNull()
+			}
+		} else {
+			resp.Diagnostics.AddError(
+				"Config property reached an unreachable state for group: "+identity.group+", and name: "+identity.name,
+				"This is a bug in the provider, and should be reported to the provider developers.",
+			)
+			return model
 		}
-		if r.semver.Major < 5 && propertyRes.Type == PropertyTypeEncryptedString {
-			model.Value = types.StringValue(valueStringRetention[identity])
-		}
-		if r.semver.Major < 5 && propertyRes.GroupName == "vuln-source" && propertyRes.Name == "google.osv.enabled" {
-			requested := valueStringRetention[identity]
-			requestedSorted := slices.SortedStableFunc(strings.SplitSeq(requested, ";"), strings.Compare)
-			responseSorted := slices.SortedStableFunc(strings.SplitSeq(propertyRes.Value, ";"), strings.Compare)
-			if slices.EqualFunc(requestedSorted, responseSorted, strings.EqualFold) {
-				model.Value = types.StringValue(requested)
+		if r.semver.Major < 5 && planned.Type.ValueString() == PropertyTypeEncryptedString {
+			// API v5 replaced `EncryptedString` with a Secrets Management system.
+			model.Value = planned.Value
+		} else if r.semver.Major < 5 && identity.group == "vuln-source" && identity.name == "google.osv.enabled" {
+			// API v5 moved this from a config property to an extension point.
+			if hasUpdated {
+				retainedValue := planned.Value.ValueString()
+				updatedValue := updatedProperty.Value
+				retainedSorted := slices.SortedStableFunc(strings.SplitSeq(retainedValue, ";"), strings.Compare)
+				responseSorted := slices.SortedStableFunc(strings.SplitSeq(updatedValue, ";"), strings.Compare)
+				if slices.EqualFunc(retainedSorted, responseSorted, strings.EqualFold) {
+					model.Value = types.StringValue(retainedValue)
+				} else {
+					model.Value = types.StringValue(updatedValue)
+				}
+			} else if hasState {
+				// No change has been made from `state`, so retain existing state.
+				model.Value = types.StringValue(stateProperty.Value)
+			} else {
+				resp.Diagnostics.AddError(
+					"Config property reached an unreachable state for group: "+identity.group+", and name: "+identity.name,
+					"This is a bug in the provider, and should be reported to the provider developers.",
+				)
+				return model
 			}
 		}
-
-		configPropertiesState.Properties = append(configPropertiesState.Properties, model)
 		tflog.Debug(ctx, "Updated bulk config property", map[string]any{
 			"group":       model.Group.ValueString(),
 			"name":        model.Name.ValueString(),
@@ -474,14 +548,24 @@ func (r *configPropertiesResource) Update(ctx context.Context, req resource.Upda
 			"type":        model.Type.ValueString(),
 			"description": model.Description.ValueString(),
 		})
+		return model
+	})
+
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	diags = resp.State.Set(ctx, configPropertiesState)
+
+	newState := configPropertiesResourceModel{
+		Properties: updatedModel,
+	}
+
+	diags = resp.State.Set(ctx, &newState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 	tflog.Debug(ctx, "Updated bulk config properties", map[string]any{
-		"count": len(configPropertiesState.Properties),
+		"count": len(newState.Properties),
 	})
 }
 

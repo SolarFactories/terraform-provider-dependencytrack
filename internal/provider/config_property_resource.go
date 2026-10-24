@@ -295,9 +295,13 @@ func (r *configPropertyResource) Delete(ctx context.Context, req resource.Delete
 	})
 	_, err := r.client.Config.Update(ctx, propertyReq)
 	if err != nil {
+		err := err.Error()
+		if r.semver.Major == 5 && err == "" {
+			// TODO: Failed to delete non-existent. Can remove from state file.
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete config property.",
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}
