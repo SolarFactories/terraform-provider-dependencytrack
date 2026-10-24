@@ -18,7 +18,7 @@ runs:
         --env 'DT_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:5432/dtrack' \
         --env 'DT_DATASOURCE_USERNAME=dtrack' \
         --env 'DT_DATASOURCE_PASSWORD=dtrack' \
-        --env 'DT_TELEMETRY_SUBMISSION_ENABLED=false' \
+        --env 'DT_TELEMETRY_SUBMISSION_DEFAULT_ENABLED=false' \
         --env 'DT_OIDC_ENABLED=true' \
         --env 'DT_OIDC_ISSUER=https://token.actions.githubusercontent.com' \
         --env 'DT_OIDC_CLIENT_ID=terraform-provider-dependencytrack' \
