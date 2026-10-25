@@ -390,3 +390,53 @@ func FindUserPrincipal(ctx context.Context, client dtrack.Client, username strin
 	// Not found.
 	return nil, errors.New("could not find user")
 }
+
+func Ternary[T any](condition bool, trueValue, falseValue T) T {
+	if condition {
+		return trueValue
+	}
+	return falseValue
+}
+
+func Ternary2[T any](condition1 bool, true1Value T, condition2 bool, true2Value, falseValue T) T {
+	if condition1 {
+		return true1Value
+	}
+	if condition2 {
+		return true2Value
+	}
+	return falseValue
+}
+
+func NewSemver(major, minor, patch int) Semver {
+	return Semver{
+		Major: major,
+		Minor: minor,
+		Patch: patch,
+	}
+}
+
+func (semver Semver) Gteq(other Semver) bool {
+	if semver.Major > other.Major {
+		return true
+	}
+	if semver.Major < other.Major {
+		return false
+	}
+	if semver.Minor > other.Minor {
+		return true
+	}
+	if semver.Minor < other.Minor {
+		return false
+	}
+	if semver.Patch > other.Patch {
+		return true
+	}
+	if semver.Patch < other.Patch {
+		return false
+	}
+	return true
+}
+func (semver Semver) Lt(other Semver) bool {
+	return !semver.Gteq(other)
+}

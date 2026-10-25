@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccNotificationRuleEventResource(t *testing.T) {
@@ -35,7 +36,11 @@ resource "dependencytrack_notification_rule" "test" {
 					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "trigger_type", "EVENT"),
-					// TODO: resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"), API 4.12+.
+					Ternary(
+						apiSemver.Gteq(NewSemver(4, 12, 0)),
+						resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"),
+						func(*terraform.State) error { return nil },
+					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", "INFORMATIONAL"),
@@ -44,10 +49,14 @@ resource "dependencytrack_notification_rule" "test" {
 			},
 			// ImportState testing.
 			{
-				ResourceName:            "dependencytrack_notification_rule.test",
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"notify_children"}, // API 4.12+. Importing state in 4.13+ is covered by below test.
+				ResourceName:      "dependencytrack_notification_rule.test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: Ternary(
+					apiSemver.Lt(NewSemver(4, 12, 0)),
+					[]string{"notify_children"},
+					nil,
+				),
 			},
 			// Update and Read testing.
 			{
@@ -79,7 +88,11 @@ resource "dependencytrack_notification_rule" "test" {
 					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "trigger_type", "EVENT"),
-					// TODO: resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"), API 4.12+.
+					Ternary(
+						apiSemver.Gteq(NewSemver(4, 12, 0)),
+						resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"),
+						func(*terraform.State) error { return nil },
+					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "false"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", "INFORMATIONAL"),
@@ -95,7 +108,7 @@ resource "dependencytrack_notification_rule" "test" {
 
 // API 4.13+.
 func TestAccNotificationRuleScheduleResource(t *testing.T) {
-	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 13) {
+	if apiSemver.Lt(NewSemver(4, 13, 0)) {
 		t.SkipNow()
 	}
 	resource.Test(t, resource.TestCase{
@@ -126,7 +139,7 @@ resource "dependencytrack_notification_rule" "test" {
 					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "trigger_type", "SCHEDULE"),
-					// TODO: resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"), API 4.12+.
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", "INFORMATIONAL"),
@@ -167,7 +180,7 @@ resource "dependencytrack_notification_rule" "test" {
 					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "enabled", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "trigger_type", "SCHEDULE"),
-					// TODO: resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"), API 4.12+.
+					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notification_level", "INFORMATIONAL"),

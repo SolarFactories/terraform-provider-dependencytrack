@@ -54,7 +54,7 @@ data "dependencytrack_project" "test" {
 
 // API 4.12+.
 func TestAccProjectDataSourceIsLatest(t *testing.T) {
-	if apiSemver.Major < 4 || (apiSemver.Major == 4 && apiSemver.Minor < 12) {
+	if apiSemver.Lt(NewSemver(4, 12, 0)) {
 		t.SkipNow()
 	}
 	resource.Test(t, resource.TestCase{

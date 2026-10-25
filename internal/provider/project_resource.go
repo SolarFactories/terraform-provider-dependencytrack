@@ -271,7 +271,7 @@ func (r *projectResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 	if projectRes.ParentRef != nil {
 		plan.Parent = types.StringValue(projectRes.ParentRef.UUID.String())
-	} else if projectReq.ParentRef != nil && r.semver.Major == 4 && r.semver.Minor < 12 {
+	} else if projectReq.ParentRef != nil && r.semver.Lt(NewSemver(4, 12, 0)) {
 		// Creates a project with the Parent, but does not return Parent within Create Endpoint.
 		// The parent being set is validated by the Read method, in combination with tests.
 		plan.Parent = types.StringValue(projectReq.ParentRef.UUID.String())
@@ -418,7 +418,7 @@ func (r *projectResource) Read(ctx context.Context, req resource.ReadRequest, re
 		} else {
 			newState.Collection = &projectResourceModelCollection{
 				Logic: types.StringValue(string(*project.CollectionLogic)),
-				Tag:   types.StringNull(), // Updated below.
+				Tag:   types.StringUnknown(), // Updated below.
 			}
 			if project.CollectionTag == nil || project.CollectionTag.Name == "" {
 				newState.Collection.Tag = types.StringNull()
@@ -673,10 +673,12 @@ func (r *projectResource) Delete(ctx context.Context, req resource.DeleteRequest
 	err := r.client.Project.Delete(ctx, id)
 	if err != nil {
 		err := err.Error()
-		missing := r.semver.Major == 4 && err == "The UUID of the project could not be found. (status: 404)"
-		missing = missing || (r.semver.Major == 5 && r.semver.Minor == 0 && err == "The UUID of the project could not be found. (status: 404)")
-		missing = missing || (r.semver.Major == 5 && r.semver.Minor >= 1 &&
-			err == "{\"status\":404,\"title\":\"Resource does not exist\",\"detail\":\"Project could not be found\"} (status: 404)")
+		var missing bool
+		if r.semver.Gteq(NewSemver(5, 1, 0)) {
+			missing = err == "{\"status\":404,\"title\":\"Resource does not exist\",\"detail\":\"Project could not be found\"} (status: 404)"
+		} else {
+			missing = err == "The UUID of the project could not be found. (status: 404)"
+		}
 
 		if missing {
 			tflog.Warn(ctx, "Unable to delete missing Project. Ignoring since is desired state.", map[string]any{
@@ -741,9 +743,9 @@ func (r *projectResource) Configure(_ context.Context, req resource.ConfigureReq
 }
 
 func hasProjectCollectionFeature(semver Semver) bool {
-	return (semver.Major == 4 && semver.Minor >= 13) || (semver.Major >= 5)
+	return semver.Gteq(NewSemver(4, 13, 0))
 }
 
 func hasProjectIsLatestFeature(semver Semver) bool {
-	return (semver.Major == 4 && semver.Minor >= 12) || (semver.Major >= 5)
+	return semver.Gteq(NewSemver(4, 12, 0))
 }

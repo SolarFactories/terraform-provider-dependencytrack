@@ -421,7 +421,7 @@ func (r *teamAPIKeyResource) Configure(_ context.Context, req resource.Configure
 }
 
 func (r *teamAPIKeyResource) isLegacy(key dtrack.APIKey) bool {
-	if r.semver.Major == 4 && r.semver.Minor < 13 {
+	if r.semver.Lt(NewSemver(4, 13, 0)) {
 		return true
 	}
 	return key.Legacy

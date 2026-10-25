@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	dtrack "github.com/DependencyTrack/client-go"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,8 +16,9 @@ import (
 )
 
 var (
-	_ resource.Resource              = &ldapTeamMappingResource{}
-	_ resource.ResourceWithConfigure = &ldapTeamMappingResource{}
+	_ resource.Resource                = &ldapTeamMappingResource{}
+	_ resource.ResourceWithConfigure   = &ldapTeamMappingResource{}
+	_ resource.ResourceWithImportState = &ldapTeamMappingResource{}
 )
 
 type (
@@ -163,9 +165,6 @@ func (r *ldapTeamMappingResource) Read(ctx context.Context, req resource.ReadReq
 	if err != nil {
 		err := err.Error()
 		if err == "did not find item" {
-			// TODO: Since `dependencytrack_ldap_team_mapping` does not implement `Import`:
-			//	unable to create duplicated references in Acceptance Tests.
-			//	So, add Import, adding fields to ImportID as required.
 			tflog.Warn(ctx, "Unable to read missing LDAP Team Mapping. Will be removed from State.", map[string]any{
 				"id":                 state.ID.ValueString(),
 				"team":               state.Team.ValueString(),
@@ -274,9 +273,18 @@ func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.Delet
 	})
 	err := r.client.LDAP.RemoveMapping(ctx, id)
 	if err != nil {
+		err := err.Error()
+		if err == "The UUID of the mapping could not be found. (status: 404)" {
+			tflog.Warn(ctx, "Unable to delete missing LDAP Team Mapping. Will be removed from state", map[string]any{
+				"id":                 state.ID.ValueString(),
+				"team":               state.Team.ValueString(),
+				"distinguished_name": state.DistinguishedName.ValueString(),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete ldap mapping",
-			"Unexpected error when trying to delete ldap mapping with id: "+id.String()+", error: "+err.Error(),
+			"Unexpected error when trying to delete ldap mapping with id: "+id.String()+", error: "+err,
 		)
 		return
 	}
@@ -284,6 +292,59 @@ func (r *ldapTeamMappingResource) Delete(ctx context.Context, req resource.Delet
 		"id":                 state.ID.ValueString(),
 		"team":               state.Team.ValueString(),
 		"distinguished_name": state.DistinguishedName.ValueString(),
+	})
+}
+
+func (r *ldapTeamMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	tflog.Debug(ctx, "Importing LDAP Team Mapping", map[string]any{
+		"id": req.ID,
+	})
+	idParts := strings.Split(req.ID, "/")
+	if len(idParts) != 2 || idParts[0] == "" || idParts[1] == "" {
+		resp.Diagnostics.AddError(
+			"Unexpected import id",
+			"Expected id in format <Team>/<Mapping>. Received: "+req.ID,
+		)
+		return
+	}
+	teamID, diag := TryParseUUID(types.StringValue(idParts[0]), LifecycleImport, path.Root("team"))
+	resp.Diagnostics.Append(diag)
+	mappingID, diag := TryParseUUID(types.StringValue(idParts[1]), LifecycleImport, path.Root("mapping"))
+	resp.Diagnostics.Append(diag)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	mappings, err := r.client.LDAP.GetTeamMappings(ctx, teamID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Within Import, unable to fetch LDAP Team Mappings.",
+			"From team: "+teamID.String()+", with API Error: "+err.Error(),
+		)
+		return
+	}
+	mapping, err := Find(mappings, func(mapping dtrack.MappedLdapGroup) bool {
+		return mapping.UUID == mappingID
+	})
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Within Import, unable to locate LDAP Team Mapping.",
+			"From team: "+teamID.String()+", and mapping: "+mappingID.String()+", with inner error: "+err.Error(),
+		)
+		return
+	}
+	diags := resp.State.Set(ctx, &ldapTeamMappingResourceModel{
+		ID:                types.StringValue(mapping.UUID.String()),
+		Team:              types.StringValue(teamID.String()),
+		DistinguishedName: types.StringValue(mapping.DistinguishedName),
+	})
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	tflog.Debug(ctx, "Imported LDAP Team Mapping", map[string]any{
+		"id": req.ID,
 	})
 }
 

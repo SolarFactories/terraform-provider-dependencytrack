@@ -552,22 +552,14 @@ linters:
       - path: main.go
         linters:
           - cyclop
-      - path: internal/provider/provider_test.go
+
+      - path: internal/provider/component_property_resource_test.go
         linters:
-          - gochecknoglobals
-          - exhaustruct_v5
-          - errcheck
+          - godox
+      - path: internal/provider/component_resource.go
+        linters:
           - revive
-          - forbidigo
-      - path: internal/provider/project_resource.go
-        linters:
-          - gocyclo
-          - cyclop
-          - gocognit
-          - nestif
-      - path: internal/provider/http_client.go
-        linters:
-          - wrapcheck
+          - staticcheck
       - path: internal/provider/config_properties_resource.go
         linters:
           - gocognit
@@ -575,38 +567,26 @@ linters:
           - cyclop
           - maintidx
           - nestif
-      - path: internal/provider/repository_resource.go
-        linters:
-          - gosec
-      - path: internal/provider/util.go
-        linters:
-          - nonamedreturns
-          - godoclint
-          - staticcheck
-          - godox
-      - path: internal/provider/team_data_source_test.go
+      - path: internal/provider/config_properties_resource_test.go
         linters:
           - godox
-      - path: internal/provider/policy_tag_resource.go
+      - path: internal/provider/config_property_resource.go
         linters:
           - godox
-          - godoclint
-      - path: internal/provider/team_apikey_resource_test.go
+      - path: internal/provider/config_property_resource_test.go
         linters:
           - godox
-      - path: internal/provider/tag_projects_resource.go
+      - path: internal/provider/http_client.go
+        linters:
+          - wrapcheck
+      - path: internal/provider/notification_publisher_resource.go
         linters:
           - gocognit
-      - path: internal/provider/tag_policies_resource.go
+          - gocyclo
+          - cyclop
+      - path: internal/provider/notification_rule_project_resource.go
         linters:
           - gocognit
-      - path: internal/provider/component_resource.go
-        linters:
-          - revive
-          - staticcheck
-      - path: internal/provider/component_property_resource_test.go
-        linters:
-          - godox
       - path: internal/provider/notification_rule_resource.go
         linters:
           - govet
@@ -614,18 +594,65 @@ linters:
           - exhaustruct_v5
           - gocyclo
           - cyclop
-      - path: internal/provider/notification_rule_resource_test.go
-        linters:
-          - godox
-      - path: internal/provider/tag_notification_rules_resource.go
+      - path: internal/provider/notification_rule_team_resource.go
         linters:
           - gocognit
       - path: internal/provider/oidc_users_data_source.go
         linters:
           - gosec
+      - path: internal/provider/policy_project_resource.go
+        linters:
+          - godox
+      - path: internal/provider/policy_tag_resource.go
+        linters:
+          - godox
+          - godoclint
       - path: internal/provider/project_data_source.go
         linters:
           - godox
+      - path: internal/provider/project_resource.go
+        linters:
+          - gocyclo
+          - cyclop
+          - gocognit
+          - nestif
+      - path: internal/provider/provider_test.go
+        linters:
+          - gochecknoglobals
+          - exhaustruct_v5
+          - errcheck
+          - revive
+          - forbidigo
+      - path: internal/provider/repository_resource.go
+        linters:
+          - gosec
+      - path: internal/provider/tag_notification_rules_resource.go
+        linters:
+          - gocognit
+      - path: internal/provider/tag_policies_resource.go
+        linters:
+          - gocognit
+      - path: internal/provider/tag_projects_resource.go
+        linters:
+          - gocognit
+      - path: internal/provider/tag_resource.go
+        linters:
+          - godox
+          - revive
+          - lll
+      - path: internal/provider/user_permission_resource.go
+        linters:
+          - godox
+      - path: internal/provider/user_team_resource.go
+        linters:
+          - godox
+      - path: internal/provider/util.go
+        linters:
+          - nonamedreturns
+          - godoclint
+          - staticcheck
+          - godox
+          - revive
       - path: internal/provider/vulnerability_policy_resource.go
         linters:
           - gocognit
@@ -634,48 +661,6 @@ linters:
       - path: internal/provider/vulnerability_policy_resource_test.go
         linters:
           - cyclop
-      - path: internal/provider/ldap_team_mapping_resource.go
-        linters:
-          - godox
-      - path: internal/provider/policy_project_resource.go
-        linters:
-          - godox
-      - path: internal/provider/tag_resource.go
-        linters:
-          - godox
-          - revive
-          - lll
-      - path: internal/provider/user_team_resource.go
-        linters:
-          - godox
-      - path: internal/provider/notification_rule_project_resource.go
-        linters:
-          - gocognit
-      - path: internal/provider/notification_rule_team_resource.go
-        linters:
-          - gocognit
-      - path: internal/provider/user_permission_resource.go
-        linters:
-          - godox
-      - path: internal/provider/config_properties_resource_test.go
-        linters:
-          - godox
-      - path: internal/provider/config_property_resource.go
-        linters:
-          - godox
-          - revive
-          - staticcheck
-      - path: internal/provider/config_property_resource_test.go
-        linters:
-          - godox
-      - path: internal/provider/notification_publisher_resource.go
-        linters:
-          - gocognit
-          - gocyclo
-          - cyclop
-      - path: internal/provider/component_resource.go
-        linters:
-          - gocognit
 
 formatters:
   enable:

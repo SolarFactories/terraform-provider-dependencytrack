@@ -700,9 +700,9 @@ func (r *notificationRuleResource) Configure(_ context.Context, req resource.Con
 }
 
 func hasNotificationChildrenFeature(semver Semver) bool {
-	return (semver.Major == 4 && semver.Minor >= 12) || (semver.Major >= 5)
+	return semver.Gteq(NewSemver(4, 12, 0))
 }
 
 func hasNotificationTriggerTypeFeature(semver Semver) bool {
-	return (semver.Major == 4 && semver.Minor >= 13) || (semver.Major >= 5)
+	return semver.Gteq(NewSemver(4, 13, 0))
 }
