@@ -376,7 +376,7 @@ resource "dependencytrack_project" "test3" {
 				ResourceName:      "dependencytrack_project.test3",
 				ImportState:       true,
 				ImportStateVerify: true,
-				// FIXME: Importing when the collection is "NONE" results in a nil value being stored.
+				// Importing when the collection is "NONE" results in a nil value being stored.
 				ImportStateVerifyIgnore: []string{"collection"},
 			},
 			// Update and Read.

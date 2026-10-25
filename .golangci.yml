@@ -616,9 +616,6 @@ linters:
           - cyclop
           - gocognit
           - nestif
-      - path: internal/provider/project_resource_test.go
-        linters:
-          - godox
       - path: internal/provider/provider_test.go
         linters:
           - gochecknoglobals
