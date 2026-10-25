@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccNotificationRuleEventResource(t *testing.T) {
@@ -38,7 +39,7 @@ resource "dependencytrack_notification_rule" "test" {
 					Ternary(
 						apiSemver.Gteq(NewSemver(4, 12, 0)),
 						resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"),
-						nil,
+						func(*terraform.State) error { return nil },
 					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "true"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
@@ -90,7 +91,7 @@ resource "dependencytrack_notification_rule" "test" {
 					Ternary(
 						apiSemver.Gteq(NewSemver(4, 12, 0)),
 						resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "notify_children", "true"),
-						nil,
+						func(*terraform.State) error { return nil },
 					),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "log_successful_publish", "false"),
 					resource.TestCheckResourceAttr("dependencytrack_notification_rule.test", "scope", "PORTFOLIO"),
