@@ -21,7 +21,7 @@ data "dependencytrack_permissions" "test" {}
 					resource.TestCheckResourceAttrSet("data.dependencytrack_team.test", "id"),
 					resource.TestCheckResourceAttr("data.dependencytrack_team.test", "name", "Administrators"),
 					resource.TestCheckResourceAttrPair(
-						"data.dependencytrack_test.test", "permissions.#",
+						"data.dependencytrack_team.test", "permissions.#",
 						"data.dependencytrack_permissions.test", "permissions.#",
 					),
 					resource.TestCheckResourceAttr("data.dependencytrack_team.test", "permissions.0.name", "ACCESS_MANAGEMENT"),
