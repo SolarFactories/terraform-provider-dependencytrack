@@ -81,7 +81,7 @@ jobs:
         api:
           # TLS Connectivity is between TF and Nginx, so is independent of API version.
           # Full API testing is handled in subsequent jobs. Therefore, this can be any compatible API version.
-          - "4.14.5-alpine"
+          - "4.14.6-alpine"
         provider:
           - "default"
           - "rootCA"
@@ -167,6 +167,7 @@ jobs:
       fail-fast: false
       matrix:
         terraform:
+         - '1.16.*'
          - '1.17.*'
         api_version:
           - "4.11.7"
@@ -184,6 +185,7 @@ jobs:
           - "4.14.3-alpine"
           - "4.14.4-alpine"
           - "4.14.5-alpine"
+          - "4.14.6-alpine"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/test
@@ -254,6 +256,7 @@ jobs:
           - "4.14.3-alpine"
           - "4.14.4-alpine"
           - "4.14.5-alpine"
+          - "4.14.6-alpine"
         terraform:
           - '1.0.*'
           - '1.1.*'
@@ -271,7 +274,6 @@ jobs:
           - '1.13.*'
           - '1.14.*'
           - '1.15.*'
-          - '1.16.*'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/test
@@ -313,6 +315,7 @@ jobs:
           - "5.1.1"
           - "5.1.2"
           - "5.2.0"
+          - "5.2.1"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/test-v5
@@ -353,6 +356,7 @@ jobs:
           - "5.1.1"
           - "5.1.2"
           - "5.2.0"
+          - "5.2.1"
         terraform:
           - '1.0.*'
           - '1.1.*'
