@@ -630,6 +630,9 @@ linters:
       - path: internal/provider/repository_resource.go
         linters:
           - gosec
+      - path: internal/provider/secret_metadata_data_source.go
+        linters:
+          - gosec
       - path: internal/provider/tag_notification_rules_resource.go
         linters:
           - gocognit
