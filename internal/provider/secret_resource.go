@@ -249,7 +249,7 @@ func (r *secretResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if err != nil {
 		err := err.Error()
 		if err == fmt.Sprintf(
-			"{\"type\":\"about:blank\",\"title\":\"Resource does no exist\",\"detail\":\"No secret with name %s found\",\"status\":404} (status: 404)",
+			"{\"type\":\"about:blank\",\"title\":\"Resource does not exist\",\"detail\":\"No secret with name %s found\",\"status\":404} (status: 404)",
 			secretName,
 		) {
 			tflog.Warn(ctx, "Unable to delete missing Secret. Ignoring since is desired state.", map[string]any{
