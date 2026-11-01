@@ -1,3 +1,33 @@
+## 1.27
+
+#### FEATURES
+- Add automated testing and documented support for API `4.14.6`, `4.14.6-alpine`.
+- Add automated testing and documented support for Terraform `1.17`.
+- Add automated testing for API `5.2.1`.
+- Add `last_bom_import` field to datasource `dependencytrack_project`.
+- Add `import` for `dependencytrack_ldap_team_mapping`.
+
+#### FIXES
+- Fix incorrect environment variable to default disable telemetry submission in local DT v5 `docker-compose.v5.yml`.
+- Update `dependencytrack_config_properties` to report errors returned from API for invalid / unknown properties.
+	- Eases use when transitioning API from v4 to v5.
+	- Thanks to [@jkvbe](https://github.com/jkvbe) for reporting.
+	- https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/226
+- Use updated `github.com/SolarFactories/client-go` to incorporate fix for `dependencytrack_project` creating projects with last BOM import of `1 Jan 1970`.
+	- Thanks for [@ripa1993](https://github.com/ripa1993) for reporting.
+	- https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/258
+- Added removal from state for `dependencytrack_config_property` if they cannot be found when reading, or deleting.
+- Added removal from state for `dependencytrack_ldap_team_mapping` if it cannot be found when deleting.
+
+#### DEPENDENCIES
+- Update override for `github/DependencyTrack/client-go` within `github.com/SolarFactories/client-go`
+
+#### MISC
+- Organise order of files within lint ignores in `.golangci.yml`. Addressed couple.
+- Simplify use of API Semver comparisons, using introduced `Semver.Gteq`, `Semver.Lt`, and `NewSemver` functions.
+- Added Semver conditional expressions to acceptance tests, to attributes that change value / conditionally exist depending on API version.
+	- Allowed to re-enable a series of disabled checks.
+
 ## 1.26
 
 #### FEATURES
