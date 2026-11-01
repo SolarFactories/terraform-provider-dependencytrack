@@ -30,6 +30,7 @@ data "dependencytrack_project" "example" {
 ### Optional
 
 - `is_latest` (Boolean) Whether the project is the latest version. Available in API 4.12+.
+- `last_bom_import` (Number) Timestamp of last BOM import
 - `parent` (String) UUID of a parent project, if nested.
 
 ### Read-Only

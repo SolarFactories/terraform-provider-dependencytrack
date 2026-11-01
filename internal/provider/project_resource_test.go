@@ -567,3 +567,31 @@ resource "dependencytrack_project" "test2" {
 		},
 	})
 }
+
+func TestAccProjectResourceRegression258(t *testing.T) {
+	// Regression test for https://github.com/SolarFactories/terraform-provider-dependencytrack/issues/258
+	// TODO: This would benefit from another test, where `last_bom_import` is set to non-zero.
+	// This would require to have a BOM import, as well as a waiting for processing to be completed.
+	// This is due to not distinguishing between an absent property, and a null-set property.
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			// Create initial Project.
+			{
+				Config: providerConfig + `
+resource "dependencytrack_project" "test" {
+	name = "Test_Project_258"
+	version = "1.0"
+}
+data "dependencytrack_project" "test" {
+	name = dependencytrack_project.test.name
+	version = dependencytrack_project.test.version
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("data.dependencytrack_project.test", "last_bom_import"),
+				),
+			},
+		},
+	})
+}

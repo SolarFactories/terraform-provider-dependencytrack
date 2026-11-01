@@ -24,18 +24,19 @@ type (
 	}
 
 	projectDataSourceModel struct {
-		Name       types.String             `tfsdk:"name"`
-		Version    types.String             `tfsdk:"version"`
-		ID         types.String             `tfsdk:"id"`
-		Classifier types.String             `tfsdk:"classifier"`
-		CPE        types.String             `tfsdk:"cpe"`
-		Group      types.String             `tfsdk:"group"`
-		Parent     types.String             `tfsdk:"parent"`
-		PURL       types.String             `tfsdk:"purl"`
-		SWID       types.String             `tfsdk:"swid"`
-		Properties []projectPropertiesModel `tfsdk:"properties"`
-		Tags       []types.String           `tfsdk:"tags"`
-		IsLatest   types.Bool               `tfsdk:"is_latest"`
+		Name          types.String             `tfsdk:"name"`
+		Version       types.String             `tfsdk:"version"`
+		ID            types.String             `tfsdk:"id"`
+		Classifier    types.String             `tfsdk:"classifier"`
+		CPE           types.String             `tfsdk:"cpe"`
+		Group         types.String             `tfsdk:"group"`
+		Parent        types.String             `tfsdk:"parent"`
+		PURL          types.String             `tfsdk:"purl"`
+		SWID          types.String             `tfsdk:"swid"`
+		Properties    []projectPropertiesModel `tfsdk:"properties"`
+		Tags          []types.String           `tfsdk:"tags"`
+		IsLatest      types.Bool               `tfsdk:"is_latest"`
+		LastBOMImport types.Int64              `tfsdk:"last_bom_import"`
 	}
 
 	projectPropertiesModel struct {
@@ -134,6 +135,11 @@ func (*projectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 				Computed:    true,
 				ElementType: types.StringType,
 			},
+			"last_bom_import": schema.Int64Attribute{
+				Description: "Timestamp of last BOM import",
+				Computed:    true,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -172,10 +178,16 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		Tags: Map(project.Tags, func(item dtrack.Tag) types.String {
 			return types.StringValue(item.Name)
 		}),
-		IsLatest: types.BoolNull(), // Set below.
+		IsLatest:      types.BoolNull(), // Set below.
+		LastBOMImport: types.Int64Unknown(),
 	}
 	if project.ParentRef != nil {
 		projectState.Parent = types.StringValue(project.ParentRef.UUID.String())
+	}
+	if project.LastBOMImport == 0 {
+		projectState.LastBOMImport = types.Int64Null()
+	} else {
+		projectState.LastBOMImport = types.Int64Value(int64(project.LastBOMImport))
 	}
 
 	// TODO: V5: Removed `Project.Properties`
@@ -208,18 +220,19 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 	tflog.Debug(ctx, "Read Project", map[string]any{
-		"id":           projectState.ID.ValueString(),
-		"name":         projectState.Name.ValueString(),
-		"version":      projectState.Version.ValueString(),
-		"is_latest":    projectState.IsLatest.ValueBool(),
-		"properties.#": len(projectState.Properties),
-		"classifier":   projectState.Classifier.ValueString(),
-		"cpe":          projectState.CPE.ValueString(),
-		"group":        projectState.Group.ValueString(),
-		"purl":         projectState.PURL.ValueString(),
-		"swid":         projectState.SWID.ValueString(),
-		"parent":       projectState.Parent.ValueString(),
-		"tags":         Map(projectState.Tags, func(item types.String) string { return item.ValueString() }),
+		"id":              projectState.ID.ValueString(),
+		"name":            projectState.Name.ValueString(),
+		"version":         projectState.Version.ValueString(),
+		"is_latest":       projectState.IsLatest.ValueBool(),
+		"properties.#":    len(projectState.Properties),
+		"classifier":      projectState.Classifier.ValueString(),
+		"cpe":             projectState.CPE.ValueString(),
+		"group":           projectState.Group.ValueString(),
+		"purl":            projectState.PURL.ValueString(),
+		"swid":            projectState.SWID.ValueString(),
+		"parent":          projectState.Parent.ValueString(),
+		"tags":            Map(projectState.Tags, func(item types.String) string { return item.ValueString() }),
+		"last_bom_import": projectState.LastBOMImport,
 	})
 }
 
