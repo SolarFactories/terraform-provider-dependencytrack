@@ -7,6 +7,9 @@ import (
 )
 
 func TestAccSecretMetadataDataSource(t *testing.T) {
+	if apiSemver.Lt(NewSemver(5, 0, 0)) {
+		t.SkipNow()
+	}
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -45,6 +48,10 @@ data "dependencytrack_secret_metadata" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttrPair(
+						"dependencytrack_secret.test", "description",
+						"data.dependencytrack_secret_metadata.test", "description",
+					),
 					resource.TestCheckResourceAttrSet("data.dependencytrack_secret_metadata.test", "updated_at"),
 				),
 			},

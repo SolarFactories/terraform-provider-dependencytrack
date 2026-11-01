@@ -108,7 +108,7 @@ func (r *secretResource) Create(ctx context.Context, req resource.CreateRequest,
 	tflog.Debug(ctx, "Created Secret", map[string]any{
 		"name":        state.Name,
 		"value.#":     len(state.Value.ValueString()),
-		"description": state.Description.ValueString(),
+		"description": state.Description,
 		"url":         state.URL,
 	})
 }
@@ -130,9 +130,20 @@ func (r *secretResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	metadata, err := r.client.Secrets.GetMetadata(ctx, secretName)
 	if err != nil {
+		err := err.Error()
+		if err == "{\"type\":\"about:blank\",\"title\":\"Not Found\",\"detail\":\"The requested resource could not be found.\",\"status\":404} (status: 404)" {
+			tflog.Warn(ctx, "Unable to read missing Secret. Will be removed from state.", map[string]any{
+				"name":        secretName,
+				"description": state.Description,
+				"url":         state.URL,
+				"value.#":     len(state.Value.ValueString()),
+			})
+			resp.State.RemoveResource(ctx)
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Within Read, unable to read Metadata for Secret: "+secretName,
-			"Error from: "+err.Error(),
+			"Error from: "+err,
 		)
 		return
 	}
@@ -236,9 +247,22 @@ func (r *secretResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	})
 	err := r.client.Secrets.Delete(ctx, secretName)
 	if err != nil {
+		err := err.Error()
+		if err == fmt.Sprintf(
+			"{\"type\":\"about:blank\",\"title\":\"Resource does no exist\",\"detail\":\"No secret with name %s found\",\"status\":404} (status: 404)",
+			secretName,
+		) {
+			tflog.Warn(ctx, "Unable to delete missing Secret. Ignoring since is desired state.", map[string]any{
+				"name":        state.Name,
+				"description": state.Description,
+				"url":         state.URL,
+				"value.#":     len(state.Value.ValueString()),
+			})
+			return
+		}
 		resp.Diagnostics.AddError(
 			"Unable to delete secret with name: "+secretName,
-			"Unexpected error from: "+err.Error(),
+			"Unexpected error from: "+err,
 		)
 		return
 	}
